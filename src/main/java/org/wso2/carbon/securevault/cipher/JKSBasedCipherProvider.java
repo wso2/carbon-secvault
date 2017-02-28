@@ -22,7 +22,6 @@ import org.wso2.carbon.securevault.MasterKey;
 import org.wso2.carbon.securevault.SecureVaultUtils;
 import org.wso2.carbon.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.securevault.exception.SecureVaultException;
-import org.wso2.carbon.securevault.internal.SecureVaultDataHolder;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
