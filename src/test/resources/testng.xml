@@ -47,10 +47,10 @@ limitations under the License.
             <class name="org.wso2.carbon.kernel.utils.MBeanRegistratorTest"/>
 
             <class name="org.wso2.carbon.kernel.configprovider.ConfigProviderImplTest"/>
-            <class name="org.wso2.carbon.kernel.securevault.DefaultMasterKeyReaderTest"/>
-            <class name="org.wso2.carbon.kernel.securevault.DefaultSecretRepositoryTest"/>
-            <class name="org.wso2.carbon.kernel.securevault.SecureVaultConfigurationProviderTest"/>
-            <class name="org.wso2.carbon.kernel.securevault.CipherToolTest"/>
+            <class name="org.wso2.carbon.securevault.DefaultMasterKeyReaderTest"/>
+            <class name="org.wso2.carbon.securevault.DefaultSecretRepositoryTest"/>
+            <class name="org.wso2.carbon.securevault.SecureVaultConfigurationProviderTest"/>
+            <class name="org.wso2.carbon.securevault.CipherToolTest"/>
             <class name="org.wso2.carbon.kernel.annotationprocessor.AnnotationProcessorTest"/>
         </classes>
     </test>
