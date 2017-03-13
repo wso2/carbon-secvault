@@ -41,10 +41,10 @@ import java.util.List;
  * @since 5.2.0
  */
 @Component(
-        name = "org.wso2.carbon.kernel.securevault.repository.DefaultSecretRepository",
+        name = "org.wso2.carbon.securevault.repository.DefaultSecretRepository",
         immediate = true,
         property = {
-                "capabilityName=org.wso2.carbon.kernel.securevault.SecretRepository"
+                "capabilityName=org.wso2.carbon.securevault.SecretRepository"
         },
         service = SecretRepository.class
 )

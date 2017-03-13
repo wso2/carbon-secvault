@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.securevault.exception.SecureVaultException;
-import org.wso2.carbon.utils.Utils;
+import org.wso2.carbon.securevault.internal.SecureVaultDataHolder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -112,9 +112,13 @@ public class SecureVaultUtils {
     }
 
     public static String getSecretPropertiesFileLocation(SecretRepositoryConfiguration secretRepositoryConfiguration) {
+        if (SecureVaultUtils.isOSGIEnv()) {
+            return secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
+                    .orElseGet(() -> getCarbonConfigHome().get()
+                            .resolve(Paths.get("security", SecureVaultConstants.SECRETS_PROPERTIES)).toString());
+        }
         return secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
-                .orElseGet(() -> Utils.getCarbonConfigHome()
-                        .resolve(Paths.get("security", SecureVaultConstants.SECRETS_PROPERTIES)).toString());
+                .orElseGet(() -> SecureVaultInitializer.getInstance().getSecretPropertiesPath().get());
     }
 
     /**
@@ -123,7 +127,10 @@ public class SecureVaultUtils {
      * @return String secure_vault.yaml location
      */
     public static String getSecureVaultYAMLLocation() {
-        return Utils.getCarbonConfigHome().resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML).toString();
+        if (SecureVaultUtils.isOSGIEnv()) {
+            return getCarbonConfigHome().get().resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML).toString();
+        }
+        return SecureVaultInitializer.getInstance().getSecureVaultYAMLPath().get();
     }
 
     /**
@@ -223,5 +230,45 @@ public class SecureVaultUtils {
         } catch (IOException e) {
             throw new SecureVaultException("Failed to read file : " + file.getAbsoluteFile(), e);
         }
+    }
+
+    /**
+     * Returns the Carbon Home directory path. If {@code carbon.home} system property is not found, gets the
+     * {@code CARBON_HOME_ENV} system property value and sets to the carbon home.
+     *
+     * @return returns the Carbon Home directory path
+     */
+    public static Optional<Path> getCarbonHome() {
+        Optional<String> carbonHome = Optional.ofNullable(System.getProperty(SecureVaultConstants.CARBON_HOME));
+        if (!carbonHome.isPresent()) {
+            carbonHome = Optional.ofNullable(System.getenv(SecureVaultConstants.CARBON_HOME_ENV));
+            carbonHome.ifPresent((home) -> System.setProperty(SecureVaultConstants.CARBON_HOME, home));
+            if (!carbonHome.isPresent()) {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(Paths.get(carbonHome.get()));
+    }
+
+    /**
+     * This method will return the carbon configuration directory path.
+     * i.e ${carbon.home}/conf
+     *
+     * @return returns the Carbon Configuration directory path
+     */
+    public static Optional<Path> getCarbonConfigHome() {
+        if (getCarbonHome().isPresent()) {
+            return Optional.of(Paths.get(getCarbonHome().get().toString(), "conf"));
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Check whether the environment is OSGI or not.
+     *
+     * @return true is environment is OSGI false if not OSGI.
+     */
+    public static boolean isOSGIEnv() {
+        return SecureVaultDataHolder.getInstance().getBundleContext().isPresent();
     }
 }
