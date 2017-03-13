@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.securevault.internal;
 
+import org.osgi.framework.BundleContext;
 import org.wso2.carbon.securevault.MasterKeyReader;
 import org.wso2.carbon.securevault.SecretRepository;
 
@@ -28,6 +29,7 @@ import java.util.Optional;
  */
 public class SecureVaultDataHolder {
     private static SecureVaultDataHolder instance = new SecureVaultDataHolder();
+    private Optional<BundleContext> bundleContext = Optional.empty();
 
     private Optional<SecretRepository> optSecretRepository = Optional.empty();
     private Optional<MasterKeyReader> optMasterKeyReader = Optional.empty();
@@ -73,5 +75,13 @@ public class SecureVaultDataHolder {
      */
     public void setMasterKeyReader(MasterKeyReader masterKeyReader) {
         optMasterKeyReader = Optional.ofNullable(masterKeyReader);
+    }
+
+    public Optional<BundleContext> getBundleContext() {
+        return bundleContext;
+    }
+
+    public void setBundleContext(BundleContext bundleContext) {
+        this.bundleContext = Optional.ofNullable(bundleContext);
     }
 }

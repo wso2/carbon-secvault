@@ -22,9 +22,10 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.securevault.exception.SecureVaultException;
+import org.wso2.carbon.securevault.internal.SecureVaultDataHolder;
 import org.wso2.carbon.securevault.repository.DefaultSecretRepository;
 import org.wso2.carbon.securevault.utils.DefaultHardCodedMasterKeyReader;
-import org.wso2.carbon.utils.Constants;
+import org.wso2.carbon.securevault.utils.FakeBundleContext;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,7 +39,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 
 /**
- * Unit tests class for org.wso2.carbon.kernel.securevault.repository.DefaultSecretRepository.
+ * Unit tests class for org.wso2.carbon.securevault.repository.DefaultSecretRepository.
  *
  * @since 5.2.0
  */
@@ -49,6 +50,7 @@ public class DefaultSecretRepositoryTest {
 
     @BeforeTest
     public void setup() {
+        SecureVaultDataHolder.getInstance().setBundleContext(new FakeBundleContext());
         File secretsFile = new File(Paths.get(secureVaultTargetPath.toString(), "secrets.properties").toString());
         File erroneousSecretsFile = new File(Paths.get(secureVaultTargetPath.toString(),
                 "error-secrets.properties").toString());
@@ -77,7 +79,7 @@ public class DefaultSecretRepositoryTest {
 
     @Test
     public void testInitSecretRepository() throws SecureVaultException {
-        System.setProperty(Constants.CARBON_HOME, secureVaultResourcesPath.toString());
+        System.setProperty(SecureVaultConstants.CARBON_HOME, secureVaultResourcesPath.toString());
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();

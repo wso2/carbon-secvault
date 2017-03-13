@@ -18,9 +18,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
-        <groupId>org.wso2.carbon</groupId>
-        <artifactId>carbon-kernel-parent</artifactId>
-        <version>5.2.0-SNAPSHOT</version>
+        <groupId>org.wso2</groupId>
+        <artifactId>wso2</artifactId>
+        <version>5</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -37,51 +37,61 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.utils</artifactId>
+            <version>${carbon.utils.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.eclipse.osgi</groupId>
             <artifactId>org.eclipse.osgi</artifactId>
+            <version>${equinox.osgi.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.wso2.eclipse.osgi</groupId>
             <artifactId>org.eclipse.osgi.services</artifactId>
+            <version>${equinox.osgi.services.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.ops4j.pax.logging</groupId>
             <artifactId>pax-logging-api</artifactId>
+            <version>${pax.logging.api.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
+            <version>${org.snakeyaml.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jacoco</groupId>
             <artifactId>org.jacoco.agent</artifactId>
+            <version>${jacoco.version}</version>
             <classifier>runtime</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
+            <version>${easymock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-easymock</artifactId>
+            <version>${powermock.api.easymock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-testng</artifactId>
+            <version>${powermock.module.testng.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -132,7 +142,6 @@
     </build>
 
     <properties>
-        <bundle.activator>org.wso2.carbon.securevault.internal.SecureVaultActivator</bundle.activator>
         <private.package>org.wso2.carbon.securevault.internal.*,</private.package>
         <export.package>
             !org.wso2.carbon.securevault.internal.*,
@@ -144,5 +153,29 @@
             org.yaml.snakeyaml.*;version="${org.snakeyaml.package.import.version.range}",
             javax.crypto.*;version="${javax.crypto.version.range}",
         </import.package>
+        <carbon.kernel.package.export.version>5.2.0</carbon.kernel.package.export.version>
+        <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
+        <osgi.framework.package.import.version.range>[1.8.0, 2.0.0)</osgi.framework.package.import.version.range>
+        <org.snakeyaml.package.import.version.range>[1.17.0,2.0.0)</org.snakeyaml.package.import.version.range>
+        <javax.crypto.version.range>[0.0.0,1.0.0)</javax.crypto.version.range>
+
+        <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
+        <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
+
+        <pax.logging.api.version>1.9.0</pax.logging.api.version>
+
+        <org.snakeyaml.version>1.17</org.snakeyaml.version>
+
+        <testng.version>6.9.4</testng.version>
+
+        <jacoco.version>0.7.5.201505241946</jacoco.version>
+
+        <easymock.version>3.4</easymock.version>
+
+        <powermock.api.easymock.version>1.6.5</powermock.api.easymock.version>
+
+        <powermock.module.testng.version>1.6.5</powermock.module.testng.version>
+        <carbon.utils.version>5.2.0-SNAPSHOT</carbon.utils.version>
+
     </properties>
 </project>

@@ -19,8 +19,9 @@ package org.wso2.carbon.securevault;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.carbon.securevault.exception.SecureVaultException;
+import org.wso2.carbon.securevault.internal.SecureVaultDataHolder;
 import org.wso2.carbon.securevault.tool.CipherTool;
-import org.wso2.carbon.utils.Constants;
+import org.wso2.carbon.securevault.utils.FakeBundleContext;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit tests class for org.wso2.carbon.kernel.securevault.tool.CipherTool.
+ * Unit tests class for org.wso2.carbon.securevault.tool.CipherTool.
  *
  * @since 5.2.0
  */
@@ -40,7 +41,8 @@ public class CipherToolTest {
 
     @Test
     public void testEncryptionAndDecryption() throws SecureVaultException {
-        System.setProperty(Constants.CARBON_HOME, secureVaultResourcesPath.toString());
+        SecureVaultDataHolder.getInstance().setBundleContext(new FakeBundleContext());
+        System.setProperty(SecureVaultConstants.CARBON_HOME, secureVaultResourcesPath.toString());
         List<URL> urls = new ArrayList<>();
         URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
 

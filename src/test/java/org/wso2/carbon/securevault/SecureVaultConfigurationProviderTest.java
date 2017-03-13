@@ -24,14 +24,15 @@ import org.wso2.carbon.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.securevault.config.model.SecureVaultConfiguration;
 import org.wso2.carbon.securevault.exception.SecureVaultException;
 import org.wso2.carbon.securevault.internal.SecureVaultConfigurationProvider;
-import org.wso2.carbon.utils.Constants;
+import org.wso2.carbon.securevault.internal.SecureVaultDataHolder;
+import org.wso2.carbon.securevault.utils.FakeBundleContext;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
- * Unit tests class for org.wso2.carbon.kernel.internal.securevault.SecureVaultConfigurationProvider.
+ * Unit tests class for org.wso2.carbon.securevault.internal.SecureVaultConfigurationProvider.
  *
  * @since 5.2.0
  */
@@ -40,26 +41,26 @@ public class SecureVaultConfigurationProviderTest {
 
     @BeforeTest
     public void setup() {
-
+        SecureVaultDataHolder.getInstance().setBundleContext(new FakeBundleContext());
     }
 
     @Test(expectedExceptions = SecureVaultException.class)
     public void testGetConfigurationNoConfigFile() throws SecureVaultException {
-        System.setProperty(Constants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString(),
+        System.setProperty(SecureVaultConstants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString(),
                 "nonExisting").toString());
         SecureVaultConfigurationProvider.getConfiguration();
     }
 
     @Test(dependsOnMethods = {"testGetConfigurationNoConfigFile"})
     public void testGetConfiguration() throws SecureVaultException {
-        System.setProperty(Constants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString()).toString());
+        System.setProperty(SecureVaultConstants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString()).toString());
         SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getConfiguration();
         Assert.assertNotNull(secureVaultConfiguration);
     }
 
     @Test(dependsOnMethods = {"testGetConfiguration"})
     public void testReadSecretRepositoryConfig() {
-        System.setProperty(Constants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString()).toString());
+        System.setProperty(SecureVaultConstants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString()).toString());
         SecureVaultConfiguration secureVaultConfiguration;
         try {
             secureVaultConfiguration = SecureVaultConfigurationProvider.getConfiguration();
@@ -70,13 +71,13 @@ public class SecureVaultConfigurationProviderTest {
         SecretRepositoryConfiguration secretRepositoryConfiguration = secureVaultConfiguration
                 .getSecretRepositoryConfig();
         Assert.assertEquals(secretRepositoryConfiguration.getType().get(),
-                "org.wso2.carbon.kernel.securevault.repository.DefaultSecretRepository");
+                "org.wso2.carbon.securevault.repository.DefaultSecretRepository");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("privateKeyAlias").get(), "wso2carbon");
     }
 
     @Test(dependsOnMethods = {"testGetConfiguration"})
     public void testReadMasterKeyReaderConfig() {
-        System.setProperty(Constants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString()).toString());
+        System.setProperty(SecureVaultConstants.CARBON_HOME, Paths.get(secureVaultResourcesPath.toString()).toString());
         SecureVaultConfiguration secureVaultConfiguration;
         try {
             secureVaultConfiguration = SecureVaultConfigurationProvider.getConfiguration();
@@ -87,7 +88,7 @@ public class SecureVaultConfigurationProviderTest {
         MasterKeyReaderConfiguration masterKeyReaderConfiguration = secureVaultConfiguration
                 .getMasterKeyReaderConfig();
         Assert.assertEquals(masterKeyReaderConfiguration.getType().get(),
-                "org.wso2.carbon.kernel.securevault.utils.DefaultHardCodedMasterKeyReader");
+                "org.wso2.carbon.securevault.utils.DefaultHardCodedMasterKeyReader");
         Assert.assertEquals(masterKeyReaderConfiguration.getParameter("nonExistingParam"), Optional.empty());
     }
 }
