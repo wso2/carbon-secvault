@@ -1,0 +1,4 @@
+permanent: false
+masterKeys:
+  keyStorePassword: wso2carbon
+  privateKeyPassword: wso2carbon
