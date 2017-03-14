@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,15 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.MasterKey;
 import org.wso2.carbon.secvault.securevault.MasterKeyReader;
 import org.wso2.carbon.secvault.securevault.SecretRepository;
+import org.wso2.carbon.secvault.securevault.SecureVaultConstants;
+import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
 import org.wso2.carbon.secvault.securevault.cipher.JKSBasedCipherProvider;
-import org.wso2.carbon.secvault.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
+import org.wso2.carbon.utils.Utils;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,10 +40,10 @@ import java.util.List;
  * This service component provides a concrete implementation for {@link SecretRepository}. This is the default
  * implementation for secret repository in Secure Vault. The secrets are taken form the secrets.properties file and
  * encryption/decryption is based on the Java KeyStore.
- *
+ * <p>
  * This component registers a SecretRepository as an OSGi service.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 @Component(
         name = "DefaultSecretRepository",
@@ -84,5 +89,22 @@ public class DefaultSecretRepository extends AbstractSecretRepository {
     @Override
     public byte[] decrypt(byte[] cipherText) throws SecureVaultException {
         return jksBasedCipherProvider.decrypt(cipherText);
+    }
+
+    @Override
+    public Path getSecretPropertiesPath(SecretRepositoryConfiguration secretRepositoryConfiguration)
+            throws SecureVaultException {
+        if (SecureVaultUtils.isOSGIEnv()) {
+            String path = secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
+                    .orElseGet(() -> Utils.getCarbonConfigHome()
+                            .resolve(Paths.get(SecureVaultConstants.SECRETS_PROPERTIES)).toString());
+            return Paths.get(path);
+        }
+        String path = secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
+                .orElseGet(() -> SecureVaultUtils
+                        .getResourcePath("securevault", "conf", SecureVaultConstants.SECRETS_PROPERTIES)
+                        .get()
+                        .toString());
+        return Paths.get(path);
     }
 }

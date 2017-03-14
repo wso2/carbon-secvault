@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.secvault.securevault.config.model;
+package org.wso2.carbon.secvault.securevault.model;
 
 /**
  * SecureVaultConfiguration class holds static configuration parameters specified in the secure-vault.yaml file.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class SecureVaultConfiguration {
     private SecretRepositoryConfiguration secretRepository;

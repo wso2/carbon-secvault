@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.wso2.carbon.secvault.securevault;
 
-
-import org.wso2.carbon.secvault.securevault.config.model.MasterKeyReaderConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.model.MasterKeyReaderConfiguration;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -29,7 +29,7 @@ import java.util.List;
  * The implementation of this interface can be different from one MasterKeyReader to another depending on its
  * requirements and behaviour.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public interface MasterKeyReader {
 
@@ -50,4 +50,11 @@ public interface MasterKeyReader {
      * @throws SecureVaultException on an error while trying to read master keys
      */
     void readMasterKeys(List<MasterKey> masterKeys) throws SecureVaultException;
+
+    /**
+     * An implementation of this method is responsible for returning the master key yaml path.
+     * @return master key yaml path
+     * @throws SecureVaultException on error retuning the master key yaml path
+     */
+    Path getMasterKeyYAMLPath() throws SecureVaultException;
 }

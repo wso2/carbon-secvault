@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.secvault.securevault.config.model;
+package org.wso2.carbon.secvault.securevault.model;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * Secret Repository Configuration bean.
+ * Master Key Reader Configuration bean.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
-public class SecretRepositoryConfiguration {
+public class MasterKeyReaderConfiguration {
 
     private String type = "";
     private Map<String, String> parameters = new HashMap<>();

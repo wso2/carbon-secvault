@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.Optional;
  * This class represents a master key that is needed to initialize a secret repository. A secret repository might need
  *  a few master keys to get it initialized.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class MasterKey {
     private String masterKeyName;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package org.wso2.carbon.secvault.securevault;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.secvault.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
-import org.wso2.carbon.secvault.securevault.internal.SecureVaultDataHolder;
+import org.wso2.carbon.utils.StringUtils;
+import org.wso2.carbon.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -49,13 +50,20 @@ import java.util.regex.Pattern;
 /**
  * Secure Vault utility methods.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class SecureVaultUtils {
     private static final Logger logger = LoggerFactory.getLogger(SecureVaultUtils.class);
-    private static final String defaultCharset = StandardCharsets.UTF_8.name();
+    private static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
     private static final Pattern varPatternEnv = Pattern.compile("\\$\\{env:([^}]*)}");
     private static final Pattern varPatternSys = Pattern.compile("\\$\\{sys:([^}]*)}");
+
+    /**
+     * Remove default constructor and make it not available to initialize.
+     */
+    private SecureVaultUtils() {
+        throw new AssertionError("Trying to a instantiate a constant class");
+    }
 
     public static MasterKey getSecret(List<MasterKey> masterKeys, String secretName) throws SecureVaultException {
         return masterKeys.stream()
@@ -74,18 +82,18 @@ public class SecureVaultUtils {
     }
 
     public static char[] toChars(byte[] bytes) {
-        Charset charset = Charset.forName(defaultCharset);
+        Charset charset = Charset.forName(DEFAULT_CHARSET);
         return charset.decode(ByteBuffer.wrap(bytes)).array();
     }
 
     public static byte[] toBytes(String value) {
-        return value.getBytes(Charset.forName(defaultCharset));
+        return value.getBytes(Charset.forName(DEFAULT_CHARSET));
     }
 
     public static Properties loadSecretFile(Path secretsFilePath) throws SecureVaultException {
         Properties properties = new Properties();
         try (InputStream inputStream = new FileInputStream(secretsFilePath.toFile());
-             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, defaultCharset))) {
+             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, DEFAULT_CHARSET))) {
             properties.load(bufferedReader);
         } catch (FileNotFoundException e) {
             throw new SecureVaultException("Cannot find secrets file in given location. (location: "
@@ -99,7 +107,7 @@ public class SecureVaultUtils {
 
     public static void updateSecretFile(Path secretsFilePath, Properties properties) throws SecureVaultException {
         try (OutputStream outputStream = new FileOutputStream(secretsFilePath.toFile());
-             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, defaultCharset)) {
+             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, DEFAULT_CHARSET)) {
 
             properties.store(outputStreamWriter, null);
         } catch (FileNotFoundException e) {
@@ -111,33 +119,34 @@ public class SecureVaultUtils {
         }
     }
 
-    public static String getSecretPropertiesFileLocation(SecretRepositoryConfiguration secretRepositoryConfiguration) {
-        if (SecureVaultUtils.isOSGIEnv()) {
-            return secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
-                    .orElseGet(() -> getCarbonConfigHome().get()
-                            .resolve(Paths.get("security", SecureVaultConstants.SECRETS_PROPERTIES)).toString());
-        }
-        return secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
-                .orElseGet(() -> SecureVaultInitializer.getInstance().getSecretPropertiesPath().get());
-    }
-
     /**
      * Returns the secure_vault.yaml location.
      *
      * @return String secure_vault.yaml location
+     * @throws SecureVaultException when carbon home is not present in OSGi mode
      */
-    public static String getSecureVaultYAMLLocation() {
+    // TODO: In OSGi mode get the location from runtime
+    public static Path getSecureVaultYAMLLocation() throws SecureVaultException {
+        // OSGi mode
         if (SecureVaultUtils.isOSGIEnv()) {
-            return getCarbonConfigHome().get().resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML).toString();
+            Path carbonHome = Utils.getCarbonConfigHome();
+            return carbonHome.resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
         }
-        return SecureVaultInitializer.getInstance().getSecureVaultYAMLPath().get();
-    }
-
-    /**
-     * Remove default constructor and make it not available to initialize.
-     */
-    private SecureVaultUtils() {
-        throw new AssertionError("Trying to a instantiate a constant class");
+        // Non-OSGi mode
+        Optional<Path> secureVaultPath = getPathFromSystemVariable(SecureVaultConstants.SECURE_VAULT_YAML,
+                SecureVaultConstants.SECURE_VAULT_YAML_ENV);
+        if (secureVaultPath.isPresent()) {
+            return secureVaultPath.get().resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
+        }
+        secureVaultPath = getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
+        if (secureVaultPath.isPresent()) {
+            return secureVaultPath.get();
+        }
+        throw new SecureVaultException(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML + " path is not set in system " +
+                "property " + SecureVaultConstants.SECURE_VAULT_YAML + " or environmental variable " +
+                SecureVaultConstants.SECURE_VAULT_YAML_ENV + " and is not available in conf/" +
+                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
     }
 
     public static String readUpdatedValue(String alias) {
@@ -149,18 +158,6 @@ public class SecureVaultUtils {
             }
         }
         return alias;
-    }
-
-    private static String readFromEnvironment(String alias) {
-        return Optional.ofNullable(alias)
-                .map(System::getenv)
-                .orElse(alias);
-    }
-
-    private static String readFromSystem(String alias) {
-        return Optional.ofNullable(alias)
-                .map(System::getProperty)
-                .orElse(alias);
     }
 
     /**
@@ -184,7 +181,7 @@ public class SecureVaultUtils {
     /**
      * This method replaces the placeholders with value provided by the given Function.
      *
-     * @param matcher a valid matcher for the given sub-string.
+     * @param matcher  a valid matcher for the given sub-string.
      * @param function a function that resolves a given property key. (eg: from system variables
      *                 or environment properties)
      * @return String substituted string
@@ -196,7 +193,7 @@ public class SecureVaultUtils {
         while (matcher.find()) {
             String sysPropKey = matcher.group(1);
             String sysPropValue = function.apply(sysPropKey);
-            if (sysPropValue == null || sysPropValue.length() == 0) {
+            if (StringUtils.isNullOrEmpty(sysPropValue)) {
                 String msg = "A value for placeholder '" + sysPropKey + "' is not specified";
                 logger.error(msg);
                 throw new SecureVaultException(msg);
@@ -233,34 +230,35 @@ public class SecureVaultUtils {
     }
 
     /**
-     * Returns the Carbon Home directory path. If {@code carbon.home} system property is not found, gets the
-     * {@code CARBON_HOME_ENV} system property value and sets to the carbon home.
+     * Returns the system property specified path. If system property specified path is not found, gets the
+     * environment property specified path and sets to the system property specified path.
      *
      * @return returns the Carbon Home directory path
      */
-    public static Optional<Path> getCarbonHome() {
-        Optional<String> carbonHome = Optional.ofNullable(System.getProperty(SecureVaultConstants.CARBON_HOME));
-        if (!carbonHome.isPresent()) {
-            carbonHome = Optional.ofNullable(System.getenv(SecureVaultConstants.CARBON_HOME_ENV));
-            carbonHome.ifPresent((home) -> System.setProperty(SecureVaultConstants.CARBON_HOME, home));
-            if (!carbonHome.isPresent()) {
+    public static Optional<Path> getPathFromSystemVariable(String systemProperty, String environmentProperty) {
+        Optional<String> path = Optional.ofNullable(System.getProperty(systemProperty));
+        if (!path.isPresent()) {
+            path = Optional.ofNullable(System.getenv(environmentProperty));
+            path.ifPresent(envPath -> System.setProperty(systemProperty, envPath));
+            if (!path.isPresent()) {
                 return Optional.empty();
             }
         }
-        return Optional.of(Paths.get(carbonHome.get()));
+        return Optional.of(Paths.get(path.get()));
     }
 
     /**
-     * This method will return the carbon configuration directory path.
-     * i.e ${carbon.home}/conf
+     * Get the path of a provided resource.
      *
-     * @return returns the Carbon Configuration directory path
+     * @param resourcePaths path strings to the location of the resource
+     * @return path of the resources
      */
-    public static Optional<Path> getCarbonConfigHome() {
-        if (getCarbonHome().isPresent()) {
-            return Optional.of(Paths.get(getCarbonHome().get().toString(), "conf"));
+    public static Optional<Path> getResourcePath(String... resourcePaths) {
+        URL resourceURL = SecureVaultUtils.class.getClassLoader().getResource("");
+        if (resourceURL != null) {
+            return Optional.ofNullable(Paths.get(resourceURL.getPath(), resourcePaths));
         }
-        return Optional.empty();
+        return Optional.empty(); // Resource do not exist
     }
 
     /**
@@ -269,6 +267,18 @@ public class SecureVaultUtils {
      * @return true is environment is OSGI false if not OSGI.
      */
     public static boolean isOSGIEnv() {
-        return SecureVaultDataHolder.getInstance().getBundleContext().isPresent();
+        return SecureVaultUtils.class.getClassLoader() instanceof org.osgi.framework.BundleReference;
+    }
+
+    private static String readFromEnvironment(String alias) {
+        return Optional.ofNullable(alias)
+                .map(System::getenv)
+                .orElse(alias);
+    }
+
+    private static String readFromSystem(String alias) {
+        return Optional.ofNullable(alias)
+                .map(System::getProperty)
+                .orElse(alias);
     }
 }

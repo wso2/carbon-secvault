@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 /**
  * The default implementation of the SecureVault.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class SecureVaultImpl implements SecureVault {
 

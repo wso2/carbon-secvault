@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,18 @@ package org.wso2.carbon.secvault.securevault.internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
-import org.wso2.carbon.secvault.securevault.config.model.SecureVaultConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.model.SecureVaultConfiguration;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 /**
  * This class takes care of parsing the secure-vault.yaml file and creating the SecureVaultConfiguration object model.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class SecureVaultConfigurationProvider {
     private static final Logger logger = LoggerFactory.getLogger(SecureVaultConfiguration.class);
@@ -59,8 +59,8 @@ public class SecureVaultConfigurationProvider {
     }
 
     private void init() throws SecureVaultException {
-        String configFileLocation = SecureVaultUtils.getSecureVaultYAMLLocation();
-        String resolvedFileContent = SecureVaultUtils.resolveFileToString(Paths.get(configFileLocation).toFile());
+        Path configFileLocation = SecureVaultUtils.getSecureVaultYAMLLocation();
+        String resolvedFileContent = SecureVaultUtils.resolveFileToString(configFileLocation.toFile());
 
         Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
                 SecureVaultConfiguration.class.getClassLoader()));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.wso2.carbon.secvault.securevault.SecureVaultInitializer;
  * to load the secrets. Once the ${@link SecretRepository} is ready, this component will  register the
  * SecureVault OSGi service, which can then be used by other components for encryption and decryption.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 @Component(
         name = "SecureVaultComponent",
@@ -49,12 +49,10 @@ public class SecureVaultComponent {
 
     private static final Logger logger = LoggerFactory.getLogger(SecureVaultComponent.class);
 
-    public SecureVaultComponent() {
-        SecureVaultInitializer.getInstance().initFromSecureVaultYAML();
-    }
-
     @Activate
     public void activate(BundleContext bundleContext) {
+        SecureVaultDataHolder.getInstance().setBundleContext(bundleContext);
+        initializeSecureVault();
         logger.debug("Activating SecureVaultComponent");
     }
 
@@ -72,6 +70,7 @@ public class SecureVaultComponent {
             unbind = "unRegisterSecretRepository"
     )
     protected void registerSecretRepository(SecretRepository secretRepository) {
+        SecureVaultInitializer.getInstance().initFromSecureVaultYAML();
         if (secretRepository.getClass().getName().equals(
                 SecureVaultInitializer.getInstance().getSecretRepositoryType())) {
             logger.debug("Registering secret repository : {}", SecureVaultInitializer.getInstance()
@@ -98,6 +97,7 @@ public class SecureVaultComponent {
             unbind = "unregisterMasterKeyReader"
     )
     protected void registerMasterKeyReader(MasterKeyReader masterKeyReader) {
+        SecureVaultInitializer.getInstance().initFromSecureVaultYAML();
         if (masterKeyReader.getClass().getName().equals(
                 SecureVaultInitializer.getInstance().getMasterKeyReaderType())) {
             logger.debug("Registering secret repository : ", SecureVaultInitializer.getInstance()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,35 +14,28 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.secvault.securevault;
+package org.wso2.carbon.secvault.securevault.ciphertool;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
-import org.wso2.carbon.secvault.securevault.internal.SecureVaultDataHolder;
-import org.wso2.carbon.secvault.securevault.tool.CipherTool;
-import org.wso2.carbon.secvault.securevault.utils.FakeBundleContext;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit tests class for CipherTool.
+ * Unit tests class for CipherTool
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class CipherToolTest {
-    private static final Path secureVaultResourcesPath = Paths.get("src", "test", "resources", "securevault");
+
     private CipherTool cipherTool;
 
     @Test
     public void testEncryptionAndDecryption() throws SecureVaultException {
-        SecureVaultDataHolder.getInstance().setBundleContext(new FakeBundleContext());
-        System.setProperty(SecureVaultConstants.CARBON_HOME, secureVaultResourcesPath.toString());
         List<URL> urls = new ArrayList<>();
         URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
 

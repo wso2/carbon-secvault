@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package org.wso2.carbon.secvault.securevault.ciphertool.utils;
 
-import org.wso2.carbon.tools.exception.CarbonToolException;
-import org.wso2.carbon.secvault.securevault.ciphertool.Constants;
+import org.wso2.carbon.secvault.securevault.ciphertool.CipherToolConstants;
+import org.wso2.carbon.secvault.securevault.ciphertool.exceptions.CipherToolException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,7 +43,7 @@ import java.util.logging.Logger;
 /**
  * Cipher Tool utility methods.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class Utils {
     private static final Logger logger = Logger.getLogger(Utils.class.getName());
@@ -55,14 +55,14 @@ public class Utils {
         throw new AssertionError("Instantiating utility class...");
     }
 
-    public static CommandLineParser createCommandLineParser(String... toolArgs) throws CarbonToolException {
+    public static CommandLineParser createCommandLineParser(String... toolArgs) throws CipherToolException {
         return new CommandLineParser(toolArgs);
     }
 
     public static URLClassLoader getCustomClassLoader(Optional<String> optCustomLibPath) {
         List<URL> urls = new ArrayList<>();
 
-        optCustomLibPath.map(path -> Paths.get(path))
+        optCustomLibPath.map(Paths::get)
                 .filter(path -> path.toFile().exists() && path.toFile().isDirectory())
                 .ifPresent(path -> urls.addAll(getJarURLs(path.toString())));
 
@@ -76,20 +76,21 @@ public class Utils {
                 (PrivilegedAction<Object>) () -> new URLClassLoader(urls.toArray(new URL[urls.size()])));
     }
 
-    public static Object createCipherTool(URLClassLoader urlClassLoader) throws CarbonToolException {
+    public static Object createCipherTool(URLClassLoader urlClassLoader) throws CipherToolException {
         Object objCipherTool;
 
         try {
-            objCipherTool = urlClassLoader.loadClass(Constants.CIPHER_TOOL_CLASS).newInstance();
+            objCipherTool = urlClassLoader.loadClass(CipherToolConstants.CIPHER_TOOL_CLASS).newInstance();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new CarbonToolException("Unable to instantiate Cipher Tool", e);
+            throw new CipherToolException("Unable to instantiate Cipher Tool", e);
         }
 
         try {
-            Method initMethod = objCipherTool.getClass().getMethod(Constants.INIT_METHOD, URLClassLoader.class);
+            Method initMethod = objCipherTool.getClass()
+                    .getMethod(CipherToolConstants.INIT_METHOD, URLClassLoader.class);
             initMethod.invoke(objCipherTool, urlClassLoader);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new CarbonToolException("Failed to initialize Cipher Tool", e);
+            throw new CipherToolException("Failed to initialize Cipher Tool", e);
         }
         return objCipherTool;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.wso2.carbon.secvault.securevault;
 /**
  * Secure Vault Constants.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class SecureVaultConstants {
 
@@ -29,8 +29,9 @@ public class SecureVaultConstants {
     public static final String PLAIN_TEXT = "plainText";
     public static final String LOCATION = "location";
     public static final String SPACE = " ";
-    public static final String CARBON_HOME = "carbon.home";
-    public static final String CARBON_HOME_ENV = "CARBON_HOME";
+
+    public static final String SECURE_VAULT_YAML = "secure.vault.yaml";
+    public static final String SECURE_VAULT_YAML_ENV = "SECURE_VAULT_YAML";
 
     /**
      * Remove default constructor and make it not available to initialize.

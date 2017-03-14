@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,12 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.SecretRepository;
 import org.wso2.carbon.secvault.securevault.SecureVaultConstants;
 import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
-import org.wso2.carbon.secvault.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -38,7 +37,7 @@ import java.util.Properties;
  * methods. An extended class of this should provide concrete implementations for other abstract methods and register
  * that class as an OSGi service of interface {@link SecretRepository}.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public abstract class AbstractSecretRepository implements SecretRepository {
     private static Logger logger = LoggerFactory.getLogger(AbstractSecretRepository.class);
@@ -48,8 +47,7 @@ public abstract class AbstractSecretRepository implements SecretRepository {
     public void loadSecrets(SecretRepositoryConfiguration secretRepositoryConfiguration)
             throws SecureVaultException {
         logger.debug("Loading secrets to SecretRepository");
-        Path secretPropertiesFilePath = Paths.get(SecureVaultUtils
-                .getSecretPropertiesFileLocation(secretRepositoryConfiguration));
+        Path secretPropertiesFilePath = getSecretPropertiesPath(secretRepositoryConfiguration);
 
         String resolvedFileContent = SecureVaultUtils.resolveFileToString(secretPropertiesFilePath.toFile());
         Properties secretsProperties = new Properties();
@@ -59,7 +57,7 @@ public abstract class AbstractSecretRepository implements SecretRepository {
             throw new SecureVaultException("Failed to load secrets.properties file");
         }
 
-        for (Map.Entry<Object, Object> entry: secretsProperties.entrySet()) {
+        for (Map.Entry<Object, Object> entry : secretsProperties.entrySet()) {
             String key = entry.getKey().toString().trim();
             String value = entry.getValue().toString().trim();
 
@@ -90,12 +88,11 @@ public abstract class AbstractSecretRepository implements SecretRepository {
     public void persistSecrets(SecretRepositoryConfiguration secretRepositoryConfiguration)
             throws SecureVaultException {
         logger.debug("Persisting secrets to SecretRepository");
-        Path secretPropertiesFilePath = Paths.get(SecureVaultUtils
-                .getSecretPropertiesFileLocation(secretRepositoryConfiguration));
+        Path secretPropertiesFilePath = getSecretPropertiesPath(secretRepositoryConfiguration);
         Properties secretsProperties = SecureVaultUtils.loadSecretFile(secretPropertiesFilePath);
 
         int count = 0;
-        for (Map.Entry<Object, Object> entry: secretsProperties.entrySet()) {
+        for (Map.Entry<Object, Object> entry : secretsProperties.entrySet()) {
             String key = entry.getKey().toString().trim();
             String value = entry.getValue().toString().trim();
 

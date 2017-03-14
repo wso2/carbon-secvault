@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.MasterKey;
 import org.wso2.carbon.secvault.securevault.MasterKeyReader;
-import org.wso2.carbon.secvault.securevault.SecureVaultInitializer;
 import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
-import org.wso2.carbon.secvault.securevault.config.model.MasterKeyReaderConfiguration;
-import org.wso2.carbon.secvault.securevault.config.model.masterkey.MasterKeyConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.model.MasterKeyReaderConfiguration;
+import org.wso2.carbon.secvault.securevault.model.masterkey.MasterKeyConfiguration;
+import org.wso2.carbon.utils.Utils;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -58,7 +58,7 @@ import java.util.Set;
  * 4. Reads the master keys from command line.
  * And this component registers a MasterKeyReader as an OSGi service.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 @Component(
         name = "DefaultMasterKeyReader",
@@ -89,22 +89,33 @@ public class DefaultMasterKeyReader implements MasterKeyReader {
 
     @Override
     public void readMasterKeys(List<MasterKey> masterKeys) throws SecureVaultException {
-        readMasterKeysFromEnvironment(masterKeys);
-        readMasterKeysFromSystem(masterKeys);
-
-        Path masterKeysFilePath;
-        if (SecureVaultUtils.isOSGIEnv()) {
-            masterKeysFilePath = Paths.get(SecureVaultUtils.getCarbonHome().get().toString(), MASTER_KEYS_FILE_NAME);
-        } else {
-            masterKeysFilePath = Paths.get(SecureVaultInitializer.getInstance().getMasterKeyYAMLPath().get());
-        }
+        Path masterKeysFilePath = getMasterKeyYAMLPath();
         if (Files.exists(masterKeysFilePath)) {
             readMasterKeysFile(masterKeysFilePath, masterKeys);
         }
+        readMasterKeysFromEnvironment(masterKeys);
+        readMasterKeysFromSystem(masterKeys);
 
         if (!fullyInitialized(masterKeys)) {
             readMasterKeysFromConsole(masterKeys);
         }
+    }
+
+    @Override
+    public Path getMasterKeyYAMLPath() throws SecureVaultException {
+        Path masterKeysFilePath;
+        if (SecureVaultUtils.isOSGIEnv()) {
+            Path carbonConfigHome = Utils.getCarbonConfigHome();
+            masterKeysFilePath = Paths.get(carbonConfigHome.toString(), MASTER_KEYS_FILE_NAME);
+        } else {
+            Optional<Path> resourcePath = SecureVaultUtils
+                    .getResourcePath("securevault", "conf", MASTER_KEYS_FILE_NAME);
+            if (!resourcePath.isPresent()) {
+                throw new SecureVaultException(MASTER_KEYS_FILE_NAME + "not found");
+            }
+            masterKeysFilePath = resourcePath.get();
+        }
+        return masterKeysFilePath;
     }
 
     private void readMasterKeysFromEnvironment(List<MasterKey> masterKeys) throws SecureVaultException {
@@ -155,10 +166,8 @@ public class DefaultMasterKeyReader implements MasterKeyReader {
 
             for (MasterKey masterKey : masterKeys) {
                 logger.debug("Reading master key '{}' from file.", masterKey.getMasterKeyName());
-                masterKey.setMasterKeyValue(Optional.ofNullable(
-                        properties.getProperty(masterKey.getMasterKeyName()))
-                        .orElseThrow(() -> new SecureVaultException("Master Key value not found for : "
-                                + masterKey.getMasterKeyName())).toCharArray());
+                Optional.ofNullable(properties.getProperty(masterKey.getMasterKeyName()))
+                        .ifPresent(s -> masterKey.setMasterKeyValue(s.toCharArray()));
             }
 
             inputStream.close();
@@ -180,14 +189,13 @@ public class DefaultMasterKeyReader implements MasterKeyReader {
                             logger.debug("Reading master key '{}' from console.",
                                     uninitializedMasterKey.getMasterKeyName());
                             uninitializedMasterKey.setMasterKeyValue(console.readPassword("[%s]", "Enter master key '"
-                                            + uninitializedMasterKey.getMasterKeyName() + "' :"));
+                                    + uninitializedMasterKey.getMasterKeyName() + "' :"));
                         })
         );
     }
 
     private boolean fullyInitialized(List<MasterKey> masterKeys) {
-        return !masterKeys.parallelStream()
-                .filter(masterKey -> !masterKey.getMasterKeyValue().isPresent())
-                .findFirst().isPresent();
+        return masterKeys.parallelStream()
+                .allMatch(masterKey -> masterKey.getMasterKeyValue().isPresent());
     }
 }

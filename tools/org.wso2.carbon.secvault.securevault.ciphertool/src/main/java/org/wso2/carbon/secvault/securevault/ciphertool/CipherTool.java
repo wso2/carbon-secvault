@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.secvault.securevault.tool;
+package org.wso2.carbon.secvault.securevault.ciphertool;
 
 import org.wso2.carbon.secvault.securevault.MasterKeyReader;
 import org.wso2.carbon.secvault.securevault.SecretRepository;
 import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
-import org.wso2.carbon.secvault.securevault.config.model.SecureVaultConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.internal.SecureVaultConfigurationProvider;
+import org.wso2.carbon.secvault.securevault.model.SecureVaultConfiguration;
 
 import java.net.URLClassLoader;
 import java.util.logging.Logger;
@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 /**
  * The Java class which defines the CipherTool.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class CipherTool {
     private static final Logger logger = Logger.getLogger(CipherTool.class.getName());

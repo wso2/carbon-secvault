@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.wso2.carbon.secvault.securevault.ciphertool;
 
+import org.wso2.carbon.secvault.securevault.ciphertool.exceptions.CipherToolException;
+import org.wso2.carbon.secvault.securevault.ciphertool.exceptions.CipherToolRuntimeException;
 import org.wso2.carbon.secvault.securevault.ciphertool.utils.CommandLineParser;
 import org.wso2.carbon.secvault.securevault.ciphertool.utils.Utils;
-import org.wso2.carbon.tools.CarbonTool;
-import org.wso2.carbon.tools.exception.CarbonToolException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,21 +30,32 @@ import java.util.logging.Logger;
 /**
  * The Java class which defines the CipherToolInitializer as a CarbonTool.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
-public class CipherToolInitializer implements CarbonTool {
+public class CipherToolInitializer {
+
     private static final Logger logger = Logger.getLogger(CipherToolInitializer.class.getName());
 
+    private CipherToolInitializer() {
+    }
 
-    @Override
-    public void execute(String... toolArgs) {
+    public static void main(String[] args) {
+        execute(args);
+    }
+
+    /**
+     * Execute cipher tool.
+     *
+     * @param toolArgs arguments for executing cipher tool
+     */
+    public static void execute(String... toolArgs) {
         CommandLineParser commandLineParser;
         try {
             commandLineParser = Utils.createCommandLineParser(toolArgs);
-        } catch (CarbonToolException e) {
+        } catch (CipherToolException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
             printHelpMessage();
-            throw new RuntimeException("Unable to run CipherTool", e);
+            throw new CipherToolRuntimeException("Unable to run CipherTool", e);
         }
 
         URLClassLoader urlClassLoader = Utils.getCustomClassLoader(commandLineParser.getCustomLibPath());
@@ -53,37 +64,46 @@ public class CipherToolInitializer implements CarbonTool {
             Object objCipherTool = Utils.createCipherTool(urlClassLoader);
             processCommand(commandLineParser.getCommandName().orElse(""),
                     commandLineParser.getCommandParam().orElse(""), objCipherTool);
-        } catch (CarbonToolException e) {
+        } catch (CipherToolException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            throw new RuntimeException("Unable to run CipherTool", e);
+            throw new CipherToolRuntimeException("Unable to run CipherTool", e);
         }
     }
 
-    private void processCommand(String command, String parameter, Object objCipherTool) throws CarbonToolException {
+    /**
+     * Process command according to the given command.
+     *
+     * @param command       command string
+     * @param parameter     parameter of the command
+     * @param objCipherTool ciphertool instance
+     * @throws CipherToolException when an error is thrown during ciphertool execution
+     */
+    private static void processCommand(String command, String parameter, Object objCipherTool)
+            throws CipherToolException {
         Method method;
         try {
             switch (command) {
-                case Constants.ENCRYPT_TEXT_COMMAND:
-                    method = objCipherTool.getClass().getMethod(Constants.ENCRYPT_TEXT_METHOD, String.class);
+                case CipherToolConstants.ENCRYPT_TEXT_COMMAND:
+                    method = objCipherTool.getClass().getMethod(CipherToolConstants.ENCRYPT_TEXT_METHOD, String.class);
                     method.invoke(objCipherTool, parameter);
                     break;
-                case Constants.DECRYPT_TEXT_COMMAND:
-                    method = objCipherTool.getClass().getMethod(Constants.DECRYPT_TEXT_METHOD, String.class);
+                case CipherToolConstants.DECRYPT_TEXT_COMMAND:
+                    method = objCipherTool.getClass().getMethod(CipherToolConstants.DECRYPT_TEXT_METHOD, String.class);
                     method.invoke(objCipherTool, parameter);
                     break;
                 default:
-                    method = objCipherTool.getClass().getMethod(Constants.ENCRYPT_SECRETS_METHOD);
+                    method = objCipherTool.getClass().getMethod(CipherToolConstants.ENCRYPT_SECRETS_METHOD);
                     method.invoke(objCipherTool);
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            throw new CarbonToolException("Failed to execute Cipher Tool command", e);
+            throw new CipherToolException("Failed to execute Cipher Tool command", e);
         }
     }
 
     /**
      * Prints a help message for the secure vault tool usage.
      */
-    private void printHelpMessage() {
+    private static void printHelpMessage() {
         logger.info("\nIncorrect usage of the cipher tool.\n\n"
                 + "Instructions: sh ciphertool.sh [<command> <parameter>]\n\n"
                 + "If no commandline options are provided, CipherTool will encrypt the secrets given in the\n"

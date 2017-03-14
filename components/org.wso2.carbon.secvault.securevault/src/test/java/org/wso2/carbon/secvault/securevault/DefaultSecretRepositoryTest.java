@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,10 @@ import org.easymock.EasyMock;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import org.wso2.carbon.secvault.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
-import org.wso2.carbon.secvault.securevault.internal.SecureVaultDataHolder;
+import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.securevault.repository.DefaultSecretRepository;
 import org.wso2.carbon.secvault.securevault.utils.DefaultHardCodedMasterKeyReader;
-import org.wso2.carbon.secvault.securevault.utils.FakeBundleContext;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,17 +39,18 @@ import static org.easymock.EasyMock.replay;
 /**
  * Unit tests class for DefaultSecretRepository.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class DefaultSecretRepositoryTest {
-    private static final Path secureVaultResourcesPath = Paths.get("src", "test", "resources", "securevault");
+    private static final Path secureVaultResourcesPath =
+            Paths.get("src", "test", "resources", "securevault", "conf");
     private static final Path secureVaultTargetPath = Paths.get("target");
     private SecretRepository secretRepository;
 
     @BeforeTest
     public void setup() {
-        SecureVaultDataHolder.getInstance().setBundleContext(new FakeBundleContext());
-        File secretsFile = new File(Paths.get(secureVaultTargetPath.toString(), "secrets.properties").toString());
+        File secretsFile = new File(Paths.get(secureVaultTargetPath.toString(),
+                SecureVaultConstants.SECRETS_PROPERTIES).toString());
         File erroneousSecretsFile = new File(Paths.get(secureVaultTargetPath.toString(),
                 "error-secrets.properties").toString());
         String entry1 = "my.pass.1=plainText Hello@123\n";
@@ -79,13 +78,14 @@ public class DefaultSecretRepositoryTest {
 
     @Test
     public void testInitSecretRepository() throws SecureVaultException {
-        System.setProperty(SecureVaultConstants.CARBON_HOME, secureVaultResourcesPath.toString());
+        System.setProperty(SecureVaultConstants.SECURE_VAULT_YAML, secureVaultResourcesPath.toString());
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString()));
+                .andReturn(Optional.of(Paths.get("securevault", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon"));
         replay(secretRepositoryConfiguration);
@@ -103,7 +103,8 @@ public class DefaultSecretRepositoryTest {
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "nonExisting", "wso2carbon.jks").toString()));
+                .andReturn(Optional.of(Paths
+                        .get("securevault", "resources", "nonExisting", "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon"));
         replay(secretRepositoryConfiguration);
@@ -121,7 +122,8 @@ public class DefaultSecretRepositoryTest {
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString()));
+                .andReturn(Optional.of(Paths
+                        .get("securevault", "resources", "security", "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("nonExistingWso2carbon"));
         replay(secretRepositoryConfiguration);
@@ -145,7 +147,9 @@ public class DefaultSecretRepositoryTest {
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString())).anyTimes();
+                .andReturn(Optional.of(Paths
+                        .get("securevault", "resources", "security", "wso2carbon.jks")
+                        .toString())).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("location"))
@@ -160,19 +164,20 @@ public class DefaultSecretRepositoryTest {
         Assert.assertEquals(new String(secretRepository.resolve("my.pass.1")), "Hello@123");
     }
 
-    @Test(dependsOnMethods = {"testReadSecrets"},  expectedExceptions = SecureVaultException.class)
+    @Test(dependsOnMethods = {"testReadSecrets"}, expectedExceptions = SecureVaultException.class)
     public void testReadSecretsWrongSecretsFileLocation() throws SecureVaultException {
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
+                        .toString())).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("location"))
                 .andReturn(Optional.of(Paths.get(secureVaultTargetPath.toString(), "nonExisting",
-                        "secrets.properties").toString())).anyTimes();
+                        "securevault/conf/secrets.properties").toString())).anyTimes();
         replay(secretRepositoryConfiguration);
 
         SecretRepository secretRepository = new DefaultSecretRepository();
@@ -187,7 +192,8 @@ public class DefaultSecretRepositoryTest {
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
+                        .toString())).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("location"))
@@ -207,7 +213,8 @@ public class DefaultSecretRepositoryTest {
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
+                        .toString())).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("location"))
@@ -229,7 +236,8 @@ public class DefaultSecretRepositoryTest {
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
+                        .toString())).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("location"))
@@ -251,7 +259,8 @@ public class DefaultSecretRepositoryTest {
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("resources", "security", "wso2carbon.jks").toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
+                        .toString())).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter("location"))

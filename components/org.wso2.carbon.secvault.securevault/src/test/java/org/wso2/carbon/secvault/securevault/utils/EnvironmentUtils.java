@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Utility class for setting environment variables for test cases.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public class EnvironmentUtils {
     private static Logger logger = LoggerFactory.getLogger(EnvironmentUtils.class);
@@ -42,7 +42,7 @@ public class EnvironmentUtils {
     /**
      * Set environment variable for a given key and value.
      *
-     * @param key Environment variable key.
+     * @param key   Environment variable key.
      * @param value Environment variable value.
      */
     public static void setEnv(String key, String value) {
@@ -76,7 +76,7 @@ public class EnvironmentUtils {
         } catch (NoSuchFieldException e) {
             Class[] classes = Collections.class.getDeclaredClasses();
             Map<String, String> env = System.getenv();
-            Arrays.asList(classes).stream().filter(cl -> COLLECTIONS_UNMODIFIABLE_MAP.equals(cl.getName())).forEach(
+            Arrays.stream(classes).filter(cl -> COLLECTIONS_UNMODIFIABLE_MAP.equals(cl.getName())).forEach(
                     (cl) -> {
                         try {
                             Field field = cl.getDeclaredField(FIELD_M);
@@ -85,6 +85,41 @@ public class EnvironmentUtils {
                             Map<String, String> map = (Map<String, String>) obj;
                             map.clear();
                             map.putAll(newenv);
+                        } catch (IllegalAccessException | NoSuchFieldException ex) {
+                            logger.error("Unable to set environment variable via unmodifiable map", ex);
+                        }
+                    }
+            );
+        } catch (ClassNotFoundException | IllegalAccessException e) {
+            logger.error("Unable to set environment variable", e);
+        }
+    }
+
+    public static void removeEnv(String key) {
+        try {
+            Class<?> processEnvironmentClass = Class.forName(PROCESS_ENVIRONMENT);
+
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField(THE_ENVIRONMENT_FILED);
+            theEnvironmentField.setAccessible(true);
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.remove(key);
+
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass
+                    .getDeclaredField(THE_CASE_INSENSITIVE_ENVIRONMENT);
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
+            cienv.remove(key);
+        } catch (NoSuchFieldException e) {
+            Class[] classes = Collections.class.getDeclaredClasses();
+            Map<String, String> env = System.getenv();
+            Arrays.stream(classes).filter(cl -> COLLECTIONS_UNMODIFIABLE_MAP.equals(cl.getName())).forEach(
+                    (cl) -> {
+                        try {
+                            Field field = cl.getDeclaredField(FIELD_M);
+                            field.setAccessible(true);
+                            Object obj = field.get(env);
+                            Map<String, String> map = (Map<String, String>) obj;
+                            map.clear();
                         } catch (IllegalAccessException | NoSuchFieldException ex) {
                             logger.error("Unable to set environment variable via unmodifiable map", ex);
                         }

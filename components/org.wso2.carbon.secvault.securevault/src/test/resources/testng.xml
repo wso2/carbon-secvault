@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2015, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@ limitations under the License.
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="Carbon-Kernel-SecureVault_Test-Suite">
+<suite name="Carbon-SecureVault_Test-Suite">
     <test name="carbon-securevault-unit-tests" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.carbon.secvault.securevault.DefaultMasterKeyReaderTest"/>
             <class name="org.wso2.carbon.secvault.securevault.DefaultSecretRepositoryTest"/>
             <class name="org.wso2.carbon.secvault.securevault.SecureVaultConfigurationProviderTest"/>
-            <class name="org.wso2.carbon.secvault.securevault.CipherToolTest"/>
-            <class name="org.wso2.carbon.securevault.spi.ServiceProviderAccessTest"/>
+            <class name="org.wso2.carbon.secvault.securevault.ServiceProviderAccessTest"/>
         </classes>
     </test>
 </suite>

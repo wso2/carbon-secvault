@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,19 @@
 
 package org.wso2.carbon.secvault.securevault;
 
-import org.wso2.carbon.secvault.securevault.config.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
+
+import java.nio.file.Path;
 
 /**
  * This interface is used to register SecretRepositories. An implementation of this interface should be registered
  * as an OSGi service using the SecretRepository interface.
- *
+ * <p>
  * The implementation of this interface can be different from one SecretRepository to another depending on its
  * requirements and behaviour.
  *
- * @since 5.2.0
+ * @since 1.0.0
  */
 public interface SecretRepository {
 
@@ -36,8 +38,8 @@ public interface SecretRepository {
      * SecretRepository ready for {@code loadSecrets} and {@code persistSecrets}
      *
      * @param secretRepositoryConfiguration {@link SecretRepositoryConfiguration}
-     * @param masterKeyReader          an initialized {@link MasterKeyReader}
-     * @throws SecureVaultException    on an error while trying to initialize the SecretRepository
+     * @param masterKeyReader               an initialized {@link MasterKeyReader}
+     * @throws SecureVaultException on an error while trying to initialize the SecretRepository
      */
     void init(SecretRepositoryConfiguration secretRepositoryConfiguration, MasterKeyReader masterKeyReader)
             throws SecureVaultException;
@@ -46,7 +48,7 @@ public interface SecretRepository {
      * An implementation of this method should load the secrets from underlying secret repository.
      *
      * @param secretRepositoryConfiguration {@link SecretRepositoryConfiguration}
-     * @throws SecureVaultException    on an error while trying to load secrets
+     * @throws SecureVaultException on an error while trying to load secrets
      */
     void loadSecrets(SecretRepositoryConfiguration secretRepositoryConfiguration) throws SecureVaultException;
 
@@ -54,7 +56,7 @@ public interface SecretRepository {
      * An implementation of this method should persist the secrets to the underlying secret repository.
      *
      * @param secretRepositoryConfiguration {@link SecretRepositoryConfiguration}
-     * @throws SecureVaultException    on an error while trying to persis secrets
+     * @throws SecureVaultException on an error while trying to persis secrets
      */
     void persistSecrets(SecretRepositoryConfiguration secretRepositoryConfiguration) throws SecureVaultException;
 
@@ -62,14 +64,14 @@ public interface SecretRepository {
      * An implementation of this method should provide the plain text secret for a given alias.
      *
      * @param alias alias of the secret
-     * @return      if the given alias is available, a char[] consisting the plain text secret else and empty char[]
+     * @return if the given alias is available, a char[] consisting the plain text secret else and empty char[]
      */
     char[] resolve(String alias);
 
     /**
      * An implementation of this method should provide the relevant encryption logic.
      *
-     * @param plainText             plain text as a byte array
+     * @param plainText plain text as a byte array
      * @return byte[]               cipher text as a byte array
      * @throws SecureVaultException on an error while trying to encrypt.
      */
@@ -78,9 +80,19 @@ public interface SecretRepository {
     /**
      * An implementation of this method should provide the relevant decryption logic.
      *
-     * @param cipherText            cipher text as a byte array
+     * @param cipherText cipher text as a byte array
      * @return byte[]               plain text as a byte array
      * @throws SecureVaultException on an error while trying to encrypt.
      */
     byte[] decrypt(byte[] cipherText) throws SecureVaultException;
+
+    /**
+     * An implementation of this method is responsible for returning the secret.properties path
+     *
+     * @param secretRepositoryConfiguration secret repository configuration
+     * @return secret.properties path
+     * @throws SecureVaultException on error retuning the secret.properties path
+     */
+    Path getSecretPropertiesPath(SecretRepositoryConfiguration secretRepositoryConfiguration)
+            throws SecureVaultException;
 }
