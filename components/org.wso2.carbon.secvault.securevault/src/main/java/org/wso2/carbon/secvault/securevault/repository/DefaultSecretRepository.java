@@ -24,15 +24,10 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.MasterKey;
 import org.wso2.carbon.secvault.securevault.MasterKeyReader;
 import org.wso2.carbon.secvault.securevault.SecretRepository;
-import org.wso2.carbon.secvault.securevault.SecureVaultConstants;
-import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
 import org.wso2.carbon.secvault.securevault.cipher.JKSBasedCipherProvider;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
-import org.wso2.carbon.utils.Utils;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,14 +38,11 @@ import java.util.List;
  * <p>
  * This component registers a SecretRepository as an OSGi service.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 @Component(
-        name = "DefaultSecretRepository",
+        name = "org.wso2.carbon.secvault.securevault.repository.DefaultSecretRepository",
         immediate = true,
-        property = {
-                "capabilityName=SecretRepository"
-        },
         service = SecretRepository.class
 )
 public class DefaultSecretRepository extends AbstractSecretRepository {
@@ -89,22 +81,5 @@ public class DefaultSecretRepository extends AbstractSecretRepository {
     @Override
     public byte[] decrypt(byte[] cipherText) throws SecureVaultException {
         return jksBasedCipherProvider.decrypt(cipherText);
-    }
-
-    @Override
-    public Path getSecretPropertiesPath(SecretRepositoryConfiguration secretRepositoryConfiguration)
-            throws SecureVaultException {
-        if (SecureVaultUtils.isOSGIEnv()) {
-            String path = secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
-                    .orElseGet(() -> Utils.getCarbonConfigHome()
-                            .resolve(Paths.get(SecureVaultConstants.SECRETS_PROPERTIES)).toString());
-            return Paths.get(path);
-        }
-        String path = secretRepositoryConfiguration.getParameter(SecureVaultConstants.LOCATION)
-                .orElseGet(() -> SecureVaultUtils
-                        .getResourcePath("securevault", "conf", SecureVaultConstants.SECRETS_PROPERTIES)
-                        .get()
-                        .toString());
-        return Paths.get(path);
     }
 }

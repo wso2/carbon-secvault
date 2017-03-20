@@ -24,22 +24,17 @@ import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
 import org.wso2.carbon.secvault.securevault.cipher.JKSBasedCipherProvider;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.model.MasterKeyReaderConfiguration;
-import org.wso2.carbon.utils.Utils;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This service component is responsible for providing master keys to initialize the secret repositories. It has
  * hard coded passwords for 'keyStorePassword' and 'privateKeyPassword'
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class DefaultHardCodedMasterKeyReader implements MasterKeyReader {
     private static Logger logger = LoggerFactory.getLogger(DefaultHardCodedMasterKeyReader.class);
-    private static final String MASTER_KEYS_FILE_NAME = "securevault/conf/master-keys.yaml";
 
     @Override
     public void init(MasterKeyReaderConfiguration masterKeyReaderConfiguration) throws SecureVaultException {
@@ -56,22 +51,5 @@ public class DefaultHardCodedMasterKeyReader implements MasterKeyReader {
         MasterKey privateKeyPassword = SecureVaultUtils.getSecret(masterKeys,
                 JKSBasedCipherProvider.PRIVATE_KEY_PASSWORD);
         privateKeyPassword.setMasterKeyValue("wso2carbon".toCharArray());
-    }
-
-    @Override
-    public Path getMasterKeyYAMLPath() throws SecureVaultException {
-        Path masterKeysFilePath;
-        if (SecureVaultUtils.isOSGIEnv()) {
-            Path carbonHomePath = Utils.getCarbonHome();
-            masterKeysFilePath = Paths.get(carbonHomePath.toString(), MASTER_KEYS_FILE_NAME);
-        } else {
-            Optional<Path> resourcePath = SecureVaultUtils
-                    .getResourcePath("securevault", "conf", MASTER_KEYS_FILE_NAME);
-            if (!resourcePath.isPresent()) {
-                throw new SecureVaultException(MASTER_KEYS_FILE_NAME + "not found");
-            }
-            masterKeysFilePath = resourcePath.get();
-        }
-        return masterKeysFilePath;
     }
 }

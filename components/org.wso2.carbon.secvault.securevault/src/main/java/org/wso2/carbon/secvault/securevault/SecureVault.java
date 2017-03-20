@@ -22,7 +22,7 @@ import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
  * This interface is used to register SecureVault.
  * Any component that needs SecureVault capabilities should depend on this interface.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public interface SecureVault {
 

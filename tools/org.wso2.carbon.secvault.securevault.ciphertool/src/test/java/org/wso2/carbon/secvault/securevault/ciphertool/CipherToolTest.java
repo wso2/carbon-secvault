@@ -18,17 +18,21 @@ package org.wso2.carbon.secvault.securevault.ciphertool;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.wso2.carbon.secvault.securevault.SecureVaultConstants;
+import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
+import org.wso2.carbon.secvault.securevault.ciphertool.utils.TestUtils;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Unit tests class for CipherTool
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class CipherToolTest {
 
@@ -39,9 +43,16 @@ public class CipherToolTest {
         List<URL> urls = new ArrayList<>();
         URLClassLoader urlClassLoader = new URLClassLoader(urls.toArray(new URL[urls.size()]));
 
+        // master-keys.yaml file may not be available when running tests in IDE
+        // master-keys.yaml file is required to initialise secure vault
+        TestUtils.createDefaultMasterKeyFile(true);
+
         try {
+            Path secureVaultYAMLPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                    SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
+                    .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
             cipherTool = new CipherTool();
-            cipherTool.init(urlClassLoader);
+            cipherTool.init(urlClassLoader, secureVaultYAMLPath);
         } catch (SecureVaultException e) {
             Assert.fail("failed to initialize Cipher Tool for testing");
         }

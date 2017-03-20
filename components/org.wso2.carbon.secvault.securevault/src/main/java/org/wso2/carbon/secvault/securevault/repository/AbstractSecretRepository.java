@@ -27,6 +27,7 @@ import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -37,7 +38,7 @@ import java.util.Properties;
  * methods. An extended class of this should provide concrete implementations for other abstract methods and register
  * that class as an OSGi service of interface {@link SecretRepository}.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public abstract class AbstractSecretRepository implements SecretRepository {
     private static Logger logger = LoggerFactory.getLogger(AbstractSecretRepository.class);
@@ -47,14 +48,15 @@ public abstract class AbstractSecretRepository implements SecretRepository {
     public void loadSecrets(SecretRepositoryConfiguration secretRepositoryConfiguration)
             throws SecureVaultException {
         logger.debug("Loading secrets to SecretRepository");
-        Path secretPropertiesFilePath = getSecretPropertiesPath(secretRepositoryConfiguration);
-
+        Path secretPropertiesFilePath = Paths.get(secretRepositoryConfiguration
+                .getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY)
+                .orElseThrow(() -> new SecureVaultException("Secret properties path not found")));
         String resolvedFileContent = SecureVaultUtils.resolveFileToString(secretPropertiesFilePath.toFile());
         Properties secretsProperties = new Properties();
         try {
             secretsProperties.load(new StringReader(resolvedFileContent));
         } catch (IOException e) {
-            throw new SecureVaultException("Failed to load secrets.properties file");
+            throw new SecureVaultException("Failed to load secrets.properties file", e);
         }
 
         for (Map.Entry<Object, Object> entry : secretsProperties.entrySet()) {
@@ -88,7 +90,9 @@ public abstract class AbstractSecretRepository implements SecretRepository {
     public void persistSecrets(SecretRepositoryConfiguration secretRepositoryConfiguration)
             throws SecureVaultException {
         logger.debug("Persisting secrets to SecretRepository");
-        Path secretPropertiesFilePath = getSecretPropertiesPath(secretRepositoryConfiguration);
+        Path secretPropertiesFilePath = Paths.get(secretRepositoryConfiguration
+                .getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY)
+                .orElseThrow(() -> new SecureVaultException("Secret properties path not found")));
         Properties secretsProperties = SecureVaultUtils.loadSecretFile(secretPropertiesFilePath);
 
         int count = 0;

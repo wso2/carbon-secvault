@@ -43,7 +43,7 @@ import java.util.logging.Logger;
 /**
  * Cipher Tool utility methods.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class Utils {
     private static final Logger logger = Logger.getLogger(Utils.class.getName());

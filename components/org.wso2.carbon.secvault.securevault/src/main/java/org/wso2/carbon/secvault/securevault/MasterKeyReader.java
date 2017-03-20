@@ -19,17 +19,16 @@ package org.wso2.carbon.secvault.securevault;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.model.MasterKeyReaderConfiguration;
 
-import java.nio.file.Path;
 import java.util.List;
 
 /**
  * This interface is used to register MasterKeyReaders. An implementation of this interface should be registered
  * as an OSGi service using the MasterKeyReader interface.
- *
+ * <p>
  * The implementation of this interface can be different from one MasterKeyReader to another depending on its
  * requirements and behaviour.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public interface MasterKeyReader {
 
@@ -37,8 +36,8 @@ public interface MasterKeyReader {
      * An implementation of this method should initialize the MasterKeyReader, so that it could perform the
      * {@code readMasterKeys}.
      *
-     * @param masterKeyReaderConfiguration  {@link MasterKeyReaderConfiguration}
-     * @throws SecureVaultException     on an error while trying to initialize the MasterKeyReader
+     * @param masterKeyReaderConfiguration {@link MasterKeyReaderConfiguration}
+     * @throws SecureVaultException on an error while trying to initialize the MasterKeyReader
      */
     void init(MasterKeyReaderConfiguration masterKeyReaderConfiguration) throws SecureVaultException;
 
@@ -50,11 +49,4 @@ public interface MasterKeyReader {
      * @throws SecureVaultException on an error while trying to read master keys
      */
     void readMasterKeys(List<MasterKey> masterKeys) throws SecureVaultException;
-
-    /**
-     * An implementation of this method is responsible for returning the master key yaml path.
-     * @return master key yaml path
-     * @throws SecureVaultException on error retuning the master key yaml path
-     */
-    Path getMasterKeyYAMLPath() throws SecureVaultException;
 }

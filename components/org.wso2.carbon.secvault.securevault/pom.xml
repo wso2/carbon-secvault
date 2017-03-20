@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.wso2.carbon.secvault</groupId>
         <artifactId>carbon-secvault</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -45,10 +45,6 @@
             <artifactId>org.wso2.carbon.utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.ops4j.pax.logging</groupId>
-            <artifactId>pax-logging-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
@@ -57,6 +53,10 @@
             <artifactId>org.jacoco.agent</artifactId>
             <classifier>runtime</classifier>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -121,10 +121,11 @@
         </resources>
     </build>
     <properties>
+        <bundle.activator>org.wso2.carbon.secvault.securevault.internal.SecureVaultActivator</bundle.activator>
         <private.package>org.wso2.carbon.secvault.securevault.internal.*</private.package>
         <export.package>
             !org.wso2.carbon.secvault.securevault.internal.*,
-            org.wso2.carbon.secvault.securevault.*
+            org.wso2.carbon.secvault.securevault.*;version="${carbon.secure.vault.package.export.version}"
         </export.package>
         <import.package>
             org.wso2.carbon.utils.*;version="${carbon.utils.package.import.version.range}",

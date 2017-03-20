@@ -20,17 +20,22 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 
+import java.nio.file.Path;
+
 /**
  * Unit tests class for SecureVaultInitializer.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class ServiceProviderAccessTest {
 
     @Test
-    public void testNonOSGIAccessToSecureVaultResolve() throws SecureVaultException {
+    public void testSecureVaultResolve() throws SecureVaultException {
+        Path secureVaultYAMLPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
+                .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
         String alias = "wso2.sample.password2";
-        SecureVault secureVault = SecureVaultInitializer.getInstance().initializeSecureVault();
+        SecureVault secureVault = SecureVaultInitializer.getInstance().initializeSecureVault(secureVaultYAMLPath);
         Assert.assertEquals(String.valueOf(secureVault.resolve(alias)), "ABC@123");
     }
 }

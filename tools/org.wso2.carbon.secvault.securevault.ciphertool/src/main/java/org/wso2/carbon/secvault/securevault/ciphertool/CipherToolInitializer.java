@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 /**
  * The Java class which defines the CipherToolInitializer as a CarbonTool.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class CipherToolInitializer {
 

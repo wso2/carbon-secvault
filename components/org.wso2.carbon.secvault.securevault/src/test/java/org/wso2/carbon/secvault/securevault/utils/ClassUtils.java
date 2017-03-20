@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 /**
  * ClassUtils.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class ClassUtils {
     public static void setToPrivateField(Object objInstance, String filedName, Object value) {

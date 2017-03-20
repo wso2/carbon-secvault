@@ -22,7 +22,6 @@ import org.wso2.carbon.secvault.securevault.MasterKey;
 import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
-import org.wso2.carbon.utils.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -49,7 +48,7 @@ import javax.crypto.NoSuchPaddingException;
 /**
  * This class is responsible for providing encryption and decryption capabilities based on the JKS.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class JKSBasedCipherProvider {
     private static Logger logger = LoggerFactory.getLogger(JKSBasedCipherProvider.class);
@@ -90,18 +89,7 @@ public class JKSBasedCipherProvider {
     }
 
     private KeyStore loadKeyStore(String keyStorePath, char[] keyStorePassword) throws SecureVaultException {
-        Path keyStoreFileLocation;
-        // TODO: Get keystore path with relevant to the runtime
-        if (SecureVaultUtils.isOSGIEnv()) {
-            Path carbonHomePath = Utils.getCarbonHome();
-            keyStoreFileLocation = Paths.get(carbonHomePath.toString(), keyStorePath);
-        } else {
-            Optional<Path> keyStore = SecureVaultUtils.getResourcePath(keyStorePath);
-            if (!keyStore.isPresent()) {
-                throw new SecureVaultException("Key store path not found");
-            }
-            keyStoreFileLocation = keyStore.get();
-        }
+        Path keyStoreFileLocation = Paths.get(keyStorePath).toAbsolutePath();
         try (BufferedInputStream bufferedInputStream = new BufferedInputStream(
                 new FileInputStream(keyStoreFileLocation.toString()))) {
             KeyStore keyStore;

@@ -22,7 +22,7 @@ import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 /**
  * The default implementation of the SecureVault.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class SecureVaultImpl implements SecureVault {
 

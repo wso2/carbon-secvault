@@ -17,47 +17,55 @@
 package org.wso2.carbon.secvault.securevault;
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.internal.SecureVaultConfigurationProvider;
 import org.wso2.carbon.secvault.securevault.model.MasterKeyReaderConfiguration;
 import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.securevault.model.SecureVaultConfiguration;
+import org.wso2.carbon.secvault.securevault.utils.TestUtils;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
  * Unit tests class for SecureVaultConfigurationProvider.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class SecureVaultConfigurationProviderTest {
-    private static final Path secureVaultResourcesPath =
-            Paths.get("src", "test", "resources", "securevault", "conf");
 
-    @Test(expectedExceptions = SecureVaultException.class)
-    public void testGetConfigurationNoConfigFile() throws SecureVaultException {
-        System.setProperty(SecureVaultConstants.SECURE_VAULT_YAML, Paths.get("nonExisting").toString());
-        SecureVaultConfigurationProvider.getConfiguration();
+    @BeforeTest
+    public void setup() {
+        try {
+            // master-keys.yaml file may not be available when running tests in IDE
+            // master-keys.yaml file is required to initialise secure vault
+            TestUtils.createDefaultMasterKeyFile(true);
+            Path secureVaultYAMLPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                    SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
+                    .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
+            SecureVaultConfigurationProvider.getInstance().initSecureVaultConfig(secureVaultYAMLPath);
+            SecureVaultInitializer.getInstance().initializeSecureVault(secureVaultYAMLPath);
+        } catch (SecureVaultException e) {
+            Assert.fail();
+        }
     }
 
-    @Test(dependsOnMethods = {"testGetConfigurationNoConfigFile"})
+    @Test
     public void testGetConfiguration() throws SecureVaultException {
-        System.setProperty(SecureVaultConstants.SECURE_VAULT_YAML,
-                Paths.get(secureVaultResourcesPath.toString()).toString());
-        SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getConfiguration();
+        SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
+                .getConfiguration()
+                .orElseThrow(() -> new SecureVaultException("Error in getting secure vault configuration"));
         Assert.assertNotNull(secureVaultConfiguration);
     }
 
     @Test(dependsOnMethods = {"testGetConfiguration"})
     public void testReadSecretRepositoryConfig() {
-        System.setProperty(SecureVaultConstants.SECURE_VAULT_YAML,
-                Paths.get(secureVaultResourcesPath.toString()).toString());
         SecureVaultConfiguration secureVaultConfiguration;
         try {
-            secureVaultConfiguration = SecureVaultConfigurationProvider.getConfiguration();
+            secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance().getConfiguration()
+                    .orElseThrow(() -> new SecureVaultException("Error in getting secure vault configuration"));
         } catch (SecureVaultException e) {
             Assert.fail("Unable to get Secure Vault Configuration.");
             return;
@@ -67,15 +75,19 @@ public class SecureVaultConfigurationProviderTest {
         Assert.assertEquals(secretRepositoryConfiguration.getType().get(),
                 "org.wso2.carbon.secvault.securevault.repository.DefaultSecretRepository");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("privateKeyAlias").get(), "wso2carbon");
+        Assert.assertEquals(secretRepositoryConfiguration.getParameter("keystoreLocation").get(),
+                "src/test/resources/resources/security/wso2carbon.jks");
+        Assert.assertEquals(secretRepositoryConfiguration.getParameter("secretPropertiesFile").get(),
+                "src/test/resources/securevault/conf/secrets.properties");
+        Assert.assertEquals(secretRepositoryConfiguration.getParameter("nonExistingParam"), Optional.empty());
     }
 
     @Test(dependsOnMethods = {"testGetConfiguration"})
     public void testReadMasterKeyReaderConfig() {
-        System.setProperty(SecureVaultConstants.SECURE_VAULT_YAML,
-                Paths.get(secureVaultResourcesPath.toString()).toString());
         SecureVaultConfiguration secureVaultConfiguration;
         try {
-            secureVaultConfiguration = SecureVaultConfigurationProvider.getConfiguration();
+            secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance().getConfiguration()
+                    .orElseThrow(() -> new SecureVaultException("Error in getting secure vault configuration"));
         } catch (SecureVaultException e) {
             Assert.fail("Unable to get Secure Vault Configuration.");
             return;
@@ -83,7 +95,9 @@ public class SecureVaultConfigurationProviderTest {
         MasterKeyReaderConfiguration masterKeyReaderConfiguration = secureVaultConfiguration
                 .getMasterKeyReaderConfig();
         Assert.assertEquals(masterKeyReaderConfiguration.getType().get(),
-                "org.wso2.carbon.secvault.securevault.utils.DefaultHardCodedMasterKeyReader");
+                "org.wso2.carbon.secvault.securevault.reader.DefaultMasterKeyReader");
         Assert.assertEquals(masterKeyReaderConfiguration.getParameter("nonExistingParam"), Optional.empty());
+        Assert.assertEquals(masterKeyReaderConfiguration.getParameter("masterKeyReaderFile").get(),
+                "src/test/resources/securevault/conf/master-keys.yaml");
     }
 }

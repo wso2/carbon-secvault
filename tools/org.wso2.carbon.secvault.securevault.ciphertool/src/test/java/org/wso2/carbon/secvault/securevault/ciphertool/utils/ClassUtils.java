@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-package org.wso2.carbon.secvault.securevault.exception;
+package org.wso2.carbon.secvault.securevault.ciphertool.utils;
+
+import java.lang.reflect.Field;
 
 /**
- * This class {@link SecureVaultException} represents exceptions happens in Secure Vault.
+ * ClassUtils.
  *
  * @since 5.0.0
  */
-public class SecureVaultException extends Exception {
-    public SecureVaultException(String message) {
-        super(message);
-    }
-
-    public SecureVaultException(String message, Throwable cause) {
-        super(message, cause);
+public class ClassUtils {
+    public static void setToPrivateField(Object objInstance, String filedName, Object value) {
+        try {
+            Field field = objInstance.getClass().getDeclaredField(filedName);
+            field.setAccessible(true);
+            field.set(objInstance, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

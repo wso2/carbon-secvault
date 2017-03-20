@@ -19,19 +19,22 @@ package org.wso2.carbon.secvault.securevault;
 /**
  * Secure Vault Constants.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class SecureVaultConstants {
 
-    public static final String SECURE_VAULT_CONFIG_YAML = "secure-vault.yaml";
-    public static final String SECRETS_PROPERTIES = "secrets.properties";
+    public static final String SECURE_VAULT_CONFIG_YAML_FILE_NAME = "secure-vault.yaml";
+    public static final String SECRETS_PROPERTIES_FILE_NAME = "secrets.properties";
+    public static final String MASTER_KEYS_FILE_NAME = "master-keys.yaml";
     public static final String CIPHER_TEXT = "cipherText";
     public static final String PLAIN_TEXT = "plainText";
-    public static final String LOCATION = "location";
     public static final String SPACE = " ";
 
+    // System and environment variables
     public static final String SECURE_VAULT_YAML = "secure.vault.yaml";
     public static final String SECURE_VAULT_YAML_ENV = "SECURE_VAULT_YAML";
+    public static final String MASTER_KEYS_YAML_CONFIG_PROPERTY = "masterKeyReaderFile";
+    public static final String SECRET_PROPERTIES_CONFIG_PROPERTY = "secretPropertiesFile";
 
     /**
      * Remove default constructor and make it not available to initialize.

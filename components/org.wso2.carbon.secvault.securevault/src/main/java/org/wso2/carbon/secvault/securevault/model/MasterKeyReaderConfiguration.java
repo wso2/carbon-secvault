@@ -23,18 +23,39 @@ import java.util.Optional;
 /**
  * Master Key Reader Configuration bean.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class MasterKeyReaderConfiguration {
 
     private String type = "";
     private Map<String, String> parameters = new HashMap<>();
 
+    /**
+     * Get master key reader implementation type.
+     *
+     * @return master key reader implementation type
+     */
     public Optional<String> getType() {
         return Optional.ofNullable(type);
     }
 
+    /**
+     * Get master key reader configuration parameters.
+     *
+     * @param key parameter key
+     * @return master key reader configuration parameters
+     */
     public Optional<String> getParameter(String key) {
         return Optional.ofNullable(parameters.get(key));
+    }
+
+    /**
+     * Set parameter value.
+     *
+     * @param key   parameter key
+     * @param value parameter value
+     */
+    public void setParameter(String key, String value) {
+        parameters.put(key, value);
     }
 }

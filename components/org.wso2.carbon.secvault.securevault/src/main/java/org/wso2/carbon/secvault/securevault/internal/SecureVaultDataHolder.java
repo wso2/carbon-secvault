@@ -25,20 +25,24 @@ import java.util.Optional;
 /**
  * Secure Vault DataHolder.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class SecureVaultDataHolder {
     private static SecureVaultDataHolder instance = new SecureVaultDataHolder();
-    private Optional<BundleContext> bundleContext = Optional.empty();
-
-    private Optional<SecretRepository> optSecretRepository = Optional.empty();
-    private Optional<MasterKeyReader> optMasterKeyReader = Optional.empty();
-
-    public static SecureVaultDataHolder getInstance() {
-        return instance;
-    }
+    private BundleContext bundleContext;
+    private SecretRepository secretRepository;
+    private MasterKeyReader masterKeyReader;
 
     private SecureVaultDataHolder() {
+    }
+
+    /**
+     * Get secure vault data holder instance.
+     *
+     * @return secure vault data holder instance
+     */
+    public static SecureVaultDataHolder getInstance() {
+        return instance;
     }
 
     /**
@@ -47,7 +51,7 @@ public class SecureVaultDataHolder {
      * @return SecretRepository returns an {@link Optional} {@link SecretRepository} instance
      */
     public Optional<SecretRepository> getSecretRepository() {
-        return optSecretRepository;
+        return Optional.ofNullable(secretRepository);
     }
 
     /**
@@ -56,7 +60,7 @@ public class SecureVaultDataHolder {
      * @param secretRepository SecretRepository instance to be set
      */
     public void setSecretRepository(SecretRepository secretRepository) {
-        optSecretRepository = Optional.ofNullable(secretRepository);
+        this.secretRepository = secretRepository;
     }
 
     /**
@@ -65,7 +69,7 @@ public class SecureVaultDataHolder {
      * @return MasterKeyReader returns an {@link Optional} {@link MasterKeyReader} instance
      */
     public Optional<MasterKeyReader> getMasterKeyReader() {
-        return optMasterKeyReader;
+        return Optional.ofNullable(masterKeyReader);
     }
 
     /**
@@ -74,14 +78,24 @@ public class SecureVaultDataHolder {
      * @param masterKeyReader MasterKeyReader instance to be set
      */
     public void setMasterKeyReader(MasterKeyReader masterKeyReader) {
-        optMasterKeyReader = Optional.ofNullable(masterKeyReader);
+        this.masterKeyReader = masterKeyReader;
     }
 
+    /**
+     * Get bundle context.
+     *
+     * @return bundle context
+     */
     public Optional<BundleContext> getBundleContext() {
-        return bundleContext;
+        return Optional.ofNullable(bundleContext);
     }
 
+    /**
+     * Set bundle context.
+     *
+     * @param bundleContext OSGi bundle context
+     */
     public void setBundleContext(BundleContext bundleContext) {
-        this.bundleContext = Optional.ofNullable(bundleContext);
+        this.bundleContext = bundleContext;
     }
 }

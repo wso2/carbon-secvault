@@ -22,7 +22,7 @@ import java.util.Optional;
  * This class represents a master key that is needed to initialize a secret repository. A secret repository might need
  *  a few master keys to get it initialized.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class MasterKey {
     private String masterKeyName;

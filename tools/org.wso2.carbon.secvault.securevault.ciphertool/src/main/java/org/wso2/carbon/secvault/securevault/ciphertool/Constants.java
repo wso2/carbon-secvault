@@ -19,7 +19,7 @@ package org.wso2.carbon.secvault.securevault.ciphertool;
 /**
  * Cipher Tool Constants.
  *
- * @since 5.2.0
+ * @since 5.0.0
  */
 public class Constants {
 

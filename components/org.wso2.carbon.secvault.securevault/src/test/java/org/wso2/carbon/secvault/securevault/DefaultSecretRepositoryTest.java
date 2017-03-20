@@ -39,20 +39,18 @@ import static org.easymock.EasyMock.replay;
 /**
  * Unit tests class for DefaultSecretRepository.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class DefaultSecretRepositoryTest {
-    private static final Path secureVaultResourcesPath =
-            Paths.get("src", "test", "resources", "securevault", "conf");
-    private static final Path secureVaultTargetPath = Paths.get("target");
     private SecretRepository secretRepository;
 
     @BeforeTest
     public void setup() {
-        File secretsFile = new File(Paths.get(secureVaultTargetPath.toString(),
-                SecureVaultConstants.SECRETS_PROPERTIES).toString());
-        File erroneousSecretsFile = new File(Paths.get(secureVaultTargetPath.toString(),
-                "error-secrets.properties").toString());
+        Path defaultConfigPath = SecureVaultUtils.getResourcePath("securevault", "conf").get();
+
+        File secretsFile = new File(defaultConfigPath.resolve(SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
+                .toString());
+        File erroneousSecretsFile = new File(defaultConfigPath.resolve("error-secrets.properties").toString());
         String entry1 = "my.pass.1=plainText Hello@123\n";
         String entry2 = "my.pass.2=cipherText SO1eiq0PyeOxJZbONZgA5OjYRSQKGL2dsd+nJBiNLNenBxSI6ToE579zA5Ffd7lJy5o" +
                 "90Zxh8Npv9XRAPtkzbvIQs4hrnf/6i/BGwObIlkPPnkM61dXJjsCFtsnVbuhzO0WZegyHKqOiAq9WB+AoX2KJvfSPuSL2XwXe6" +
@@ -78,18 +76,17 @@ public class DefaultSecretRepositoryTest {
 
     @Test
     public void testInitSecretRepository() throws SecureVaultException {
-        System.setProperty(SecureVaultConstants.SECURE_VAULT_YAML, secureVaultResourcesPath.toString());
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("securevault", "resources", "security",
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
                         "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon"));
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
 
@@ -100,15 +97,15 @@ public class DefaultSecretRepositoryTest {
     public void testInitSecretRepositoryWrongJKSLocation() throws SecureVaultException {
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths
-                        .get("securevault", "resources", "nonExisting", "wso2carbon.jks").toString()));
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "nonExisting", "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon"));
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         SecretRepository secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
     }
@@ -119,15 +116,15 @@ public class DefaultSecretRepositoryTest {
     public void testInitSecretRepositoryWrongAlias() throws SecureVaultException {
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths
-                        .get("securevault", "resources", "security", "wso2carbon.jks").toString()));
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("nonExistingWso2carbon"));
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         SecretRepository secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
     }
@@ -142,21 +139,24 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testInitSecretRepository"})
     public void testReadSecrets() throws SecureVaultException {
+
+        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
+                .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
+
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths
-                        .get("securevault", "resources", "security", "wso2carbon.jks")
-                        .toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
-        expect(secretRepositoryConfiguration.getParameter("location"))
-                .andReturn(Optional.of(Paths.get(secureVaultTargetPath.toString(),
-                        "secrets.properties").toString())).anyTimes();
+        expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
+                .andReturn(Optional.ofNullable(secretRepositoryPath.toAbsolutePath().toString())).anyTimes();
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         SecretRepository secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
         secretRepository.loadSecrets(secretRepositoryConfiguration);
@@ -166,18 +166,20 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testReadSecrets"}, expectedExceptions = SecureVaultException.class)
     public void testReadSecretsWrongSecretsFileLocation() throws SecureVaultException {
+        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf", "nonExisting",
+                SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
+                .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
         MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
-                        .toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
-        expect(secretRepositoryConfiguration.getParameter("location"))
-                .andReturn(Optional.of(Paths.get(secureVaultTargetPath.toString(), "nonExisting",
-                        "securevault/conf/secrets.properties").toString())).anyTimes();
+        expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
+                .andReturn(Optional.ofNullable(secretRepositoryPath.toAbsolutePath().toString())).anyTimes();
         replay(secretRepositoryConfiguration);
 
         SecretRepository secretRepository = new DefaultSecretRepository();
@@ -187,20 +189,22 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testReadSecrets"})
     public void testEncryptSecrets() throws SecureVaultException {
+        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
+                .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
-                        .toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
-        expect(secretRepositoryConfiguration.getParameter("location"))
-                .andReturn(Optional.of(Paths.get(secureVaultTargetPath.toString(),
-                        "secrets.properties").toString())).anyTimes();
+        expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
+                .andReturn(Optional.ofNullable(secretRepositoryPath.toAbsolutePath().toString())).anyTimes();
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         SecretRepository secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
         secretRepository.persistSecrets(secretRepositoryConfiguration);
@@ -208,20 +212,22 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testEncryptSecrets"})
     public void testReadSecretsCipherTest() throws SecureVaultException {
+        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
+                .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
-                        .toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
-        expect(secretRepositoryConfiguration.getParameter("location"))
-                .andReturn(Optional.of(Paths.get(secureVaultTargetPath.toString(),
-                        "secrets.properties").toString())).anyTimes();
+        expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
+                .andReturn(Optional.ofNullable(secretRepositoryPath.toAbsolutePath().toString())).anyTimes();
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         SecretRepository secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
         secretRepository.loadSecrets(secretRepositoryConfiguration);
@@ -231,20 +237,22 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testInitSecretRepository"})
     public void testReadErroneousSecrets() throws SecureVaultException {
+        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                "error-secrets.properties")
+                .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
-                        .toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
-        expect(secretRepositoryConfiguration.getParameter("location"))
-                .andReturn(Optional.of(Paths.get(secureVaultTargetPath.toString(),
-                        "error-secrets.properties").toString())).anyTimes();
+        expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
+                .andReturn(Optional.ofNullable(secretRepositoryPath.toAbsolutePath().toString())).anyTimes();
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         SecretRepository secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
         secretRepository.loadSecrets(secretRepositoryConfiguration);
@@ -254,20 +262,22 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testReadErroneousSecrets"})
     public void testPersistErroneousSecrets() throws SecureVaultException {
+        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+                "error-secrets.properties")
+                .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
                 EasyMock.mock(SecretRepositoryConfiguration.class);
-        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
-                .andReturn(Optional.of(Paths.get("securevault", "resources", "security", "wso2carbon.jks")
-                        .toString())).anyTimes();
+                .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
+                        "wso2carbon.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
-        expect(secretRepositoryConfiguration.getParameter("location"))
-                .andReturn(Optional.of(Paths.get(secureVaultTargetPath.toString(),
-                        "error-secrets.properties").toString())).anyTimes();
+        expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
+                .andReturn(Optional.ofNullable(secretRepositoryPath.toAbsolutePath().toString())).anyTimes();
         replay(secretRepositoryConfiguration);
 
+        MasterKeyReader masterKeyReader = new DefaultHardCodedMasterKeyReader();
         SecretRepository secretRepository = new DefaultSecretRepository();
         secretRepository.init(secretRepositoryConfiguration, masterKeyReader);
         secretRepository.persistSecrets(secretRepositoryConfiguration);

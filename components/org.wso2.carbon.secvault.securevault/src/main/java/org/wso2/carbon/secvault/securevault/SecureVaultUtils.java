@@ -19,8 +19,8 @@ package org.wso2.carbon.secvault.securevault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.internal.SecureVaultDataHolder;
 import org.wso2.carbon.utils.StringUtils;
-import org.wso2.carbon.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,13 +50,13 @@ import java.util.regex.Pattern;
 /**
  * Secure Vault utility methods.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class SecureVaultUtils {
     private static final Logger logger = LoggerFactory.getLogger(SecureVaultUtils.class);
     private static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
-    private static final Pattern varPatternEnv = Pattern.compile("\\$\\{env:([^}]*)}");
-    private static final Pattern varPatternSys = Pattern.compile("\\$\\{sys:([^}]*)}");
+    private static final Pattern VAR_PATTERN_ENV = Pattern.compile("\\$\\{env:([^}]*)}");
+    private static final Pattern VAR_PATTERN_SYS = Pattern.compile("\\$\\{sys:([^}]*)}");
 
     /**
      * Remove default constructor and make it not available to initialize.
@@ -119,36 +119,6 @@ public class SecureVaultUtils {
         }
     }
 
-    /**
-     * Returns the secure_vault.yaml location.
-     *
-     * @return String secure_vault.yaml location
-     * @throws SecureVaultException when carbon home is not present in OSGi mode
-     */
-    // TODO: In OSGi mode get the location from runtime
-    public static Path getSecureVaultYAMLLocation() throws SecureVaultException {
-        // OSGi mode
-        if (SecureVaultUtils.isOSGIEnv()) {
-            Path carbonHome = Utils.getCarbonConfigHome();
-            return carbonHome.resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
-        }
-        // Non-OSGi mode
-        Optional<Path> secureVaultPath = getPathFromSystemVariable(SecureVaultConstants.SECURE_VAULT_YAML,
-                SecureVaultConstants.SECURE_VAULT_YAML_ENV);
-        if (secureVaultPath.isPresent()) {
-            return secureVaultPath.get().resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
-        }
-        secureVaultPath = getResourcePath("securevault", "conf",
-                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
-        if (secureVaultPath.isPresent()) {
-            return secureVaultPath.get();
-        }
-        throw new SecureVaultException(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML + " path is not set in system " +
-                "property " + SecureVaultConstants.SECURE_VAULT_YAML + " or environmental variable " +
-                SecureVaultConstants.SECURE_VAULT_YAML_ENV + " and is not available in conf/" +
-                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML);
-    }
-
     public static String readUpdatedValue(String alias) {
         if (alias != null) {
             if (alias.startsWith("${env:")) {
@@ -169,11 +139,11 @@ public class SecureVaultUtils {
      * @throws SecureVaultException in case a valid value for a specified placeholder is not provided.
      */
     public static String substituteVariables(String value) throws SecureVaultException {
-        if (varPatternEnv.matcher(value).find()) {
-            value = substituteVariables(varPatternEnv.matcher(value), System::getenv);
+        if (VAR_PATTERN_ENV.matcher(value).find()) {
+            value = substituteVariables(VAR_PATTERN_ENV.matcher(value), System::getenv);
         }
-        if (varPatternSys.matcher(value).find()) {
-            value = substituteVariables(varPatternSys.matcher(value), System::getProperty);
+        if (VAR_PATTERN_SYS.matcher(value).find()) {
+            value = substituteVariables(VAR_PATTERN_SYS.matcher(value), System::getProperty);
         }
         return value;
     }
@@ -239,7 +209,6 @@ public class SecureVaultUtils {
         Optional<String> path = Optional.ofNullable(System.getProperty(systemProperty));
         if (!path.isPresent()) {
             path = Optional.ofNullable(System.getenv(environmentProperty));
-            path.ifPresent(envPath -> System.setProperty(systemProperty, envPath));
             if (!path.isPresent()) {
                 return Optional.empty();
             }
@@ -267,7 +236,7 @@ public class SecureVaultUtils {
      * @return true is environment is OSGI false if not OSGI.
      */
     public static boolean isOSGIEnv() {
-        return SecureVaultUtils.class.getClassLoader() instanceof org.osgi.framework.BundleReference;
+        return SecureVaultDataHolder.getInstance().getBundleContext().isPresent();
     }
 
     private static String readFromEnvironment(String alias) {

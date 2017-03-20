@@ -23,11 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.MasterKey;
 import org.wso2.carbon.secvault.securevault.MasterKeyReader;
-import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
+import org.wso2.carbon.secvault.securevault.SecureVaultConstants;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.model.MasterKeyReaderConfiguration;
 import org.wso2.carbon.secvault.securevault.model.masterkey.MasterKeyConfiguration;
-import org.wso2.carbon.utils.Utils;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -58,19 +57,16 @@ import java.util.Set;
  * 4. Reads the master keys from command line.
  * And this component registers a MasterKeyReader as an OSGi service.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 @Component(
-        name = "DefaultMasterKeyReader",
-        immediate = true,
-        property = {
-                "capabilityName=MasterKeyReader"
-        }
+        name = "org.wso2.carbon.secvault.securevault.reader.DefaultMasterKeyReader",
+        immediate = true
 )
 public class DefaultMasterKeyReader implements MasterKeyReader {
     private static Logger logger = LoggerFactory.getLogger(DefaultMasterKeyReader.class);
-    private static final String MASTER_KEYS_FILE_NAME = "master-keys.yaml";
     private Set<String> relocationPaths = new HashSet<>();
+    private MasterKeyReaderConfiguration masterKeyReaderConfiguration;
 
     @Activate
     public void activate() {
@@ -84,12 +80,15 @@ public class DefaultMasterKeyReader implements MasterKeyReader {
 
     @Override
     public void init(MasterKeyReaderConfiguration masterKeyReaderConfiguration) throws SecureVaultException {
-        // No initializations needed for the DefaultMasterKeyReader
+        this.masterKeyReaderConfiguration = masterKeyReaderConfiguration;
     }
 
     @Override
     public void readMasterKeys(List<MasterKey> masterKeys) throws SecureVaultException {
-        Path masterKeysFilePath = getMasterKeyYAMLPath();
+        Path masterKeysFilePath = Paths.get(masterKeyReaderConfiguration
+                .getParameter(SecureVaultConstants.MASTER_KEYS_YAML_CONFIG_PROPERTY)
+                .orElseThrow(() -> new SecureVaultException("Master keys YAML path not found")));
+
         if (Files.exists(masterKeysFilePath)) {
             readMasterKeysFile(masterKeysFilePath, masterKeys);
         }
@@ -99,23 +98,6 @@ public class DefaultMasterKeyReader implements MasterKeyReader {
         if (!fullyInitialized(masterKeys)) {
             readMasterKeysFromConsole(masterKeys);
         }
-    }
-
-    @Override
-    public Path getMasterKeyYAMLPath() throws SecureVaultException {
-        Path masterKeysFilePath;
-        if (SecureVaultUtils.isOSGIEnv()) {
-            Path carbonConfigHome = Utils.getCarbonConfigHome();
-            masterKeysFilePath = Paths.get(carbonConfigHome.toString(), MASTER_KEYS_FILE_NAME);
-        } else {
-            Optional<Path> resourcePath = SecureVaultUtils
-                    .getResourcePath("securevault", "conf", MASTER_KEYS_FILE_NAME);
-            if (!resourcePath.isPresent()) {
-                throw new SecureVaultException(MASTER_KEYS_FILE_NAME + "not found");
-            }
-            masterKeysFilePath = resourcePath.get();
-        }
-        return masterKeysFilePath;
     }
 
     private void readMasterKeysFromEnvironment(List<MasterKey> masterKeys) throws SecureVaultException {

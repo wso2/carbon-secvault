@@ -16,7 +16,6 @@
 
 package org.wso2.carbon.secvault.securevault.internal;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -28,7 +27,13 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.securevault.MasterKeyReader;
 import org.wso2.carbon.secvault.securevault.SecretRepository;
 import org.wso2.carbon.secvault.securevault.SecureVault;
+import org.wso2.carbon.secvault.securevault.SecureVaultConstants;
 import org.wso2.carbon.secvault.securevault.SecureVaultInitializer;
+import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.securevault.model.SecureVaultConfiguration;
+import org.wso2.carbon.utils.Utils;
+
+import java.nio.file.Path;
 
 /**
  * This service component acts as a RequiredCapabilityListener for all the ${@link SecretRepository}s and
@@ -39,26 +44,24 @@ import org.wso2.carbon.secvault.securevault.SecureVaultInitializer;
  * to load the secrets. Once the ${@link SecretRepository} is ready, this component will  register the
  * SecureVault OSGi service, which can then be used by other components for encryption and decryption.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 @Component(
-        name = "SecureVaultComponent",
+        name = "org.wso2.carbon.secvault.securevault.internal.SecureVaultComponent",
         immediate = true
 )
 public class SecureVaultComponent {
 
     private static final Logger logger = LoggerFactory.getLogger(SecureVaultComponent.class);
+    private static final String SECURE_VAULT_CONFIG_ERROR = "Error occurred when obtaining secure vault configuration";
 
     @Activate
-    public void activate(BundleContext bundleContext) {
-        SecureVaultDataHolder.getInstance().setBundleContext(bundleContext);
-        initializeSecureVault();
+    public void activate() {
         logger.debug("Activating SecureVaultComponent");
     }
 
     @Deactivate
-    public void deactivate(BundleContext bundleContext) {
-        SecureVaultDataHolder.getInstance().setBundleContext(null);
+    public void deactivate() {
         logger.debug("Deactivating SecureVaultComponent");
     }
 
@@ -70,22 +73,35 @@ public class SecureVaultComponent {
             unbind = "unRegisterSecretRepository"
     )
     protected void registerSecretRepository(SecretRepository secretRepository) {
-        SecureVaultInitializer.getInstance().initFromSecureVaultYAML();
-        if (secretRepository.getClass().getName().equals(
-                SecureVaultInitializer.getInstance().getSecretRepositoryType())) {
-            logger.debug("Registering secret repository : {}", SecureVaultInitializer.getInstance()
-                    .getSecretRepositoryType());
-            SecureVaultDataHolder.getInstance().setSecretRepository(secretRepository);
-            initializeSecureVault();
+        Path secureVaultYAMLPath = Utils.getCarbonConfigHome()
+                .resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+        try {
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
+                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            String secretRepositoryType = secureVaultConfiguration.getSecretRepositoryConfig().getType()
+                    .orElseThrow(() -> new SecureVaultException("Secret repository type is not set"));
+            if (secretRepository.getClass().getName().equals(secretRepositoryType)) {
+                logger.debug("Registering secret repository : {}", secretRepositoryType);
+                SecureVaultDataHolder.getInstance().setSecretRepository(secretRepository);
+                initializeSecureVault(secureVaultYAMLPath);
+            }
+        } catch (SecureVaultException e) {
+            logger.error("Error occurred when registering secret repository", e);
         }
     }
 
     protected void unRegisterSecretRepository(SecretRepository secretRepository) {
-        if (secretRepository.getClass().getName().equals(
-                SecureVaultInitializer.getInstance().getSecretRepositoryType())) {
-            logger.debug("Un-registering secret repository : {}", SecureVaultInitializer.getInstance()
-                    .getSecretRepositoryType());
-            SecureVaultDataHolder.getInstance().setSecretRepository(null);
+        try {
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
+                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            String secretRepositoryType = secureVaultConfiguration.getSecretRepositoryConfig().getType()
+                    .orElseThrow(() -> new SecureVaultException("Secret repository type is not set"));
+            if (secretRepository.getClass().getName().equals(secretRepositoryType)) {
+                logger.debug("Un-registering secret repository : {}", secretRepositoryType);
+                SecureVaultDataHolder.getInstance().setSecretRepository(null);
+            }
+        } catch (SecureVaultException e) {
+            logger.error("Error occurred when un-registering secret repository", e);
         }
     }
 
@@ -97,22 +113,35 @@ public class SecureVaultComponent {
             unbind = "unregisterMasterKeyReader"
     )
     protected void registerMasterKeyReader(MasterKeyReader masterKeyReader) {
-        SecureVaultInitializer.getInstance().initFromSecureVaultYAML();
-        if (masterKeyReader.getClass().getName().equals(
-                SecureVaultInitializer.getInstance().getMasterKeyReaderType())) {
-            logger.debug("Registering secret repository : ", SecureVaultInitializer.getInstance()
-                    .getMasterKeyReaderType());
-            SecureVaultDataHolder.getInstance().setMasterKeyReader(masterKeyReader);
-            initializeSecureVault();
+        Path secureVaultYAMLPath = Utils.getCarbonConfigHome()
+                .resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+        try {
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
+                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            String masterKeyReaderType = secureVaultConfiguration.getMasterKeyReaderConfig().getType()
+                    .orElseThrow(() -> new SecureVaultException("Master key reader type is not set"));
+            if (masterKeyReader.getClass().getName().equals(masterKeyReaderType)) {
+                logger.debug("Registering secret repository : ", masterKeyReaderType);
+                SecureVaultDataHolder.getInstance().setMasterKeyReader(masterKeyReader);
+                initializeSecureVault(secureVaultYAMLPath);
+            }
+        } catch (SecureVaultException e) {
+            logger.error("Error occurred when registering master key reader", e);
         }
     }
 
     protected void unregisterMasterKeyReader(MasterKeyReader masterKeyReader) {
-        if (masterKeyReader.getClass().getName().equals(
-                SecureVaultInitializer.getInstance().getMasterKeyReaderType())) {
-            logger.debug("Un-registering secret repository : ", SecureVaultInitializer.getInstance()
-                    .getMasterKeyReaderType());
-            SecureVaultDataHolder.getInstance().setMasterKeyReader(null);
+        try {
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
+                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            String masterKeyReaderType = secureVaultConfiguration.getMasterKeyReaderConfig().getType()
+                    .orElseThrow(() -> new SecureVaultException("Master key reader type is not set"));
+            if (masterKeyReader.getClass().getName().equals(masterKeyReaderType)) {
+                logger.debug("Un-registering secret repository : ", masterKeyReaderType);
+                SecureVaultDataHolder.getInstance().setMasterKeyReader(null);
+            }
+        } catch (SecureVaultException e) {
+            logger.error("Error occurred when un-registering master key reader", e);
         }
     }
 
@@ -122,18 +151,20 @@ public class SecureVaultComponent {
      * repository and loading secrets to secret repository and will register SecureVault service finally if all
      * the previous tasks successful.
      */
-    private void initializeSecureVault() {
-
+    private void initializeSecureVault(Path secureVaultYAMLPath) {
         if (!SecureVaultDataHolder.getInstance().getSecretRepository().isPresent() ||
                 !SecureVaultDataHolder.getInstance().getMasterKeyReader().isPresent() ||
                 !SecureVaultDataHolder.getInstance().getBundleContext().isPresent()) {
             logger.debug("Waiting for Secure Vault dependencies");
             return;
         }
+        try {
+            SecureVaultInitializer.getInstance().initializeSecureVault(secureVaultYAMLPath);
+        } catch (SecureVaultException e) {
+            logger.error("Error occurred when initializing secure vault", e);
+        }
 
-        SecureVaultInitializer.getInstance().initializeSecureVault();
-
-        if (SecureVaultInitializer.getInstance().initialized) {
+        if (SecureVaultInitializer.getInstance().isInitialized()) {
             SecureVaultDataHolder.getInstance().getBundleContext()
                     .ifPresent(bundleContext -> bundleContext
                             .registerService(SecureVault.class, new SecureVaultImpl(), null));

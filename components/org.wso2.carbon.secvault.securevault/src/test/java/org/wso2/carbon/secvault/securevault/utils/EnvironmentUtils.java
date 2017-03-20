@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Utility class for setting environment variables for test cases.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class EnvironmentUtils {
     private static Logger logger = LoggerFactory.getLogger(EnvironmentUtils.class);

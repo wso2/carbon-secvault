@@ -18,26 +18,38 @@ package org.wso2.carbon.secvault.securevault.ciphertool;
 
 import org.wso2.carbon.secvault.securevault.MasterKeyReader;
 import org.wso2.carbon.secvault.securevault.SecretRepository;
+import org.wso2.carbon.secvault.securevault.SecureVaultInitializer;
 import org.wso2.carbon.secvault.securevault.SecureVaultUtils;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.internal.SecureVaultConfigurationProvider;
 import org.wso2.carbon.secvault.securevault.model.SecureVaultConfiguration;
 
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 /**
  * The Java class which defines the CipherTool.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class CipherTool {
     private static final Logger logger = Logger.getLogger(CipherTool.class.getName());
     private SecureVaultConfiguration secureVaultConfiguration;
     private SecretRepository secretRepository;
 
-    public void init(URLClassLoader urlClassLoader) throws SecureVaultException {
-        secureVaultConfiguration = SecureVaultConfigurationProvider.getConfiguration();
+    /**
+     * Initialise cipher tool.
+     *
+     * @param urlClassLoader      url class loader
+     * @param secureVaultYAMLPath secure vault yaml path
+     * @throws SecureVaultException error on initializing secure vault YAML configuration
+     */
+    public void init(URLClassLoader urlClassLoader, Path secureVaultYAMLPath) throws SecureVaultException {
+        // Initialize secure vault
+        SecureVaultInitializer.getInstance().initializeSecureVault(secureVaultYAMLPath);
+        secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance().getConfiguration()
+                .orElseThrow(() -> new SecurityException("Error occurred when obtaining secure vault configuration"));
 
         String secretRepositoryType = secureVaultConfiguration.getSecretRepositoryConfig().getType()
                 .orElseThrow(() -> new SecureVaultException("Secret repository type is mandatory"));
@@ -56,10 +68,22 @@ public class CipherTool {
         secretRepository.init(secureVaultConfiguration.getSecretRepositoryConfig(), masterKeyReader);
     }
 
+    /**
+     * Encrypt secrets.
+     *
+     * @throws SecureVaultException error on persisting secrets
+     */
     public void encryptSecrets() throws SecureVaultException {
         secretRepository.persistSecrets(secureVaultConfiguration.getSecretRepositoryConfig());
     }
 
+    /**
+     * Encrypt text.
+     *
+     * @param plainText text to encrypt (plain)
+     * @return encrypted text
+     * @throws SecureVaultException error on encrypting plain text
+     */
     public String encryptText(String plainText) throws SecureVaultException {
         byte[] encryptedPassword = secretRepository.encrypt(SecureVaultUtils.toBytes(plainText.trim()));
         String base64Encoded = new String(SecureVaultUtils.toChars(SecureVaultUtils.base64Encode(encryptedPassword)));
@@ -67,6 +91,13 @@ public class CipherTool {
         return base64Encoded;
     }
 
+    /**
+     * Decrypt text.
+     *
+     * @param cipherText ciphered text
+     * @return decrypted text (plain text)
+     * @throws SecureVaultException error on decrypting text
+     */
     public String decryptText(String cipherText) throws SecureVaultException {
         byte[] decryptedPassword = secretRepository.decrypt(SecureVaultUtils
                 .base64Decode(SecureVaultUtils.toBytes(cipherText)));

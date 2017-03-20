@@ -1,4 +1,4 @@
-# Using Secure Vault
+# WSO2 Secure Vault
 WSO2 Secure Vault allows you to store encrypted passwords that are mapped to aliases, i.e., you can 
 use the aliases instead of the actual passwords in your configuration files for better security. 
 For example, some configurations require the admin username and password. If the admin user password 
@@ -102,10 +102,7 @@ annotation. An example for the above `DefaultHardCodedMasterKeyReader` will be a
 ```java
     @Component(
             name = "DefaultMasterKeyReader",
-            immediate = true,
-            property = {
-                    "capabilityName=MasterKeyReader"
-            }
+            immediate = true
     )
     public class DefaultMasterKeyReader implements MasterKeyReader {
         // Implementation details
@@ -186,9 +183,6 @@ annotation. An example for the above `CustomSecretRepository` will be as shown b
     @Component(
             name = "org.wso2.carbon.securevault.repository.CustomSecretRepository",
             immediate = true,
-            property = {
-                    "capabilityName=SecretRepository"
-            },
             service = SecretRepository.class
     )
     public class CustomSecretRepository implements SecretRepository {

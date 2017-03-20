@@ -20,7 +20,7 @@ package org.wso2.carbon.secvault.securevault.ciphertool.exceptions;
 /**
  * Runtime Exception thrown when an error occurs in cipher tool.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class CipherToolRuntimeException extends RuntimeException {
 

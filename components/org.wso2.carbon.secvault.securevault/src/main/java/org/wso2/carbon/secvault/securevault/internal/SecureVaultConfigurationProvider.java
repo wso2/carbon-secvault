@@ -26,48 +26,58 @@ import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * This class takes care of parsing the secure-vault.yaml file and creating the SecureVaultConfiguration object model.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class SecureVaultConfigurationProvider {
     private static final Logger logger = LoggerFactory.getLogger(SecureVaultConfiguration.class);
-    private static final SecureVaultConfigurationProvider INSTANCE = new SecureVaultConfigurationProvider();
+    private static final SecureVaultConfigurationProvider instance = new SecureVaultConfigurationProvider();
     private boolean initialized = false;
     private SecureVaultConfiguration secureVaultConfiguration;
 
     private SecureVaultConfigurationProvider() {
     }
 
-    private static SecureVaultConfigurationProvider getInstance() throws SecureVaultException {
-        if (INSTANCE.initialized) {
-            return INSTANCE;
-        }
 
-        synchronized (INSTANCE) {
-            if (!INSTANCE.initialized) {
-                INSTANCE.init();
-            }
-        }
-        return INSTANCE;
+    /**
+     * Get secure vault configuration provider instance.
+     *
+     * @return secure vault configuration provider
+     */
+    public static SecureVaultConfigurationProvider getInstance() {
+        return instance;
     }
 
-    public static SecureVaultConfiguration getConfiguration() throws SecureVaultException {
-        return getInstance().secureVaultConfiguration;
+    /**
+     * Initialise secure vault configuration provider.
+     *
+     * @param secureVaultConfigurationPath Secure vault yaml configuration path
+     * @throws SecureVaultException when error occurs in secure vault configuration provider initialisation
+     */
+    public synchronized void initSecureVaultConfig(Path secureVaultConfigurationPath) throws SecureVaultException {
+        if (!initialized) {
+            String resolvedFileContent = SecureVaultUtils.resolveFileToString(secureVaultConfigurationPath.toFile());
+            Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
+                    SecureVaultConfiguration.class.getClassLoader()));
+            yaml.setBeanAccess(BeanAccess.FIELD);
+            secureVaultConfiguration = yaml.loadAs(resolvedFileContent, SecureVaultConfiguration.class);
+
+            initialized = true;
+            logger.debug("Secure vault configurations loaded successfully.");
+        }
     }
 
-    private void init() throws SecureVaultException {
-        Path configFileLocation = SecureVaultUtils.getSecureVaultYAMLLocation();
-        String resolvedFileContent = SecureVaultUtils.resolveFileToString(configFileLocation.toFile());
-
-        Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
-                SecureVaultConfiguration.class.getClassLoader()));
-        yaml.setBeanAccess(BeanAccess.FIELD);
-        secureVaultConfiguration = yaml.loadAs(resolvedFileContent, SecureVaultConfiguration.class);
-
-        initialized = true;
-        logger.debug("Secure vault configurations loaded successfully.");
+    /**
+     * Get secure vault configuration.
+     *
+     * @return optional secure vault configuration
+     * @throws SecureVaultException when error occurs in secure vault configuration provider initialisation
+     */
+    public synchronized Optional<SecureVaultConfiguration> getConfiguration() throws SecureVaultException {
+        return Optional.ofNullable(secureVaultConfiguration);
     }
 }

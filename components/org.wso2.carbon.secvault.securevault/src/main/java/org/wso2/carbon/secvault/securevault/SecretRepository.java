@@ -19,8 +19,6 @@ package org.wso2.carbon.secvault.securevault;
 import org.wso2.carbon.secvault.securevault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.securevault.model.SecretRepositoryConfiguration;
 
-import java.nio.file.Path;
-
 /**
  * This interface is used to register SecretRepositories. An implementation of this interface should be registered
  * as an OSGi service using the SecretRepository interface.
@@ -28,7 +26,7 @@ import java.nio.file.Path;
  * The implementation of this interface can be different from one SecretRepository to another depending on its
  * requirements and behaviour.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public interface SecretRepository {
 
@@ -85,14 +83,4 @@ public interface SecretRepository {
      * @throws SecureVaultException on an error while trying to encrypt.
      */
     byte[] decrypt(byte[] cipherText) throws SecureVaultException;
-
-    /**
-     * An implementation of this method is responsible for returning the secret.properties path
-     *
-     * @param secretRepositoryConfiguration secret repository configuration
-     * @return secret.properties path
-     * @throws SecureVaultException on error retuning the secret.properties path
-     */
-    Path getSecretPropertiesPath(SecretRepositoryConfiguration secretRepositoryConfiguration)
-            throws SecureVaultException;
 }

@@ -21,7 +21,7 @@ import java.util.Properties;
 /**
  * MasterKeyConfiguration class holds static configuration parameters specified in the master-keys.yaml file.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class MasterKeyConfiguration {
     private boolean permanent = false;

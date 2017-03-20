@@ -24,7 +24,7 @@ import java.util.Optional;
 /**
  * Cipher Tool Command Line Parser.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class CommandLineParser {
 

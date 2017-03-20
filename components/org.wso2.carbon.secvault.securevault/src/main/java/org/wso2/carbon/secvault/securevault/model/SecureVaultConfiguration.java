@@ -19,16 +19,26 @@ package org.wso2.carbon.secvault.securevault.model;
 /**
  * SecureVaultConfiguration class holds static configuration parameters specified in the secure-vault.yaml file.
  *
- * @since 1.0.0
+ * @since 5.0.0
  */
 public class SecureVaultConfiguration {
     private SecretRepositoryConfiguration secretRepository;
     private MasterKeyReaderConfiguration masterKeyReader;
 
+    /**
+     * Get secret repository configuration.
+     *
+     * @return secret repository configuration
+     */
     public SecretRepositoryConfiguration getSecretRepositoryConfig() {
         return secretRepository;
     }
 
+    /**
+     * Get master key reader configuration.
+     *
+     * @return master key reader configuration
+     */
     public MasterKeyReaderConfiguration getMasterKeyReaderConfig() {
         return masterKeyReader;
     }
