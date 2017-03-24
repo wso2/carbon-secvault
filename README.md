@@ -85,7 +85,7 @@ the `secure-vault.yaml` file.
                 masterKeysFilePath = Paths.get(carbonHomePath.get().toString(), MASTER_KEYS_FILE_NAME);
             } else {
                 Optional<Path> resourcePath = SecureVaultUtils
-                        .getResourcePath("securevault", "conf", MASTER_KEYS_FILE_NAME);
+                        .getResourcePath(standalone, "conf", MASTER_KEYS_FILE_NAME);
                 if (!resourcePath.isPresent()) {
                     throw new SecureVaultException(MASTER_KEYS_FILE_NAME + "not found");
                 }

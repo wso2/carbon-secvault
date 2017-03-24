@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -214,20 +213,6 @@ public class SecureVaultUtils {
             }
         }
         return Optional.of(Paths.get(path.get()));
-    }
-
-    /**
-     * Get the path of a provided resource.
-     *
-     * @param resourcePaths path strings to the location of the resource
-     * @return path of the resources
-     */
-    public static Optional<Path> getResourcePath(String... resourcePaths) {
-        URL resourceURL = SecureVaultUtils.class.getClassLoader().getResource("");
-        if (resourceURL != null) {
-            return Optional.ofNullable(Paths.get(resourceURL.getPath(), resourcePaths));
-        }
-        return Optional.empty(); // Resource do not exist
     }
 
     /**

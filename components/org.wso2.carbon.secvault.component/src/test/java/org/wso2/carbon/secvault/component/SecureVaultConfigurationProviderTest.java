@@ -44,7 +44,7 @@ public class SecureVaultConfigurationProviderTest {
             // master-keys.yaml file may not be available when running tests in IDE
             // master-keys.yaml file is required to initialise secure vault
             TestUtils.createDefaultMasterKeyFile(true);
-            Path secureVaultYAMLPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+            Path secureVaultYAMLPath = TestUtils.getResourcePath("securevault", "conf",
                     SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
                     .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
             EnvironmentUtils.setEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV,
@@ -87,7 +87,7 @@ public class SecureVaultConfigurationProviderTest {
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("keystoreLocation").get(),
                 "src/test/resources/resources/security/wso2carbon.jks");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("secretPropertiesFile").get(),
-                "src/test/resources/securevault/conf/secrets.properties");
+                "src/test/resources/standalone/conf/secrets.properties");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("nonExistingParam"), Optional.empty());
     }
 
@@ -107,6 +107,6 @@ public class SecureVaultConfigurationProviderTest {
                 "org.wso2.carbon.secvault.component.reader.DefaultMasterKeyReader");
         Assert.assertEquals(masterKeyReaderConfiguration.getParameter("nonExistingParam"), Optional.empty());
         Assert.assertEquals(masterKeyReaderConfiguration.getParameter("masterKeyReaderFile").get(),
-                "src/test/resources/securevault/conf/master-keys.yaml");
+                "src/test/resources/standalone/conf/master-keys.yaml");
     }
 }

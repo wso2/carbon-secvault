@@ -31,8 +31,10 @@ import org.yaml.snakeyaml.representer.Representer;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -81,9 +83,24 @@ public class TestUtils {
         ClassUtils.setToPrivateField(masterKeyConfiguration, "masterKeys", properties);
         ClassUtils.setToPrivateField(masterKeyConfiguration, "permanent", isPermanent);
 
-        Path path = SecureVaultUtils.getResourcePath("securevault", "conf")
+        Path path = getResourcePath("securevault", "conf")
                 .orElseThrow(() -> new SecureVaultException("Secure vault resource path not found"));
         File tempFile = new File(Paths.get(path.toString(), SecureVaultConstants.MASTER_KEYS_FILE_NAME).toString());
         createMasterKeyFile(tempFile, masterKeyConfiguration);
+    }
+
+
+    /**
+     * Get the path of a provided resource.
+     *
+     * @param resourcePaths path strings to the location of the resource
+     * @return path of the resources
+     */
+    public static Optional<Path> getResourcePath(String... resourcePaths) {
+        URL resourceURL = SecureVaultUtils.class.getClassLoader().getResource(Paths.get("", resourcePaths).toString());
+        if (resourceURL != null) {
+            return Optional.ofNullable(Paths.get(resourceURL.getPath()));
+        }
+        return Optional.empty(); // Resource do not exist
     }
 }
