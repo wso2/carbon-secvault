@@ -20,10 +20,10 @@ limitations under the License.
 <suite name="Carbon-Kernel-SecureVault_Test-Suite">
     <test name="carbon-securevault-unit-tests" preserve-order="true" parallel="false">
         <classes>
-            <class name="org.wso2.carbon.securevault.DefaultMasterKeyReaderTest"/>
-            <class name="org.wso2.carbon.securevault.DefaultSecretRepositoryTest"/>
-            <class name="org.wso2.carbon.securevault.SecureVaultConfigurationProviderTest"/>
-            <class name="org.wso2.carbon.securevault.CipherToolTest"/>
+            <class name="org.wso2.carbon.secvault.securevault.DefaultMasterKeyReaderTest"/>
+            <class name="org.wso2.carbon.secvault.securevault.DefaultSecretRepositoryTest"/>
+            <class name="org.wso2.carbon.secvault.securevault.SecureVaultConfigurationProviderTest"/>
+            <class name="org.wso2.carbon.secvault.securevault.CipherToolTest"/>
             <class name="org.wso2.carbon.securevault.spi.ServiceProviderAccessTest"/>
         </classes>
     </test>
