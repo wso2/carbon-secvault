@@ -63,7 +63,7 @@ public class DefaultMasterKeyReaderTest {
         // Set configuration
         Path masterKeyPath;
         try {
-            masterKeyPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+            masterKeyPath = TestUtils.getResourcePath("securevault", "conf",
                     SecureVaultConstants.MASTER_KEYS_FILE_NAME)
                     .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
             setMasterKeyReader(masterKeyPath);
@@ -112,7 +112,7 @@ public class DefaultMasterKeyReaderTest {
 
     @Test
     public void testReadMasterKeysViaRelocation() {
-        Path path = SecureVaultUtils.getResourcePath("securevault", "conf").get();
+        Path path = TestUtils.getResourcePath("securevault", "conf").get();
 
         // Create reallocation file
         MasterKeyConfiguration masterKeyConfigurationReallocation = new MasterKeyConfiguration();
@@ -155,7 +155,7 @@ public class DefaultMasterKeyReaderTest {
         ClassUtils.setToPrivateField(masterKeyConfiguration, "permanent", false);
         ClassUtils.setToPrivateField(masterKeyConfiguration, "relocation", "nonExistentPath");
 
-        Path path = SecureVaultUtils.getResourcePath("securevault", "conf").get();
+        Path path = TestUtils.getResourcePath("securevault", "conf").get();
         File masterKeyFile = new File(Paths.get(path.toString(), "master-keys.yaml").toString());
         TestUtils.createMasterKeyFile(masterKeyFile, masterKeyConfiguration);
 
@@ -168,7 +168,7 @@ public class DefaultMasterKeyReaderTest {
 
     @Test(expectedExceptions = {SecureVaultException.class})
     public void testReadMasterKeysViaRelocationCyclicDependency() throws SecureVaultException {
-        Path path = SecureVaultUtils.getResourcePath("securevault", "conf").get();
+        Path path = TestUtils.getResourcePath("securevault", "conf").get();
 
         File reallocationFile = new File(Paths.get(path.toString(), "new-master-keys.yaml").toString());
         File masterKeyFile = new File(Paths.get(path.toString(), "master-keys.yaml").toString());

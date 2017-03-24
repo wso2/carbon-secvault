@@ -44,7 +44,7 @@ public class SecureVaultConfigurationProviderTest {
             // master-keys.yaml file may not be available when running tests in IDE
             // master-keys.yaml file is required to initialise secure vault
             TestUtils.createDefaultMasterKeyFile(true);
-            Path secureVaultYAMLPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+            Path secureVaultYAMLPath = TestUtils.getResourcePath("securevault", "conf",
                     SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
                     .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
             EnvironmentUtils.setEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV,
