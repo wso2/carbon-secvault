@@ -24,10 +24,13 @@ import org.testng.annotations.ObjectFactory;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolException;
 import org.wso2.carbon.secvault.ciphertool.utils.CommandLineParser;
+import org.wso2.carbon.secvault.ciphertool.utils.TestUtils;
 import org.wso2.carbon.secvault.ciphertool.utils.Utils;
+import org.wso2.carbon.secvault.component.SecureVaultConstants;
 import org.wso2.carbon.secvault.component.exception.SecureVaultException;
 
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -45,7 +48,10 @@ public class CipherToolInitializerTest {
 
     @Test
     public void testExecuteTestEncryptSecrets() throws CipherToolException, SecureVaultException {
-        String[] toolArgs = new String[]{};
+        Path secureVaultYamlPath = TestUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
+                .orElseThrow(() -> new CipherToolException("Secure vault yaml file not found"));
+        String[] toolArgs = new String[]{"-configPath", secureVaultYamlPath.toAbsolutePath().toString()};
 
         PowerMock.mockStatic(Utils.class);
         CommandLineParser commandLineParser = new CommandLineParser(toolArgs);
@@ -53,7 +59,7 @@ public class CipherToolInitializerTest {
         CipherTool cipherTool = EasyMock.mock(CipherTool.class);
         EasyMock.expect(Utils.createCommandLineParser(toolArgs)).andReturn(commandLineParser);
         EasyMock.expect(Utils.getCustomClassLoader(Optional.empty())).andReturn(urlClassLoader);
-        EasyMock.expect(Utils.createCipherTool(urlClassLoader)).andReturn(cipherTool);
+        EasyMock.expect(Utils.createCipherTool(urlClassLoader, secureVaultYamlPath)).andReturn(cipherTool);
 
         cipherTool.encryptSecrets();
         EasyMock.expectLastCall().anyTimes();
@@ -67,7 +73,11 @@ public class CipherToolInitializerTest {
 
     @Test
     public void testExecuteTestEncryptText() throws CipherToolException, SecureVaultException {
-        String[] toolArgs = new String[]{"-encryptText", "ABC@123"};
+        Path secureVaultYamlPath = TestUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
+                .orElseThrow(() -> new CipherToolException("Secure vault yaml file not found"));
+        String[] toolArgs = new String[]{"-configPath", secureVaultYamlPath.toAbsolutePath().toString(),
+                "-encryptText", "ABC@123"};
 
         PowerMock.mockStatic(Utils.class);
         CommandLineParser commandLineParser = new CommandLineParser(toolArgs);
@@ -75,7 +85,7 @@ public class CipherToolInitializerTest {
         CipherTool cipherTool = EasyMock.mock(CipherTool.class);
         EasyMock.expect(Utils.createCommandLineParser(toolArgs)).andReturn(commandLineParser);
         EasyMock.expect(Utils.getCustomClassLoader(Optional.empty())).andReturn(urlClassLoader);
-        EasyMock.expect(Utils.createCipherTool(urlClassLoader)).andReturn(cipherTool);
+        EasyMock.expect(Utils.createCipherTool(urlClassLoader, secureVaultYamlPath)).andReturn(cipherTool);
 
         EasyMock.expect(cipherTool.encryptText(EasyMock.anyObject())).andReturn("dummy".toCharArray());
 
@@ -88,7 +98,11 @@ public class CipherToolInitializerTest {
 
     @Test
     public void testExecuteTestDecryptText() throws CipherToolException, SecureVaultException {
-        String[] toolArgs = new String[]{"-decryptText", "ABC@123"};
+        Path secureVaultYamlPath = TestUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
+                .orElseThrow(() -> new CipherToolException("Secure vault yaml file not found"));
+        String[] toolArgs = new String[]{"-configPath", secureVaultYamlPath.toAbsolutePath().toString(),
+                "-decryptText", "ABC@123"};
 
         PowerMock.mockStatic(Utils.class);
         CommandLineParser commandLineParser = new CommandLineParser(toolArgs);
@@ -96,7 +110,7 @@ public class CipherToolInitializerTest {
         CipherTool cipherTool = EasyMock.mock(CipherTool.class);
         EasyMock.expect(Utils.createCommandLineParser(toolArgs)).andReturn(commandLineParser);
         EasyMock.expect(Utils.getCustomClassLoader(Optional.empty())).andReturn(urlClassLoader);
-        EasyMock.expect(Utils.createCipherTool(urlClassLoader)).andReturn(cipherTool);
+        EasyMock.expect(Utils.createCipherTool(urlClassLoader, secureVaultYamlPath)).andReturn(cipherTool);
 
         EasyMock.expect(cipherTool.decryptText(EasyMock.anyObject())).andReturn("dummy".toCharArray());
 
@@ -109,7 +123,11 @@ public class CipherToolInitializerTest {
 
     @Test
     public void testExecuteTestEncryptSecretsWithCustomLibPath() throws CipherToolException, SecureVaultException {
-        String[] toolArgs = new String[]{"-customLibPath", "/tmp"};
+        Path secureVaultYamlPath = TestUtils.getResourcePath("securevault", "conf",
+                SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
+                .orElseThrow(() -> new CipherToolException("Secure vault yaml file not found"));
+        String[] toolArgs = new String[]{"-configPath", secureVaultYamlPath.toAbsolutePath().toString(),
+                "-customLibPath", "/tmp"};
 
         PowerMock.mockStatic(Utils.class);
         CommandLineParser commandLineParser = new CommandLineParser(toolArgs);
@@ -117,7 +135,7 @@ public class CipherToolInitializerTest {
         CipherTool cipherTool = EasyMock.mock(CipherTool.class);
         EasyMock.expect(Utils.createCommandLineParser(toolArgs)).andReturn(commandLineParser);
         EasyMock.expect(Utils.getCustomClassLoader(EasyMock.anyObject())).andReturn(urlClassLoader);
-        EasyMock.expect(Utils.createCipherTool(urlClassLoader)).andReturn(cipherTool);
+        EasyMock.expect(Utils.createCipherTool(urlClassLoader, secureVaultYamlPath)).andReturn(cipherTool);
 
         cipherTool.encryptSecrets();
         EasyMock.expectLastCall().anyTimes();

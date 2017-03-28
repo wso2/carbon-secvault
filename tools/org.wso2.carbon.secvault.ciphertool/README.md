@@ -9,22 +9,29 @@ of encrypting and decrypting secrets.
 ## Usage: ciphertool.sh [<command> <parameter>]
 
 ```bash
--- command      -encryptText | -decryptText | -customLibPath
+-- command      -configPath | -encryptText | -decryptText | -customLibPath
 
 -- parameter    input to the command
 ```
 
-### Examples
- 
-1. `ciphertool.sh`
-       Encrypts the secrets in the conf/security/secrets.properties file
+Please note that the `-configPath` argument is mandatory.
 
-2. `ciphertool.sh -encryptText ABC@123`
+### Examples
+
+1. `ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml`
+       
+       Loads the configuration according to the specified configuration and
+       encrypts the secrets in the specified secrets.properties file
+
+2. `ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml -encryptText ABC@123`
+       
        Encrypts the given parameter "ABC@123"
 
-3. `ciphertool.sh -decryptText XX...XX`
+3. `ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml -decryptText XX...XX`
+       
        Decrypts the given parameter "XX...XX"
 
-4. `ciphertool.sh -customLibPath /home/user/custom/libs`
+4. `ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml -customLibPath /home/user/custom/libs`
+
        Loads the libraries in the given path first and perform the same operation as in eg:1.
        This is an optional flag.

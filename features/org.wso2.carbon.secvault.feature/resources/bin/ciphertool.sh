@@ -126,4 +126,4 @@ echo JAVA_HOME environment variable is set to $JAVA_HOME
 echo CARBON_HOME environment variable is set to $CARBON_HOME
 
 cd "$CARBON_HOME/bin/bootstrap/tools";
-java -jar org.wso2.carbon.secvault.securevault.ciphertool.CipherToolInitializer $*
+java -jar org.wso2.carbon.secvault.securevault.ciphertool.jar $*

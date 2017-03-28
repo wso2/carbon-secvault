@@ -23,6 +23,7 @@ package org.wso2.carbon.secvault.ciphertool;
  */
 public class CipherToolConstants {
 
+    public static final String CONFIG_PATH_COMMAND = "-configPath";
     public static final String ENCRYPT_TEXT_COMMAND = "-encryptText";
     public static final String DECRYPT_TEXT_COMMAND = "-decryptText";
     public static final String CUSTOM_LIB_PATH_COMMAND = "-customLibPath";
@@ -33,7 +34,7 @@ public class CipherToolConstants {
     public static final String DECRYPT_TEXT_METHOD = "decryptText";
 
 
-    public static final String CIPHER_TOOL_CLASS = "org.wso2.carbon.kernel.component.tool.CipherTool";
+    public static final String CIPHER_TOOL_CLASS = "org.wso2.carbon.secvault.ciphertool.CipherTool";
 
     /**
      * Remove default constructor and make it not available to initialize.
