@@ -26,19 +26,19 @@
     <artifactId>carbon-secvault</artifactId>
     <version>5.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>WSO2 Secure Vault Parent</name>
+    <name>WSO2 Carbon Secure Vault - Parent</name>
     <url>http://wso2.com</url>
     <modules>
-        <module>components/org.wso2.carbon.secvault.securevault</module>
-        <module>tools/org.wso2.carbon.secvault.securevault.ciphertool</module>
-        <module>features/org.wso2.carbon.secvault.securevault.feature</module>
-        <module>tests/org.wso2.carbon.secvault.securevault.tests.coverage</module>
+        <module>components/org.wso2.carbon.secvault.component</module>
+        <module>tools/org.wso2.carbon.secvault.ciphertool</module>
+        <module>features/org.wso2.carbon.secvault.feature</module>
+        <module>tests/org.wso2.carbon.secvault.tests.coverage</module>
     </modules>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.wso2.carbon.secvault</groupId>
-                <artifactId>org.wso2.carbon.secvault.securevault</artifactId>
+                <artifactId>org.wso2.carbon.secvault.component</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -190,7 +190,7 @@
         <jacoco.version>0.7.5.201505241946</jacoco.version>
 
         <!-- Maven plugin versions -->
-        <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-        <maven.java-doc.plugin.version>2.10.4</maven.java-doc.plugin.version>
+        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
+        <maven.java.doc.plugin.version>2.10.4</maven.java.doc.plugin.version>
     </properties>
 </project>

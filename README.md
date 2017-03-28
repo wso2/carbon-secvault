@@ -101,7 +101,7 @@ annotation. An example for the above `DefaultHardCodedMasterKeyReader` will be a
 
 ```java
     @Component(
-            name = "DefaultMasterKeyReader",
+            name = ""org.wso2.carbon.secvault.component.reader.DefaultMasterKeyReader"",
             immediate = true
     )
     public class DefaultMasterKeyReader implements MasterKeyReader {
@@ -181,7 +181,7 @@ annotation. An example for the above `CustomSecretRepository` will be as shown b
 
 ```java
     @Component(
-            name = "org.wso2.carbon.securevault.repository.CustomSecretRepository",
+            name = "org.wso2.carbon.secvault.component.repository.CustomSecretRepository",
             immediate = true,
             service = SecretRepository.class
     )
