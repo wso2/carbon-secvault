@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -76,9 +77,9 @@ public class Utils {
                 (PrivilegedAction<Object>) () -> new URLClassLoader(urls.toArray(new URL[urls.size()])));
     }
 
-    public static Object createCipherTool(URLClassLoader urlClassLoader) throws CipherToolException {
+    public static Object createCipherTool(URLClassLoader urlClassLoader, Path secureVaultConfigPath) throws
+            CipherToolException {
         Object objCipherTool;
-
         try {
             objCipherTool = urlClassLoader.loadClass(CipherToolConstants.CIPHER_TOOL_CLASS).newInstance();
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
@@ -88,7 +89,7 @@ public class Utils {
         try {
             Method initMethod = objCipherTool.getClass()
                     .getMethod(CipherToolConstants.INIT_METHOD, URLClassLoader.class);
-            initMethod.invoke(objCipherTool, urlClassLoader);
+            initMethod.invoke(objCipherTool, urlClassLoader, secureVaultConfigPath);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new CipherToolException("Failed to initialize Cipher Tool", e);
         }

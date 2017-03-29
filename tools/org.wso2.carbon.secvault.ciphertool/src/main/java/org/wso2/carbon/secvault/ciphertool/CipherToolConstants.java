@@ -23,6 +23,7 @@ package org.wso2.carbon.secvault.ciphertool;
  */
 public class CipherToolConstants {
 
+    public static final String CONFIG_PATH_COMMAND = "-configPath";
     public static final String ENCRYPT_TEXT_COMMAND = "-encryptText";
     public static final String DECRYPT_TEXT_COMMAND = "-decryptText";
     public static final String CUSTOM_LIB_PATH_COMMAND = "-customLibPath";

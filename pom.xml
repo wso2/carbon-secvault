@@ -29,7 +29,7 @@
     <name>WSO2 Carbon Secure Vault - Parent</name>
     <url>http://wso2.com</url>
     <modules>
-        <module>components/org.wso2.carbon.secvault.component</module>
+        <module>components/org.wso2.carbon.secvault</module>
         <module>tools/org.wso2.carbon.secvault.ciphertool</module>
         <module>features/org.wso2.carbon.secvault.feature</module>
         <module>tests/org.wso2.carbon.secvault.tests.coverage</module>
@@ -38,7 +38,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.wso2.carbon.secvault</groupId>
-                <artifactId>org.wso2.carbon.secvault.component</artifactId>
+                <artifactId>org.wso2.carbon.secvault</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -114,12 +114,6 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.version}</version>
                     <executions>
-                        <execution>
-                            <id>default-prepare-agent</id>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                            </goals>
-                        </execution>
                         <execution>
                             <id>default-instrument</id>
                             <goals>

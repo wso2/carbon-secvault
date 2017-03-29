@@ -20,10 +20,10 @@ import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+import org.wso2.carbon.secvault.SecureVaultConstants;
+import org.wso2.carbon.secvault.SecureVaultUtils;
 import org.wso2.carbon.secvault.ciphertool.utils.TestUtils;
-import org.wso2.carbon.secvault.component.SecureVaultConstants;
-import org.wso2.carbon.secvault.component.SecureVaultUtils;
-import org.wso2.carbon.secvault.component.exception.SecureVaultException;
+import org.wso2.carbon.secvault.exception.SecureVaultException;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -39,10 +39,10 @@ import java.util.List;
 public class CipherToolTest {
 
     private CipherTool cipherTool;
-
+    private Path secureVaultYAMLPath;
     @BeforeTest
     public void setup() throws SecureVaultException {
-        Path secureVaultYAMLPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+        secureVaultYAMLPath = SecureVaultUtils.getResourcePath("securevault", "conf",
                 SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
         EnvironmentUtils.setEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV,
@@ -65,7 +65,7 @@ public class CipherToolTest {
 
         try {
             cipherTool = new CipherTool();
-            cipherTool.init(urlClassLoader);
+            cipherTool.init(urlClassLoader, secureVaultYAMLPath);
         } catch (SecureVaultException e) {
             Assert.fail("failed to initialize Cipher Tool for testing");
         }

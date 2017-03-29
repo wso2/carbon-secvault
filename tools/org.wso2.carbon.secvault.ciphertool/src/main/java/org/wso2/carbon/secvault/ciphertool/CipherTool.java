@@ -16,15 +16,14 @@
 
 package org.wso2.carbon.secvault.ciphertool;
 
-import org.wso2.carbon.secvault.component.MasterKeyReader;
-import org.wso2.carbon.secvault.component.SecretRepository;
-import org.wso2.carbon.secvault.component.SecureVaultFactory;
-import org.wso2.carbon.secvault.component.SecureVaultUtils;
-import org.wso2.carbon.secvault.component.exception.SecureVaultException;
-import org.wso2.carbon.secvault.component.internal.SecureVaultConfigurationProvider;
-import org.wso2.carbon.secvault.component.model.SecureVaultConfiguration;
+import org.wso2.carbon.secvault.MasterKeyReader;
+import org.wso2.carbon.secvault.SecretRepository;
+import org.wso2.carbon.secvault.SecureVaultUtils;
+import org.wso2.carbon.secvault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
 
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 /**
@@ -43,11 +42,9 @@ public class CipherTool {
      * @param urlClassLoader url class loader
      * @throws SecureVaultException error on initializing secure vault YAML configuration
      */
-    public void init(URLClassLoader urlClassLoader) throws SecureVaultException {
-        // Initialize secure vault
-        new SecureVaultFactory().getSecureVault().orElseThrow(() ->
-                new SecureVaultException("Error occurred when getting secure vault instance"));
-        secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance().getConfiguration()
+    public void init(URLClassLoader urlClassLoader, Path secureVaultConfigPath) throws SecureVaultException {
+        // Load SecureVaultConfiguration from the provided configuration file.
+        secureVaultConfiguration = SecureVaultUtils.getSecureVaultConfig(secureVaultConfigPath)
                 .orElseThrow(() -> new SecurityException("Error occurred when obtaining secure vault configuration"));
 
         String secretRepositoryType = secureVaultConfiguration.getSecretRepositoryConfig().getType()

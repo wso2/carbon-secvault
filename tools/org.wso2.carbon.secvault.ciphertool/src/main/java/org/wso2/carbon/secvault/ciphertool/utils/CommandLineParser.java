@@ -28,9 +28,10 @@ import java.util.Optional;
  */
 public class CommandLineParser {
 
-    private Optional<String> customLibPath = Optional.empty();
-    private Optional<String> commandName = Optional.empty();
-    private Optional<String> commandParam = Optional.empty();
+    private String customConfigPath;
+    private String customLibPath;
+    private String commandName;
+    private String commandParam;
 
     public CommandLineParser(String... args) throws CipherToolException {
         if (args.length > 4 || args.length % 2 != 0) {
@@ -39,20 +40,36 @@ public class CommandLineParser {
 
         if (args.length > 0) {
             for (int i = 0; i < args.length; i += 2) {
-                if (CipherToolConstants.CUSTOM_LIB_PATH_COMMAND.equals(args[i])) {
-                    commandName = Optional.of(CipherToolConstants.CUSTOM_LIB_PATH_COMMAND);
-                    customLibPath = Optional.ofNullable(args[i + 1]);
-                } else if (CipherToolConstants.DECRYPT_TEXT_COMMAND.equals(args[i])) {
-                    commandName = Optional.of(CipherToolConstants.DECRYPT_TEXT_COMMAND);
-                    commandParam = Optional.of(args[i + 1]);
-                } else if (CipherToolConstants.ENCRYPT_TEXT_COMMAND.equals(args[i])) {
-                    commandName = Optional.of(CipherToolConstants.ENCRYPT_TEXT_COMMAND);
-                    commandParam = Optional.of(args[i + 1]);
-                } else {
-                    throw new CipherToolException("Invalid argument");
+                switch (args[i]) {
+                    case CipherToolConstants.CONFIG_PATH_COMMAND:
+                        customConfigPath = args[i + 1];
+                        break;
+                    case CipherToolConstants.CUSTOM_LIB_PATH_COMMAND:
+                        commandName = CipherToolConstants.CUSTOM_LIB_PATH_COMMAND;
+                        customLibPath = args[i + 1];
+                        break;
+                    case CipherToolConstants.ENCRYPT_TEXT_COMMAND:
+                        commandName = CipherToolConstants.ENCRYPT_TEXT_COMMAND;
+                        commandParam = args[i + 1];
+                        break;
+                    case CipherToolConstants.DECRYPT_TEXT_COMMAND:
+                        commandName = CipherToolConstants.DECRYPT_TEXT_COMMAND;
+                        commandParam = args[i + 1];
+                        break;
+                    default:
+                        throw new CipherToolException("Invalid argument");
                 }
             }
         }
+    }
+
+    /**
+     * Get custom config path.
+     *
+     * @return custom config path
+     */
+    public Optional<String> getCustomConfigPath() {
+        return Optional.ofNullable(customConfigPath);
     }
 
     /**
@@ -61,7 +78,7 @@ public class CommandLineParser {
      * @return custom lib path
      */
     public Optional<String> getCustomLibPath() {
-        return customLibPath;
+        return Optional.ofNullable(customLibPath);
     }
 
     /**
@@ -70,7 +87,7 @@ public class CommandLineParser {
      * @return command name
      */
     public Optional<String> getCommandName() {
-        return commandName;
+        return Optional.ofNullable(commandName);
     }
 
     /**
@@ -79,6 +96,6 @@ public class CommandLineParser {
      * @return command parameters
      */
     public Optional<String> getCommandParam() {
-        return commandParam;
+        return Optional.ofNullable(commandParam);
     }
 }
