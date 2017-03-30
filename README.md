@@ -85,7 +85,7 @@ the `secure-vault.yaml` file.
                 masterKeysFilePath = Paths.get(carbonHomePath.get().toString(), MASTER_KEYS_FILE_NAME);
             } else {
                 Optional<Path> resourcePath = SecureVaultUtils
-                        .getResourcePath(standalone, "conf", MASTER_KEYS_FILE_NAME);
+                        .getResourcePath("securevault", "conf", MASTER_KEYS_FILE_NAME);
                 if (!resourcePath.isPresent()) {
                     throw new SecureVaultException(MASTER_KEYS_FILE_NAME + "not found");
                 }
@@ -181,7 +181,8 @@ annotation. An example for the above `CustomSecretRepository` will be as shown b
 
 ```java
     @Component(
-            name = oorg.wso2.carbon.secvault.repository   immediate = true,
+            name = "org.wso2.carbon.secvault.repository.CustomSecretRepository",
+            immediate = true,
             service = SecretRepository.class
     )
     public class CustomSecretRepository implements SecretRepository {
