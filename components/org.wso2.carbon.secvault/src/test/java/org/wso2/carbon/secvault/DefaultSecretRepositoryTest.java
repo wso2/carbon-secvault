@@ -24,6 +24,7 @@ import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.repository.DefaultSecretRepository;
 import org.wso2.carbon.secvault.utils.DefaultHardCodedMasterKeyReader;
+import org.wso2.carbon.secvault.utils.TestUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,7 +47,7 @@ public class DefaultSecretRepositoryTest {
 
     @BeforeTest
     public void setup() {
-        Path defaultConfigPath = SecureVaultUtils.getResourcePath("securevault", "conf").get();
+        Path defaultConfigPath = TestUtils.getResourcePath("securevault", "conf").get();
 
         File secretsFile = new File(defaultConfigPath.resolve(SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
                 .toString());
@@ -140,7 +141,7 @@ public class DefaultSecretRepositoryTest {
     @Test(dependsOnMethods = {"testInitSecretRepository"})
     public void testReadSecrets() throws SecureVaultException {
 
-        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+        Path secretRepositoryPath = TestUtils.getResourcePath("securevault", "conf",
                 SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
 
@@ -166,7 +167,7 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testReadSecrets"}, expectedExceptions = SecureVaultException.class)
     public void testReadSecretsWrongSecretsFileLocation() throws SecureVaultException {
-        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf", "nonExisting",
+        Path secretRepositoryPath = TestUtils.getResourcePath("securevault", "conf", "nonExisting",
                 SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
@@ -189,7 +190,7 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testReadSecrets"})
     public void testEncryptSecrets() throws SecureVaultException {
-        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+        Path secretRepositoryPath = TestUtils.getResourcePath("securevault", "conf",
                 SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
@@ -212,7 +213,7 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testEncryptSecrets"})
     public void testReadSecretsCipherTest() throws SecureVaultException {
-        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+        Path secretRepositoryPath = TestUtils.getResourcePath("securevault", "conf",
                 SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
@@ -237,7 +238,7 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testInitSecretRepository"})
     public void testReadErroneousSecrets() throws SecureVaultException {
-        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+        Path secretRepositoryPath = TestUtils.getResourcePath("securevault", "conf",
                 "error-secrets.properties")
                 .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =
@@ -262,7 +263,7 @@ public class DefaultSecretRepositoryTest {
 
     @Test(dependsOnMethods = {"testReadErroneousSecrets"})
     public void testPersistErroneousSecrets() throws SecureVaultException {
-        Path secretRepositoryPath = SecureVaultUtils.getResourcePath("securevault", "conf",
+        Path secretRepositoryPath = TestUtils.getResourcePath("securevault", "conf",
                 "error-secrets.properties")
                 .orElseThrow(() -> new SecureVaultException("Secret repository path not found"));
         SecretRepositoryConfiguration secretRepositoryConfiguration =

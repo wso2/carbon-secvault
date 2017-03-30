@@ -19,11 +19,11 @@ package org.wso2.carbon.secvault.samples.securevault;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.secvault.component.SecureVault;
-import org.wso2.carbon.secvault.component.SecureVaultConstants;
-import org.wso2.carbon.secvault.component.SecureVaultFactory;
-import org.wso2.carbon.secvault.component.SecureVaultUtils;
-import org.wso2.carbon.secvault.component.exception.SecureVaultException;
+import org.wso2.carbon.secvault.SecureVault;
+import org.wso2.carbon.secvault.SecureVaultConstants;
+import org.wso2.carbon.secvault.SecureVaultFactory;
+import org.wso2.carbon.secvault.SecureVaultUtils;
+import org.wso2.carbon.secvault.exception.SecureVaultException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.Properties;
 
 /**
  * Sample demonstrating the use of secure vault in non-OSGi mode.
@@ -47,16 +46,13 @@ public class Application {
     public static void main(String[] args) {
         copyFilesToPWD(); // Copies required files to the current working directory
         try {
-            // In non-OSGi mode, secure vault yaml path is taken from system property or environment variable
-            // Setting system property
+            // In non-OSGi mode, secure vault yaml path needs to pass to create securevault instance.
             Path secureVaultPath = Paths.get(FILE_FOLDER, "securevault", "conf",
                     SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
-            Properties props = System.getProperties();
-            props.setProperty(SecureVaultConstants.SECURE_VAULT_YAML, secureVaultPath.toAbsolutePath().toString());
 
             // Initialisation of the secure vault is done at the same time you get the secure vault from the secure
             // vault factory
-            SecureVault secureVault = new SecureVaultFactory().getSecureVault()
+            SecureVault secureVault = new SecureVaultFactory().getSecureVault(secureVaultPath)
                     .orElseThrow(() -> new SecureVaultException("Error in getting secure vault instance"));
             logger.info("Secure vault successfully initialized");
 
