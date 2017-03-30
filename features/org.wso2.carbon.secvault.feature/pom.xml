@@ -32,7 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>org.wso2.carbon.secvault</groupId>
-            <artifactId>org.wso2.carbon.secvault.component</artifactId>
+            <artifactId>org.wso2.carbon.secvault</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -84,7 +84,7 @@
                             </adviceFileContents>
                             <bundles>
                                 <bundle>
-                                    <symbolicName>org.wso2.carbon.secvault.component</symbolicName>
+                                    <symbolicName>org.wso2.carbon.secvault</symbolicName>
                                     <version>${project.version}</version>
                                 </bundle>
                             </bundles>

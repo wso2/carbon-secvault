@@ -24,14 +24,14 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.secvault.samples.securevault</artifactId>
+    <artifactId>securevault-standalone</artifactId>
     <name>WSO2 Carbon Secure Vault - Secure Vault Sample</name>
     <url>http://wso2.com</url>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.wso2.carbon.secvault</groupId>
-            <artifactId>org.wso2.carbon.secvault.component</artifactId>
+            <artifactId>org.wso2.carbon.secvault</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

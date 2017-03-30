@@ -32,7 +32,7 @@
     <dependencies>
         <dependency>
             <groupId>org.wso2.carbon.secvault</groupId>
-            <artifactId>org.wso2.carbon.secvault.component</artifactId>
+            <artifactId>org.wso2.carbon.secvault</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -80,6 +80,37 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>jar-with-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        org.wso2.carbon.secvault.ciphertool.CipherToolInitializer
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                            <attach>false</attach>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                            <finalName>org.wso2.carbon.secvault.ciphertool</finalName>
+                            <outputDirectory>
+                                ../../features/org.wso2.carbon.secvault.feature/resources/bin/bootstrap/tools
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

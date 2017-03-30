@@ -18,10 +18,10 @@
 package org.wso2.carbon.secvault.ciphertool.utils;
 
 import org.testng.Assert;
-import org.wso2.carbon.secvault.component.SecureVaultConstants;
-import org.wso2.carbon.secvault.component.SecureVaultUtils;
-import org.wso2.carbon.secvault.component.exception.SecureVaultException;
-import org.wso2.carbon.secvault.component.model.masterkey.MasterKeyConfiguration;
+import org.wso2.carbon.secvault.SecureVaultConstants;
+import org.wso2.carbon.secvault.SecureVaultUtils;
+import org.wso2.carbon.secvault.exception.SecureVaultException;
+import org.wso2.carbon.secvault.model.masterkey.MasterKeyConfiguration;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.introspector.BeanAccess;

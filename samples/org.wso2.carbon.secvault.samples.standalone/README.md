@@ -1,29 +1,24 @@
 # How to use Secure Vault in non-OSGi mode
 
 This sample will demonstrate how to use secure vault in non-OSGi mode.
-The sample will demonstrate encrypting, decrypting and resolving passwords
+This will demonstrate encrypting, decrypting and resolving passwords
 using secure vault service.
 
 ## Steps for initializing secure vault
 
-Secure vault YAML configuration file should be set as a system property or an
-environment variable. (If the secure vault yaml path is not available as a system
-property, then secure vault yaml will be taken from an environment variable)
+Secure vault YAML configuration file path needs to pass when creating securevault service instance.
+Service initialisation in non-OSGi as follows,
 
-The system property key and the environmental variable key are as defined below
-for setting the secure vault yaml path.
+In this sample, we use the configuration file(secure-vault.yaml) inside resource directory. We can use configuration 
+file in any other location, we need specify the location when initializing the securevault instance.
 
-* **System property key:** "secure.vault.yaml"
-* **Environmental variable key:** "SECURE_VAULT_YAML" 
-
-Once these properties are set you are ready to initialise the secure vault
 ```java
+Path configPath = Paths.get("resources", "securevault", "conf", "secure-vault.yaml");
 SecureVaultFactory secureVaultFactory = new SecureVaultFactory();
-SecureVault secureVault = secureVaultFactory.getSecureVault();
+SecureVault secureVault = secureVaultFactory.getSecureVault(configPath);
 ```
 
-Secure vault will be automatically initialised when you get the secure vault service
-from the SecureVaultFactory
+Secure vault will be initialised when you get the secure vault service from the SecureVaultFactory
 
 ## Encrypting password using secure vault
 
@@ -54,4 +49,12 @@ If you want to get the value of `wso2.sample.password1` use the `resolve()` meth
 
 ```java
 char[] secret = secureVault.resolve("wso2.sample.password1");
+```
+
+## How to run the sample
+
+
+Use following command to run the application
+```
+java -jar securevault-standalone-*-jar-with-dependencies.jar
 ```

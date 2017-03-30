@@ -16,6 +16,8 @@
 
 package org.wso2.carbon.secvault.ciphertool;
 
+import org.wso2.carbon.secvault.SecureVaultConstants;
+import org.wso2.carbon.secvault.SecureVaultUtils;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolException;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolRuntimeException;
 import org.wso2.carbon.secvault.ciphertool.utils.CommandLineParser;
@@ -24,6 +26,8 @@ import org.wso2.carbon.secvault.ciphertool.utils.Utils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,13 +63,22 @@ public class CipherToolInitializer {
         }
 
         URLClassLoader urlClassLoader = Utils.getCustomClassLoader(commandLineParser.getCustomLibPath());
+        Path secureVaultConfigPath;
+
+        if (commandLineParser.getCustomConfigPath().isPresent()) {
+            secureVaultConfigPath = Paths.get(commandLineParser.getCustomConfigPath().get());
+        } else if (SecureVaultUtils.isOSGIEnv()) {
+            secureVaultConfigPath = org.wso2.carbon.utils.Utils.getCarbonConfigHome().resolve
+                    (SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+        } else {
+            throw new CipherToolRuntimeException("Secure vault YAML path is not set");
+        }
 
         try {
-            Object objCipherTool = Utils.createCipherTool(urlClassLoader);
+            Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
             processCommand(commandLineParser.getCommandName().orElse(""),
                     commandLineParser.getCommandParam().orElse(""), objCipherTool);
         } catch (CipherToolException e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
             throw new CipherToolRuntimeException("Unable to run CipherTool", e);
         }
     }
