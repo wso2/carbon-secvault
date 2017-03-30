@@ -21,11 +21,11 @@
         <artifactId>carbon-secvault</artifactId>
         <groupId>org.wso2.carbon.secvault</groupId>
         <version>5.0.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.carbon.secvault.samples.securevault</artifactId>
-    <name>WSO2 Secure Vault - Secure Vault Sample</name>
+    <name>WSO2 Carbon Secure Vault - Secure Vault Sample</name>
     <url>http://wso2.com</url>
     <packaging>jar</packaging>
     <dependencies>
@@ -57,7 +57,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        org.wso2.carbon.secvault.samples.securevault.Application
+                                        org.wso2.carbon.secvault.samples.standalone.Application
                                     </mainClass>
                                 </manifest>
                             </archive>

@@ -33,7 +33,7 @@
         <module>tools/org.wso2.carbon.secvault.ciphertool</module>
         <module>features/org.wso2.carbon.secvault.feature</module>
         <module>tests/org.wso2.carbon.secvault.tests.coverage</module>
-        <module>samples/org.wso2.carbon.secvault.samples.securevault</module>
+        <module>samples/org.wso2.carbon.secvault.samples.standalone</module>
     </modules>
     <dependencyManagement>
         <dependencies>

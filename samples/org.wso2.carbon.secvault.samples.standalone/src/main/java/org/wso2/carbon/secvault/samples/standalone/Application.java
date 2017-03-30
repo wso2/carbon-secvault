@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.wso2.carbon.secvault.samples.securevault;
+package org.wso2.carbon.secvault.samples.standalone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
