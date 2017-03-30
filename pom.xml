@@ -33,6 +33,7 @@
         <module>tools/org.wso2.carbon.secvault.ciphertool</module>
         <module>features/org.wso2.carbon.secvault.feature</module>
         <module>tests/org.wso2.carbon.secvault.tests.coverage</module>
+        <module>samples/org.wso2.carbon.secvault.samples.standalone</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -50,6 +51,11 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.api.version}</version>
             </dependency>
             <dependency>
