@@ -17,7 +17,6 @@
 package org.wso2.carbon.secvault;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
@@ -25,7 +24,6 @@ import org.wso2.carbon.secvault.internal.SecureVaultDataHolder;
 import org.wso2.carbon.secvault.model.MasterKeyReaderConfiguration;
 import org.wso2.carbon.secvault.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
-import org.wso2.carbon.secvault.utils.EnvironmentUtils;
 import org.wso2.carbon.secvault.utils.TestUtils;
 
 import java.nio.file.Path;
@@ -55,11 +53,6 @@ public class SecureVaultConfigurationProviderTest {
         } catch (SecureVaultException e) {
             Assert.fail();
         }
-    }
-
-    @AfterTest
-    public void tearDown() {
-        EnvironmentUtils.removeEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV);
     }
 
     @Test

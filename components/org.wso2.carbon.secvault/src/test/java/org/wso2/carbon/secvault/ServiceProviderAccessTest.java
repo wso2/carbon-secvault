@@ -17,11 +17,9 @@
 package org.wso2.carbon.secvault;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
-import org.wso2.carbon.secvault.utils.EnvironmentUtils;
 import org.wso2.carbon.secvault.utils.TestUtils;
 
 import java.nio.file.Path;
@@ -39,11 +37,6 @@ public class ServiceProviderAccessTest {
         secureVaultYAMLPath = TestUtils.getResourcePath("securevault", "conf",
                 SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
-    }
-
-    @AfterTest
-    public void afterTest() {
-        EnvironmentUtils.removeEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV);
     }
 
     @Test

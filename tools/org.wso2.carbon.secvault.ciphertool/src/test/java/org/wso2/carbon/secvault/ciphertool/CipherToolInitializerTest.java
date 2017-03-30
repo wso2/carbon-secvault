@@ -55,8 +55,6 @@ public class CipherToolInitializerTest {
         secureVaultYAMLPath = TestUtils.getResourcePath("securevault", "conf",
                 SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
-        EnvironmentUtils.setEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV,
-                secureVaultYAMLPath.toAbsolutePath().toString());
     }
 
     @Test

@@ -108,7 +108,7 @@ public class SecureVaultFactory {
     private <T> T createInstance(String className, Class<T> baseClass) throws SecureVaultException {
         try {
             Class<?> clazz = Class.forName(className);
-            if (!clazz.isAssignableFrom(baseClass)) {
+            if (!baseClass.isAssignableFrom(clazz)) {
                 throw new InstantiationException("Class " + className + " is not of the required base type");
             }
             return (T) clazz.newInstance();

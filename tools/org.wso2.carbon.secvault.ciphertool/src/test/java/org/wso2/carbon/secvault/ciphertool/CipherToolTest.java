@@ -17,7 +17,6 @@
 package org.wso2.carbon.secvault.ciphertool;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.SecureVaultConstants;
@@ -44,13 +43,6 @@ public class CipherToolTest {
         secureVaultYAMLPath = TestUtils.getResourcePath("securevault", "conf",
                 SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
                 .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
-        EnvironmentUtils.setEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV,
-                secureVaultYAMLPath.toAbsolutePath().toString());
-    }
-
-    @AfterTest
-    public void afterTest() {
-        EnvironmentUtils.removeEnv(SecureVaultConstants.SECURE_VAULT_YAML_ENV);
     }
 
     @Test

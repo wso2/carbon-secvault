@@ -31,8 +31,6 @@ public class SecureVaultConstants {
     public static final String SPACE = " ";
 
     // System and environment variables
-    public static final String SECURE_VAULT_YAML = "secure.vault.yaml";
-    public static final String SECURE_VAULT_YAML_ENV = "SECURE_VAULT_YAML";
     public static final String MASTER_KEYS_YAML_CONFIG_PROPERTY = "masterKeyReaderFile";
     public static final String SECRET_PROPERTIES_CONFIG_PROPERTY = "secretPropertiesFile";
 
