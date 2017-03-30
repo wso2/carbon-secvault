@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations
  *  under the License.
  */
-package org.wso2.carbon.secvault.ciphertool.utils;
+package org.wso2.carbon.secvault.utils;
 
 import org.testng.Assert;
 import org.wso2.carbon.secvault.SecureVaultConstants;
@@ -88,7 +88,6 @@ public class TestUtils {
         File tempFile = new File(Paths.get(path.toString(), SecureVaultConstants.MASTER_KEYS_FILE_NAME).toString());
         createMasterKeyFile(tempFile, masterKeyConfiguration);
     }
-
 
     /**
      * Get the path of a provided resource.

@@ -14,34 +14,53 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <parent>
-        <artifactId>carbon-secvault</artifactId>
         <groupId>org.wso2.carbon.secvault</groupId>
+        <artifactId>carbon-secvault</artifactId>
         <version>5.0.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.secvault.ciphertool</artifactId>
-    <packaging>jar</packaging>
-    <name>WSO2 Carbon Secure Vault - CipherTool</name>
-    <description>Secure vault cipher tool</description>
+    <artifactId>org.wso2.carbon.secvault</artifactId>
+    <packaging>bundle</packaging>
+    <name>WSO2 Carbon Secure Vault - Component</name>
+    <description>
+        Secure vault bundle
+    </description>
     <url>http://wso2.com</url>
     <dependencies>
         <dependency>
-            <groupId>org.wso2.carbon.secvault</groupId>
-            <artifactId>org.wso2.carbon.secvault</artifactId>
+            <groupId>org.wso2.eclipse.osgi</groupId>
+            <artifactId>org.eclipse.osgi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.eclipse.osgi</groupId>
+            <artifactId>org.eclipse.osgi.services</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jacoco</groupId>
             <artifactId>org.jacoco.agent</artifactId>
             <classifier>runtime</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -57,11 +76,6 @@
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-testng</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -83,35 +97,43 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <artifactId>maven-javadoc-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>jar-with-dependencies</id>
-                        <phase>package</phase>
+                        <id>attach-javadocs</id>
                         <goals>
-                            <goal>single</goal>
+                            <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>
-                                        org.wso2.carbon.secvault.securevault.ciphertool.CipherToolInitializer
-                                    </mainClass>
-                                </manifest>
-                            </archive>
-                            <attach>false</attach>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>assembly.xml</descriptor>
-                            </descriptors>
-                            <finalName>org.wso2.carbon.secvault.securevault.ciphertool</finalName>
-                            <outputDirectory>
-                                ../../features/org.wso2.carbon.secvault.securevault.feature/resources/bin/bootstrap/tools
-                            </outputDirectory>
+                            <excludePackageNames>org.wso2.carbon.secvault.internal</excludePackageNames>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <show>public</show>
+                            <nohelp>true</nohelp>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
     </build>
+    <properties>
+        <bundle.activator>org.wso2.carbon.secvault.internal.SecureVaultActivator</bundle.activator>
+        <private.package>org.wso2.carbon.secvault.internal.*</private.package>
+        <export.package>
+            !org.wso2.carbon.secvault.internal.*,
+            org.wso2.carbon.secvault.*;version="${carbon.secure.vault.package.export.version}"
+        </export.package>
+        <import.package>
+            org.wso2.carbon.utils.*;version="${carbon.utils.package.import.version.range}",
+            org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
+            org.osgi.framework.*;version="${osgi.framework.package.import.version.range}",
+            org.yaml.snakeyaml.*;version="${org.snakeyaml.package.import.version.range}",
+            javax.crypto.*;version="${javax.crypto.version.range}",
+        </import.package>
+    </properties>
 </project>

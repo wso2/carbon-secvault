@@ -16,6 +16,8 @@
 
 package org.wso2.carbon.secvault.ciphertool;
 
+import org.wso2.carbon.secvault.SecureVaultConstants;
+import org.wso2.carbon.secvault.SecureVaultUtils;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolException;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolRuntimeException;
 import org.wso2.carbon.secvault.ciphertool.utils.CommandLineParser;
@@ -56,21 +58,27 @@ public class CipherToolInitializer {
             commandLineParser = Utils.createCommandLineParser(toolArgs);
         } catch (CipherToolException e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
-            logger.info("Invalid cipher tool arguments!\n\n");
             printHelpMessage();
             throw new CipherToolRuntimeException("Unable to run CipherTool", e);
         }
 
         URLClassLoader urlClassLoader = Utils.getCustomClassLoader(commandLineParser.getCustomLibPath());
-        Path secureVaultYamlPath = Paths.get(commandLineParser.getSecureVaultYamlPath()
-                .orElseThrow(() -> new CipherToolRuntimeException("Secure vault YAML path is not set")));
+        Path secureVaultConfigPath;
+
+        if (commandLineParser.getCustomConfigPath().isPresent()) {
+            secureVaultConfigPath = Paths.get(commandLineParser.getCustomConfigPath().get());
+        } else if (SecureVaultUtils.isOSGIEnv()) {
+            secureVaultConfigPath = org.wso2.carbon.utils.Utils.getCarbonConfigHome().resolve
+                    (SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+        } else {
+            throw new CipherToolRuntimeException("Secure vault YAML path is not set");
+        }
 
         try {
-            Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultYamlPath);
+            Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
             processCommand(commandLineParser.getCommandName().orElse(""),
                     commandLineParser.getCommandParam().orElse(""), objCipherTool);
         } catch (CipherToolException e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
             throw new CipherToolRuntimeException("Unable to run CipherTool", e);
         }
     }
@@ -109,15 +117,15 @@ public class CipherToolInitializer {
      * Prints a help message for the secure vault tool usage.
      */
     private static void printHelpMessage() {
-        logger.info("Instructions: sh ciphertool.sh [<command> <parameter>]\n\n"
-                + "-- command      -configPath | -encryptText | -decryptText | -customLibPath\n\n"
-                + "-- parameter    input to the command\n\n"
-                + "Please note that the `-configPath` argument is mandatory\n\n"
+        logger.info("\nIncorrect usage of the cipher tool.\n\n"
+                + "Instructions: sh ciphertool.sh [<command> <parameter>]\n\n"
+                + "If no commandline options are provided, CipherTool will encrypt the secrets given in the\n"
+                + "[CARBON_HOME]/conf/security/secrets.properties file. This is the default behaviour.\n"
+                + "CipherTool will read the configurations from secure-vault.yaml file. Hence it is mandatory\n"
+                + "to update the [CARBON_HOME]/conf/secure-vault.yaml file before running CipherTool\n\n"
                 + "Usages:\n\n"
-                + "1. -configPath : this option is used to specify the secure vault yaml configuration file location.\n"
-                + "   When specified, ciphertool will load the configuration values from the specified configuration \n"
-                + "   path"
-                + "     ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml\n\n"
+                + "1. With no option specified, cipher tool will encrypt the secrets given in the\n"
+                + "   [CARBON_HOME]conf/security/secrets.properties file.\n\n"
                 + "2. -encryptText : this option will first encrypt a given text and then prints the base64 encoded\n"
                 + "   string of the encoded cipher text in the console.\n"
                 + "     Eg: ciphertool.sh -encryptText Abc@123\n\n"

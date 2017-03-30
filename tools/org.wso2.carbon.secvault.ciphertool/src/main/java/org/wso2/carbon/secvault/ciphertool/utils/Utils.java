@@ -77,8 +77,8 @@ public class Utils {
                 (PrivilegedAction<Object>) () -> new URLClassLoader(urls.toArray(new URL[urls.size()])));
     }
 
-    public static Object createCipherTool(URLClassLoader urlClassLoader, Path secureVaultYamlPath)
-            throws CipherToolException {
+    public static Object createCipherTool(URLClassLoader urlClassLoader, Path secureVaultConfigPath) throws
+            CipherToolException {
         Object objCipherTool;
 
         try {
@@ -89,8 +89,8 @@ public class Utils {
 
         try {
             Method initMethod = objCipherTool.getClass()
-                    .getMethod(CipherToolConstants.INIT_METHOD, URLClassLoader.class, Path.class);
-            initMethod.invoke(objCipherTool, urlClassLoader, secureVaultYamlPath);
+                    .getMethod(CipherToolConstants.INIT_METHOD, URLClassLoader.class);
+            initMethod.invoke(objCipherTool, urlClassLoader, secureVaultConfigPath);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new CipherToolException("Failed to initialize Cipher Tool", e);
         }
