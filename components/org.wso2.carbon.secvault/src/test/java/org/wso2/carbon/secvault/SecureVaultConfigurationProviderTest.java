@@ -21,7 +21,7 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
-import org.wso2.carbon.secvault.internal.SecureVaultConfigurationProvider;
+import org.wso2.carbon.secvault.internal.SecureVaultDataHolder;
 import org.wso2.carbon.secvault.model.MasterKeyReaderConfiguration;
 import org.wso2.carbon.secvault.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
@@ -32,7 +32,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * Unit tests class for SecureVaultConfigurationProvider.
+ * Unit tests class for SecureVault Configuration.
  *
  * @since 5.0.0
  */
@@ -47,6 +47,9 @@ public class SecureVaultConfigurationProviderTest {
             Path secureVaultYAMLPath = TestUtils.getResourcePath("securevault", "conf",
                     SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME)
                     .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
+            SecureVaultDataHolder.getInstance().setSecureVaultConfiguration(SecureVaultUtils.getSecureVaultConfig
+                    (secureVaultYAMLPath).orElseThrow(() -> new SecureVaultException("Error occurred when obtaining " +
+                    "secure vault configuration.")));
             new SecureVaultFactory().getSecureVault(secureVaultYAMLPath)
                     .orElseThrow(() -> new SecureVaultException("Error occurred when getting secure vault instance"));
         } catch (SecureVaultException e) {
@@ -61,8 +64,8 @@ public class SecureVaultConfigurationProviderTest {
 
     @Test
     public void testGetConfiguration() throws SecureVaultException {
-        SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
-                .getConfiguration()
+        SecureVaultConfiguration secureVaultConfiguration = SecureVaultDataHolder.getInstance()
+                .getSecureVaultConfiguration()
                 .orElseThrow(() -> new SecureVaultException("Error in getting secure vault configuration"));
         Assert.assertNotNull(secureVaultConfiguration);
     }
@@ -71,7 +74,8 @@ public class SecureVaultConfigurationProviderTest {
     public void testReadSecretRepositoryConfig() {
         SecureVaultConfiguration secureVaultConfiguration;
         try {
-            secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance().getConfiguration()
+            secureVaultConfiguration = SecureVaultDataHolder.getInstance()
+                    .getSecureVaultConfiguration()
                     .orElseThrow(() -> new SecureVaultException("Error in getting secure vault configuration"));
         } catch (SecureVaultException e) {
             Assert.fail("Unable to get Secure Vault Configuration.");
@@ -93,7 +97,8 @@ public class SecureVaultConfigurationProviderTest {
     public void testReadMasterKeyReaderConfig() {
         SecureVaultConfiguration secureVaultConfiguration;
         try {
-            secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance().getConfiguration()
+            secureVaultConfiguration = SecureVaultDataHolder.getInstance()
+                    .getSecureVaultConfiguration()
                     .orElseThrow(() -> new SecureVaultException("Error in getting secure vault configuration"));
         } catch (SecureVaultException e) {
             Assert.fail("Unable to get Secure Vault Configuration.");

@@ -74,8 +74,9 @@ public class SecureVaultComponent {
     )
     protected void registerSecretRepository(SecretRepository secretRepository) {
         try {
-            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
-                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultDataHolder.getInstance()
+                    .getSecureVaultConfiguration().orElseThrow(() -> new SecureVaultException
+                            (SECURE_VAULT_CONFIG_ERROR));
             String secretRepositoryType = secureVaultConfiguration.getSecretRepositoryConfig().getType()
                     .orElseThrow(() -> new SecureVaultException("Secret repository type is not set"));
             if (secretRepository.getClass().getName().equals(secretRepositoryType)) {
@@ -90,8 +91,9 @@ public class SecureVaultComponent {
 
     protected void unRegisterSecretRepository(SecretRepository secretRepository) {
         try {
-            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
-                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultDataHolder.getInstance()
+                    .getSecureVaultConfiguration().orElseThrow(() -> new SecureVaultException
+                            (SECURE_VAULT_CONFIG_ERROR));
             String secretRepositoryType = secureVaultConfiguration.getSecretRepositoryConfig().getType()
                     .orElseThrow(() -> new SecureVaultException("Secret repository type is not set"));
             if (secretRepository.getClass().getName().equals(secretRepositoryType)) {
@@ -112,8 +114,9 @@ public class SecureVaultComponent {
     )
     protected void registerMasterKeyReader(MasterKeyReader masterKeyReader) {
         try {
-            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
-                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultDataHolder.getInstance()
+                    .getSecureVaultConfiguration().orElseThrow(() -> new SecureVaultException
+                            (SECURE_VAULT_CONFIG_ERROR));
             String masterKeyReaderType = secureVaultConfiguration.getMasterKeyReaderConfig().getType()
                     .orElseThrow(() -> new SecureVaultException("Master key reader type is not set"));
             if (masterKeyReader.getClass().getName().equals(masterKeyReaderType)) {
@@ -128,8 +131,9 @@ public class SecureVaultComponent {
 
     protected void unregisterMasterKeyReader(MasterKeyReader masterKeyReader) {
         try {
-            SecureVaultConfiguration secureVaultConfiguration = SecureVaultConfigurationProvider.getInstance()
-                    .getConfiguration().orElseThrow(() -> new SecureVaultException(SECURE_VAULT_CONFIG_ERROR));
+            SecureVaultConfiguration secureVaultConfiguration = SecureVaultDataHolder.getInstance()
+                    .getSecureVaultConfiguration().orElseThrow(() -> new SecureVaultException
+                            (SECURE_VAULT_CONFIG_ERROR));
             String masterKeyReaderType = secureVaultConfiguration.getMasterKeyReaderConfig().getType()
                     .orElseThrow(() -> new SecureVaultException("Master key reader type is not set"));
             if (masterKeyReader.getClass().getName().equals(masterKeyReaderType)) {

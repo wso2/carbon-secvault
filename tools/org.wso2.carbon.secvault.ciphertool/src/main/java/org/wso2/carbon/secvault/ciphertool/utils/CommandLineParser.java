@@ -34,7 +34,7 @@ public class CommandLineParser {
     private String commandParam;
 
     public CommandLineParser(String... args) throws CipherToolException {
-        if (args.length > 4 || args.length % 2 != 0) {
+        if (args.length > 6 || args.length % 2 != 0) {
             throw new CipherToolException("Invalid argument count.");
         }
 
@@ -45,7 +45,6 @@ public class CommandLineParser {
                         customConfigPath = args[i + 1];
                         break;
                     case CipherToolConstants.CUSTOM_LIB_PATH_COMMAND:
-                        commandName = CipherToolConstants.CUSTOM_LIB_PATH_COMMAND;
                         customLibPath = args[i + 1];
                         break;
                     case CipherToolConstants.ENCRYPT_TEXT_COMMAND:

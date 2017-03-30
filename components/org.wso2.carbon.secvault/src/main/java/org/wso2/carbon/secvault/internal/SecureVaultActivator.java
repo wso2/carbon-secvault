@@ -22,6 +22,8 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.SecureVaultConstants;
+import org.wso2.carbon.secvault.SecureVaultUtils;
+import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.utils.Utils;
 
 import java.nio.file.Path;
@@ -42,7 +44,9 @@ public class SecureVaultActivator implements BundleActivator {
         logger.debug("Initializing Secure Vault config...");
         Path secureVaultYAMLPath = Utils.getCarbonConfigHome()
                 .resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
-        SecureVaultConfigurationProvider.getInstance().initSecureVaultConfig(secureVaultYAMLPath);
+        SecureVaultDataHolder.getInstance().setSecureVaultConfiguration(SecureVaultUtils.getSecureVaultConfig
+                (secureVaultYAMLPath).orElseThrow(() -> new SecureVaultException("Error occurred when obtaining " +
+                "secure vault configuration.")));
         logger.debug("Secure vault config successfully initialized");
     }
 

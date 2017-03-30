@@ -19,6 +19,7 @@ package org.wso2.carbon.secvault.internal;
 import org.osgi.framework.BundleContext;
 import org.wso2.carbon.secvault.MasterKeyReader;
 import org.wso2.carbon.secvault.SecretRepository;
+import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
 
 import java.util.Optional;
 
@@ -32,6 +33,7 @@ public class SecureVaultDataHolder {
     private BundleContext bundleContext;
     private SecretRepository secretRepository;
     private MasterKeyReader masterKeyReader;
+    private SecureVaultConfiguration secureVaultConfiguration;
 
     private SecureVaultDataHolder() {
     }
@@ -97,5 +99,23 @@ public class SecureVaultDataHolder {
      */
     public void setBundleContext(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
+    }
+
+    /**
+     * Getter method of secure vault configuration instance.
+     *
+     * @return SecureVaultConfiguration returns an {@link Optional} {@link SecureVaultConfiguration} instance
+     */
+    public Optional<SecureVaultConfiguration> getSecureVaultConfiguration() {
+        return Optional.ofNullable(secureVaultConfiguration);
+    }
+
+    /**
+     * Setter method of {@link SecureVaultConfiguration}.
+     *
+     * @param secureVaultConfiguration SecureVaultConfiguration instance to be set
+     */
+    public void setSecureVaultConfiguration(SecureVaultConfiguration secureVaultConfiguration) {
+        this.secureVaultConfiguration = secureVaultConfiguration;
     }
 }
