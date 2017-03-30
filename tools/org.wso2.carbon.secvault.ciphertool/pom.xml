@@ -95,7 +95,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        org.wso2.carbon.secvault.securevault.ciphertool.CipherToolInitializer
+                                        org.wso2.carbon.secvault.ciphertool.CipherToolInitializer
                                     </mainClass>
                                 </manifest>
                             </archive>
@@ -104,9 +104,9 @@
                             <descriptors>
                                 <descriptor>assembly.xml</descriptor>
                             </descriptors>
-                            <finalName>org.wso2.carbon.secvault.securevault.ciphertool</finalName>
+                            <finalName>org.wso2.carbon.secvault.ciphertool</finalName>
                             <outputDirectory>
-                                ../../features/org.wso2.carbon.secvault.securevault.feature/resources/bin/bootstrap/tools
+                                ../../features/org.wso2.carbon.secvault.feature/resources/bin/bootstrap/tools
                             </outputDirectory>
                         </configuration>
                     </execution>

@@ -82,7 +82,7 @@ public class SecureVaultConfigurationProviderTest {
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("keystoreLocation").get(),
                 "src/test/resources/resources/security/wso2carbon.jks");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("secretPropertiesFile").get(),
-                "src/test/resources/standalone/conf/secrets.properties");
+                "src/test/resources/securevault/conf/secrets.properties");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("nonExistingParam"), Optional.empty());
     }
 
@@ -103,6 +103,6 @@ public class SecureVaultConfigurationProviderTest {
                 "org.wso2.carbon.secvault.reader.DefaultMasterKeyReader");
         Assert.assertEquals(masterKeyReaderConfiguration.getParameter("nonExistingParam"), Optional.empty());
         Assert.assertEquals(masterKeyReaderConfiguration.getParameter("masterKeyReaderFile").get(),
-                "src/test/resources/standalone/conf/master-keys.yaml");
+                "src/test/resources/securevault/conf/master-keys.yaml");
     }
 }
