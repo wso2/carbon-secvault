@@ -51,7 +51,7 @@ public abstract class AbstractSecretRepository implements SecretRepository {
         Path secretPropertiesFilePath = Paths.get(secretRepositoryConfiguration
                 .getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY)
                 .orElseThrow(() -> new SecureVaultException("Secret properties path not found")));
-        String resolvedFileContent = SecureVaultUtils.resolveFileToString(secretPropertiesFilePath.toFile());
+        String resolvedFileContent = SecureVaultUtils.resolveFileToString(secretPropertiesFilePath);
         Properties secretsProperties = new Properties();
         try {
             secretsProperties.load(new StringReader(resolvedFileContent));

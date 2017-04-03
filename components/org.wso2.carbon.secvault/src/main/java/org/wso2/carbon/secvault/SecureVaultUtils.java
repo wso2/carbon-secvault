@@ -27,7 +27,6 @@ import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -39,13 +38,14 @@ import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,6 +60,7 @@ public class SecureVaultUtils {
     private static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
     private static final Pattern VAR_PATTERN_ENV = Pattern.compile("\\$\\{env:([^}]*)}");
     private static final Pattern VAR_PATTERN_SYS = Pattern.compile("\\$\\{sys:([^}]*)}");
+
 
     /**
      * Remove default constructor and make it not available to initialize.
@@ -84,7 +85,7 @@ public class SecureVaultUtils {
             logger.debug("Loading Secure Vault Configurations from the file: " + secureVaultConfigPath
                     .toString());
         }
-        String resolvedFileContent = SecureVaultUtils.resolveFileToString(secureVaultConfigPath.toFile());
+        String resolvedFileContent = SecureVaultUtils.resolveFileToString(secureVaultConfigPath);
         Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
                 SecureVaultConfiguration.class.getClassLoader()));
         yaml.setBeanAccess(BeanAccess.FIELD);
@@ -206,26 +207,40 @@ public class SecureVaultUtils {
     }
 
     /**
-     * This method reads the file content and replace all the placeholders in it.
+     * This method reads the configurations content from the filepath.
+     * Extracts securevault configs and replaces all the placeholders in it.
      *
-     * @param file a valid file
-     * @return resolved content of the file
+     * @param configFilePath a valid file
+     * @return resolved securevault content of the file
      * @throws SecureVaultException if an exception happens while reading the file.
      */
-    public static String resolveFileToString(File file) throws SecureVaultException {
-        try (InputStream inputStream = new FileInputStream(file);
-             BufferedReader bufferedReader = new BufferedReader(
-                     new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-
-            String stringContent;
-            try (Scanner scanner = new Scanner(bufferedReader)) {
-                stringContent = scanner.useDelimiter("\\A").next();
-                stringContent = SecureVaultUtils.substituteVariables(stringContent);
-            }
-            return stringContent;
+    public static String resolveFileToString(Path configFilePath) throws SecureVaultException {
+        try {
+            byte[] contentBytes = Files.readAllBytes(configFilePath);
+            String stringContent = new String(contentBytes, StandardCharsets.UTF_8);
+            stringContent = getSecureVaultConfiguration(stringContent);
+            return SecureVaultUtils.substituteVariables(stringContent);
         } catch (IOException e) {
-            throw new SecureVaultException("Failed to read file : " + file.getAbsoluteFile(), e);
+            throw new SecureVaultException("Failed to read filepath : " + configFilePath, e);
         }
+    }
+
+    /**
+     * This method extracts the securevault configuration from the configuration string.
+     * Extracts the configurations under wso2.securevault element.
+     *
+     * @param configFileContent configuration content string
+     * @return extracted securevault config
+     */
+    private static String getSecureVaultConfiguration(String configFileContent) throws SecureVaultException {
+        Yaml yaml = new Yaml();
+        Map<String, Object> configurationMap = (Map<String, Object>) yaml.loadAs(configFileContent, Map.class);
+
+        if (configurationMap == null || configurationMap.isEmpty() ||
+                configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE) == null) {
+            throw new SecureVaultException("Error initializing securevault, secure configuration does not exist");
+        }
+        return yaml.dumpAsMap(configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE));
     }
 
     /**
