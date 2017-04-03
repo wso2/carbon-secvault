@@ -29,6 +29,7 @@ public class SecureVaultConstants {
     public static final String CIPHER_TEXT = "cipherText";
     public static final String PLAIN_TEXT = "plainText";
     public static final String SPACE = " ";
+    public static final String SECUREVAULT_NAMESPACE = "wso2.securevault";
 
     // System and environment variables
     public static final String MASTER_KEYS_YAML_CONFIG_PROPERTY = "masterKeyReaderFile";
