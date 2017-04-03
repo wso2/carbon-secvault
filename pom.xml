@@ -100,8 +100,8 @@
                 <version>${org.jacoco.ant.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.wso2.carbon</groupId>
-                <artifactId>org.wso2.carbon.utils</artifactId>
+                <groupId>org.wso2.carbon.utils</groupId>
+                <artifactId>carbon-utils</artifactId>
                 <version>${carbon.utils.version}</version>
             </dependency>
             <dependency>
@@ -160,6 +160,11 @@
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.wso2.carbon.maven</groupId>
+                    <artifactId>carbon-feature-plugin</artifactId>
+                    <version>${carbon.feature.plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -175,7 +180,7 @@
         <carbon.secure.vault.package.export.version>5.0.0</carbon.secure.vault.package.export.version>
 
         <!-- Carbon dependencies -->
-        <carbon.utils.version>5.2.0-SNAPSHOT</carbon.utils.version>
+        <carbon.utils.version>1.0.0</carbon.utils.version>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.12</slf4j.api.version>
@@ -192,5 +197,6 @@
         <!-- Maven plugin versions -->
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
         <maven.java.doc.plugin.version>2.10.4</maven.java.doc.plugin.version>
+        <carbon.feature.plugin.version>3.1.0</carbon.feature.plugin.version>
     </properties>
 </project>
