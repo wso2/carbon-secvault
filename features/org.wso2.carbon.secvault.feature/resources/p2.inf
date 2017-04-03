@@ -1,7 +1,7 @@
 instructions.configure = \
-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault.securevault_${feature.version}/conf,target:${installFolder}/../../conf/,overwrite:true);\
-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault.securevault_${feature.version}/bin,target:${installFolder}/../../bin/,overwrite:true);\
-org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault.securevault_${feature.version}/bin/bootstrap/tools,target:${installFolder}/../../bin/bootstrap/tools,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault_${feature.version}/conf,target:${installFolder}/../../conf/,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault_${feature.version}/bin,target:${installFolder}/../../bin/,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault_${feature.version}/bin/bootstrap/tools,target:${installFolder}/../../bin/bootstrap/tools,overwrite:true);\
 org.eclipse.equinox.p2.touchpoint.natives.chmod(targetDir:${installFolder}/../../bin,targetFile:ciphertool.sh,permissions:755);\
 org.eclipse.equinox.p2.touchpoint.natives.chmod(targetDir:${installFolder}/../../bin,targetFile:ciphertool.bat,permissions:755);\
 org.eclipse.equinox.p2.touchpoint.natives.chmod(targetDir:${installFolder}/../../bin/bootstrap/tools,targetFile:org.wso2.carbon.secvault.ciphertool.jar,permissions:755);\
