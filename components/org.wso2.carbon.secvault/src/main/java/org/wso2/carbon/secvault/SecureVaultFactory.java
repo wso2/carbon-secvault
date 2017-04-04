@@ -85,7 +85,7 @@ public class SecureVaultFactory {
      * @param secretRepository         secret repository instance
      * @throws SecureVaultException on initializing master key reader
      */
-    public static SecureVault getSecureVault(SecureVaultConfiguration secureVaultConfiguration,
+    private static SecureVault getSecureVault(SecureVaultConfiguration secureVaultConfiguration,
                                                  MasterKeyReader masterKeyReader, SecretRepository secretRepository)
             throws SecureVaultException {
         logger.debug("Initializing the secure vault with, SecretRepositoryType={}, MasterKeyReaderType={}",

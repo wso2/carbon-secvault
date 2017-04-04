@@ -30,6 +30,10 @@ import org.wso2.carbon.secvault.SecureVault;
 import org.wso2.carbon.secvault.SecureVaultFactory;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
+import org.wso2.carbon.utils.Constants;
+import org.wso2.carbon.utils.Utils;
+
+import java.nio.file.Path;
 
 /**
  * This service component acts as a RequiredCapabilityListener for all the ${@link SecretRepository}s and
@@ -154,14 +158,9 @@ public class SecureVaultComponent {
             logger.debug("Waiting for Secure Vault dependencies");
             return;
         }
-        MasterKeyReader masterKeyReader = SecureVaultDataHolder.getInstance().getMasterKeyReader().orElseThrow(()
-                -> new SecurityException("Master key reader type is not set"));
-        SecretRepository secretRepository = SecureVaultDataHolder.getInstance().getSecretRepository().orElseThrow
-                (() -> new SecurityException("Secret repository type is not set"));
-        SecureVaultConfiguration secureVaultConfiguration = SecureVaultDataHolder.getInstance()
-                .getSecureVaultConfiguration().orElseThrow(() -> new SecurityException(SECURE_VAULT_CONFIG_ERROR));
-        SecureVault secureVault = SecureVaultFactory.getSecureVault(secureVaultConfiguration, masterKeyReader,
-                secretRepository);
+        Path secureVaultYamlPath = Utils.getRuntimeConfigPath().resolve(Constants.DEPLOYMENT_CONFIG_YAML);
+        SecureVault secureVault = SecureVaultFactory.getSecureVault(secureVaultYamlPath).orElseThrow(() ->
+                new SecureVaultException("Error occurred when getting secure vault instance"));
 
         SecureVaultDataHolder.getInstance().getBundleContext().ifPresent(bundleContext -> bundleContext
                 .registerService(SecureVault.class, secureVault, null));
