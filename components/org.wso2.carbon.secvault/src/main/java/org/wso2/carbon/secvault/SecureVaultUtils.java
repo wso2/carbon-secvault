@@ -60,7 +60,7 @@ public class SecureVaultUtils {
     private static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
     private static final Pattern VAR_PATTERN_ENV = Pattern.compile("\\$\\{env:([^}]*)}");
     private static final Pattern VAR_PATTERN_SYS = Pattern.compile("\\$\\{sys:([^}]*)}");
-    private static final String YAML_EXTENSION = "yaml";
+    private static final String YAML_EXTENSION = ".yaml";
     public static final int DOT_CHARACTOR = 46;
     public static final int SLASH_CHARACTOR = 47;
     public static final int BACKSLASH_CHARACTOR = 92;
@@ -223,7 +223,7 @@ public class SecureVaultUtils {
             String stringContent = new String(contentBytes, StandardCharsets.UTF_8);
             // get secure-vault configuration segment from the yaml file. validation is to allow only yaml file to
             // process.
-            if (isExtension(configFilePath.toString(), YAML_EXTENSION)) {
+            if (configFilePath.toString().endsWith(YAML_EXTENSION)) {
                 stringContent = getSecureVaultConfiguration(stringContent);
             }
             return SecureVaultUtils.substituteVariables(stringContent);
@@ -286,36 +286,5 @@ public class SecureVaultUtils {
         return Optional.ofNullable(alias)
                 .map(System::getProperty)
                 .orElse(alias);
-    }
-
-    /**
-     * Check whether the extension matches the file extension
-     * @param filename filename
-     * @param extension extension
-     * @return true if filename extension matches with input extension
-     */
-    public static boolean isExtension(String filename, String extension) {
-        if (filename != null && extension != null && extension.length() != 0) {
-            String fileExt = getExtension(filename);
-            return extension.equals(fileExt);
-        }
-        return false;
-    }
-
-    /**
-     * Returns extension of the filename
-     * @param filename filename
-     * @return file extension
-     */
-    public static String getExtension(String filename) {
-        if (filename != null) {
-            int extPosition = filename.lastIndexOf(DOT_CHARACTOR);
-            int separatorPosition = Math.max(filename.lastIndexOf(SLASH_CHARACTOR), filename.lastIndexOf
-                    (BACKSLASH_CHARACTOR));
-            if (extPosition > separatorPosition) {
-                return filename.substring(extPosition + 1);
-            }
-        }
-        return null;
     }
 }
