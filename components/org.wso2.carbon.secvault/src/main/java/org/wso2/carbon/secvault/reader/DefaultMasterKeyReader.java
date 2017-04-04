@@ -36,6 +36,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -148,8 +150,13 @@ public class DefaultMasterKeyReader implements MasterKeyReader {
 
             for (MasterKey masterKey : masterKeys) {
                 logger.debug("Reading master key '{}' from file.", masterKey.getMasterKeyName());
-                Optional.ofNullable(properties.getProperty(masterKey.getMasterKeyName()))
-                        .ifPresent(s -> masterKey.setMasterKeyValue(s.toCharArray()));
+                byte[] masterKeyValue = (byte[]) Optional.ofNullable(
+                        properties.get(masterKey.getMasterKeyName()))
+                        .orElseThrow(() -> new SecureVaultException("Master Key value not found for : "
+                                + masterKey.getMasterKeyName()));
+                ByteBuffer byteBuffer = ByteBuffer.wrap(masterKeyValue);
+                CharBuffer charBuffer = StandardCharsets.UTF_8.decode(byteBuffer);
+                masterKey.setMasterKeyValue(charBuffer.array());
             }
 
             inputStream.close();

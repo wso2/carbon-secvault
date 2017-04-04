@@ -78,8 +78,8 @@ public class TestUtils {
     public static void createDefaultMasterKeyFile(boolean isPermanent) throws SecureVaultException {
         MasterKeyConfiguration masterKeyConfiguration = new MasterKeyConfiguration();
         Properties properties = new Properties();
-        properties.setProperty("keyStorePassword", "wso2carbon");
-        properties.setProperty("privateKeyPassword", "wso2carbon");
+        properties.put("keyStorePassword", "wso2carbon".getBytes());
+        properties.put("privateKeyPassword", "wso2carbon".getBytes());
         ClassUtils.setToPrivateField(masterKeyConfiguration, "masterKeys", properties);
         ClassUtils.setToPrivateField(masterKeyConfiguration, "permanent", isPermanent);
 
