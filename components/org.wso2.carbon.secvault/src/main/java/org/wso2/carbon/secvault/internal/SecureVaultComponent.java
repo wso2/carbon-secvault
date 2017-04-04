@@ -160,8 +160,8 @@ public class SecureVaultComponent {
         }
         try {
             // Get secure vault yaml path
-            Path secureVaultYamlPath = Utils.getCarbonConfigHome()
-                    .resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+            Path secureVaultYamlPath = Utils.getRuntimeConfigPath().
+                    resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
             new SecureVaultFactory().getSecureVault(secureVaultYamlPath).orElseThrow(() ->
                     new SecureVaultException("Error occurred when getting secure vault instance"));
         } catch (SecureVaultException e) {

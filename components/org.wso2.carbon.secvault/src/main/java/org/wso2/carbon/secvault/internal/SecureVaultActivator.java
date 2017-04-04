@@ -42,8 +42,8 @@ public class SecureVaultActivator implements BundleActivator {
         SecureVaultDataHolder.getInstance().setBundleContext(bundleContext);
         logger.debug("Starting Secure Vault bundle");
         logger.debug("Initializing Secure Vault config...");
-        Path secureVaultYAMLPath = Utils.getCarbonConfigHome()
-                .resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+        Path secureVaultYAMLPath = Utils.getRuntimeConfigPath().
+                resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
         SecureVaultDataHolder.getInstance().setSecureVaultConfiguration(SecureVaultUtils.getSecureVaultConfig
                 (secureVaultYAMLPath).orElseThrow(() -> new SecureVaultException("Error occurred when obtaining " +
                 "secure vault configuration.")));
