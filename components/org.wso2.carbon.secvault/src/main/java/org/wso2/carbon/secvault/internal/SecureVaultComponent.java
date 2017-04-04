@@ -151,23 +151,18 @@ public class SecureVaultComponent {
      * repository and loading secrets to secret repository and will register SecureVault service finally if all
      * the previous tasks successful.
      */
-    private void initializeSecureVault() {
+    private void initializeSecureVault() throws SecureVaultException {
         if (!SecureVaultDataHolder.getInstance().getSecretRepository().isPresent() ||
                 !SecureVaultDataHolder.getInstance().getMasterKeyReader().isPresent() ||
                 !SecureVaultDataHolder.getInstance().getBundleContext().isPresent()) {
             logger.debug("Waiting for Secure Vault dependencies");
             return;
         }
-        try {
-            // Get secure vault yaml path
-            Path secureVaultYamlPath = Utils.getRuntimeConfigPath().resolve(Constants.DEPLOYMENT_CONFIG_YAML);
-            new SecureVaultFactory().getSecureVault(secureVaultYamlPath).orElseThrow(() ->
-                    new SecureVaultException("Error occurred when getting secure vault instance"));
-        } catch (SecureVaultException e) {
-            logger.error("Error occurred when initializing secure vault", e);
-        }
+        Path secureVaultYamlPath = Utils.getRuntimeConfigPath().resolve(Constants.DEPLOYMENT_CONFIG_YAML);
+        SecureVault secureVault = SecureVaultFactory.getSecureVault(secureVaultYamlPath).orElseThrow(() ->
+                new SecureVaultException("Error occurred when getting secure vault instance"));
 
         SecureVaultDataHolder.getInstance().getBundleContext().ifPresent(bundleContext -> bundleContext
-                .registerService(SecureVault.class, new SecureVaultImpl(), null));
+                .registerService(SecureVault.class, secureVault, null));
     }
 }

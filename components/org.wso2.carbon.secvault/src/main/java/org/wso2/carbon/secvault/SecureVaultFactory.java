@@ -43,7 +43,7 @@ public class SecureVaultFactory {
      *
      * @throws SecureVaultException error on initializing secure vault
      */
-    public Optional<SecureVault> getSecureVault(Path secureVaultConfigPath) throws SecureVaultException {
+    public static Optional<SecureVault> getSecureVault(Path secureVaultConfigPath) throws SecureVaultException {
         MasterKeyReader masterKeyReader;
         SecretRepository secretRepository;
         SecureVaultConfiguration secureVaultConfiguration = SecureVaultUtils.getSecureVaultConfig(secureVaultConfigPath)
@@ -85,7 +85,7 @@ public class SecureVaultFactory {
      * @param secretRepository         secret repository instance
      * @throws SecureVaultException on initializing master key reader
      */
-    private SecureVault getSecureVault(SecureVaultConfiguration secureVaultConfiguration,
+    private static SecureVault getSecureVault(SecureVaultConfiguration secureVaultConfiguration,
                                                  MasterKeyReader masterKeyReader, SecretRepository secretRepository)
             throws SecureVaultException {
         logger.debug("Initializing the secure vault with, SecretRepositoryType={}, MasterKeyReaderType={}",
@@ -105,7 +105,7 @@ public class SecureVaultFactory {
      * @return instance of the given class name
      * @throws SecureVaultException when creating an instance of the class
      */
-    private <T> T createInstance(String className, Class<T> baseClass) throws SecureVaultException {
+    private static <T> T createInstance(String className, Class<T> baseClass) throws SecureVaultException {
         try {
             Class<?> clazz = Class.forName(className);
             if (!baseClass.isAssignableFrom(clazz)) {

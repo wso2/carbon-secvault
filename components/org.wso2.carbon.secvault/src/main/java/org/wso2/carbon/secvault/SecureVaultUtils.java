@@ -60,7 +60,7 @@ public class SecureVaultUtils {
     private static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
     private static final Pattern VAR_PATTERN_ENV = Pattern.compile("\\$\\{env:([^}]*)}");
     private static final Pattern VAR_PATTERN_SYS = Pattern.compile("\\$\\{sys:([^}]*)}");
-
+    private static final String YAML_EXTENSION = ".yaml";
 
     /**
      * Remove default constructor and make it not available to initialize.
@@ -218,7 +218,11 @@ public class SecureVaultUtils {
         try {
             byte[] contentBytes = Files.readAllBytes(configFilePath);
             String stringContent = new String(contentBytes, StandardCharsets.UTF_8);
-            stringContent = getSecureVaultConfiguration(stringContent);
+            // get secure-vault configuration segment from the yaml file. validation is to allow only yaml file to
+            // process.
+            if (configFilePath.toString().endsWith(YAML_EXTENSION)) {
+                stringContent = getSecureVaultConfiguration(stringContent);
+            }
             return SecureVaultUtils.substituteVariables(stringContent);
         } catch (IOException e) {
             throw new SecureVaultException("Failed to read filepath : " + configFilePath, e);
