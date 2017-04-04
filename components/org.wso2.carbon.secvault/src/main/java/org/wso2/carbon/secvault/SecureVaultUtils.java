@@ -61,9 +61,6 @@ public class SecureVaultUtils {
     private static final Pattern VAR_PATTERN_ENV = Pattern.compile("\\$\\{env:([^}]*)}");
     private static final Pattern VAR_PATTERN_SYS = Pattern.compile("\\$\\{sys:([^}]*)}");
     private static final String YAML_EXTENSION = ".yaml";
-    public static final int DOT_CHARACTOR = 46;
-    public static final int SLASH_CHARACTOR = 47;
-    public static final int BACKSLASH_CHARACTOR = 92;
 
     /**
      * Remove default constructor and make it not available to initialize.
