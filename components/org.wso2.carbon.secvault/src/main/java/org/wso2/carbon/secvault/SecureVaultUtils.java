@@ -221,7 +221,7 @@ public class SecureVaultUtils {
             String stringContent = new String(contentBytes, StandardCharsets.UTF_8);
             // get secure-vault configuration segment from the yaml file. validation is to allow only yaml file to
             // process.
-            if(FilenameUtils.isExtension(configFilePath.toString(), YAML_EXTENSION)) {
+            if (FilenameUtils.isExtension(configFilePath.toString(), YAML_EXTENSION)) {
                 stringContent = getSecureVaultConfiguration(stringContent);
             }
             return SecureVaultUtils.substituteVariables(stringContent);
