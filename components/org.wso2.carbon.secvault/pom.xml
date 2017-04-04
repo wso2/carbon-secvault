@@ -78,6 +78,10 @@
             <artifactId>powermock-module-testng</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-io.wso2</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

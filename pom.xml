@@ -105,6 +105,11 @@
                 <version>${carbon.utils.version}</version>
             </dependency>
             <dependency>
+                <groupId>commons-io.wso2</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jacoco</groupId>
                 <artifactId>org.jacoco.agent</artifactId>
                 <version>${jacoco.version}</version>
@@ -188,6 +193,7 @@
         <powermock.module.testng.version>1.6.5</powermock.module.testng.version>
         <org.jacoco.ant.version>0.7.5.201505241946</org.jacoco.ant.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
+        <commons.io.version>2.4.0.wso2v1</commons.io.version>
 
         <!-- Maven plugin versions -->
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
