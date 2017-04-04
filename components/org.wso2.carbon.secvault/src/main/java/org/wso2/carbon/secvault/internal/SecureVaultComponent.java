@@ -27,10 +27,10 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.MasterKeyReader;
 import org.wso2.carbon.secvault.SecretRepository;
 import org.wso2.carbon.secvault.SecureVault;
-import org.wso2.carbon.secvault.SecureVaultConstants;
 import org.wso2.carbon.secvault.SecureVaultFactory;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
+import org.wso2.carbon.utils.Constants;
 import org.wso2.carbon.utils.Utils;
 
 import java.nio.file.Path;
@@ -160,8 +160,7 @@ public class SecureVaultComponent {
         }
         try {
             // Get secure vault yaml path
-            Path secureVaultYamlPath = Utils.getRuntimeConfigPath().
-                    resolve(SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+            Path secureVaultYamlPath = Utils.getRuntimeConfigPath().resolve(Constants.DEPLOYMENT_CONFIG_YAML);
             new SecureVaultFactory().getSecureVault(secureVaultYamlPath).orElseThrow(() ->
                     new SecureVaultException("Error occurred when getting secure vault instance"));
         } catch (SecureVaultException e) {
