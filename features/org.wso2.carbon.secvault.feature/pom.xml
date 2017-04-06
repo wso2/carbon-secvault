@@ -88,6 +88,12 @@
                                     <version>${project.version}</version>
                                 </bundle>
                             </bundles>
+                            <importFeatures>
+                                <importFeatureDef>
+                                    <id>org.wso2.carbon.utils.feature</id>
+                                    <version>${carbon.utils.version}</version>
+                                </importFeatureDef>
+                            </importFeatures>
                         </configuration>
                     </execution>
                 </executions>
