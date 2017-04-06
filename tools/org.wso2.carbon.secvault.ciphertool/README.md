@@ -1,10 +1,8 @@
 # ciphertool.sh and ciphertool.bat
 
 * The script files which run the cipher tool.
-* This tool is mainly used to secure (encrypt) the secrets given in the 
-conf/security/secrets.properties file.Apart from that this tool is capable 
-of encrypting and decrypting secrets.
-* Default behaviour of the ciphertool can be changed by modifying the conf/secure-vault.yaml file.
+* This tool is mainly used to secure (encrypt) the secrets given in the secrets.properties file. Apart from that this tool is capable of encrypting and decrypting secrets.
+* Default behaviour of the ciphertool can be changed by modifying the secure-vault.yaml file.
 
 ## Usage: ciphertool.sh [<command> <parameter>]
 
@@ -20,8 +18,7 @@ Please note that the `-configPath` argument is mandatory.
 
 1. `ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml`
        
-       Loads the configuration according to the specified configuration and
-       encrypts the secrets in the specified secrets.properties file
+       Loads the configuration according to the specified configuration and encrypts the secrets in the specified secrets.properties file
 
 2. `ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml -encryptText ABC@123`
        
@@ -33,5 +30,4 @@ Please note that the `-configPath` argument is mandatory.
 
 4. `ciphertool.sh -configPath /home/user/custom/config/secure-vault.yaml -customLibPath /home/user/custom/libs`
 
-       Loads the libraries in the given path first and perform the same operation as in eg:1.
-       This is an optional flag.
+       Loads the libraries in the given path first and perform the same operation as in eg:1. This is an optional flag.
