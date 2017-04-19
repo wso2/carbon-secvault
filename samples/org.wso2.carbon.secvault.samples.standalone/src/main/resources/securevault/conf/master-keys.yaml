@@ -1,4 +1,5 @@
 permanent: true
 masterKeys:
-  keyStorePassword: wso2carbon
-  privateKeyPassword: wso2carbon
+  keyStorePassword: !!binary d3NvMmNhcmJvbg==
+  privateKeyPassword: !!binary d3NvMmNhcmJvbg==
+  

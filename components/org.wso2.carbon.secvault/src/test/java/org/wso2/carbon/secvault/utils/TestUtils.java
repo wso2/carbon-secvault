@@ -43,6 +43,7 @@ import java.util.Properties;
  * @since 5.0.0
  */
 public class TestUtils {
+    private static final String WSO2_CARBON_PASSWORD = "wso2carbon";
     /**
      * Create master key file
      *
@@ -78,8 +79,8 @@ public class TestUtils {
     public static void createDefaultMasterKeyFile(boolean isPermanent) throws SecureVaultException {
         MasterKeyConfiguration masterKeyConfiguration = new MasterKeyConfiguration();
         Properties properties = new Properties();
-        properties.setProperty("keyStorePassword", "wso2carbon");
-        properties.setProperty("privateKeyPassword", "wso2carbon");
+        properties.put("keyStorePassword", WSO2_CARBON_PASSWORD.getBytes());
+        properties.put("privateKeyPassword", WSO2_CARBON_PASSWORD.getBytes());
         ClassUtils.setToPrivateField(masterKeyConfiguration, "masterKeys", properties);
         ClassUtils.setToPrivateField(masterKeyConfiguration, "permanent", isPermanent);
 

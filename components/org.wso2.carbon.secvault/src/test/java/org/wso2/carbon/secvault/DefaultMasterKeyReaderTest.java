@@ -32,7 +32,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -46,6 +45,7 @@ import java.util.Properties;
 public class DefaultMasterKeyReaderTest {
 
     private MasterKeyReader masterKeyReader;
+    private MasterKeyReader masterKeyReaderWithInvaildPath;
 
     @BeforeMethod
     public void prepare() {
@@ -66,7 +66,8 @@ public class DefaultMasterKeyReaderTest {
             masterKeyPath = TestUtils.getResourcePath("securevault", "conf",
                     SecureVaultConstants.MASTER_KEYS_FILE_NAME)
                     .orElseThrow(() -> new SecureVaultException("Secure vault YAML path not found"));
-            setMasterKeyReader(masterKeyPath);
+            masterKeyReader = getMasterKeyReader(masterKeyPath);
+            masterKeyReaderWithInvaildPath = getMasterKeyReader(Paths.get("master-keys.yaml"));
         } catch (SecureVaultException e) {
             Assert.fail();
         }
@@ -82,14 +83,14 @@ public class DefaultMasterKeyReaderTest {
         Assert.assertEquals(masterKeys.get(0).getMasterKeyValue().get(), "wso2carbon".toCharArray());
     }
 
-    @Test
+    @Test(expectedExceptions = SecureVaultException.class, expectedExceptionsMessageRegExp = "Master Key value not " +
+            "found for : MasterKey1")
     public void testReadMasterKeysFromFileWithNoMasterKey() throws SecureVaultException {
         TestUtils.createDefaultMasterKeyFile(true);
 
         List<MasterKey> masterKeys = new ArrayList<>();
         masterKeys.add(new MasterKey("MasterKey1"));
         masterKeyReader.readMasterKeys(masterKeys);
-        Assert.assertEquals(masterKeys.get(0).getMasterKeyValue(), Optional.empty());
     }
 
     @Test
@@ -117,7 +118,7 @@ public class DefaultMasterKeyReaderTest {
         // Create reallocation file
         MasterKeyConfiguration masterKeyConfigurationReallocation = new MasterKeyConfiguration();
         Properties propsReallocation = new Properties();
-        propsReallocation.setProperty("MasterKey1", "MyPasswordFromFile");
+        propsReallocation.put("MasterKey1", "MyPasswordFromFile".getBytes());
         ClassUtils.setToPrivateField(masterKeyConfigurationReallocation, "masterKeys", propsReallocation);
         ClassUtils.setToPrivateField(masterKeyConfigurationReallocation, "permanent", true);
 
@@ -127,7 +128,7 @@ public class DefaultMasterKeyReaderTest {
         // Create file
         MasterKeyConfiguration masterKeyConfigurationOrig = new MasterKeyConfiguration();
         Properties propertiesOrig = new Properties();
-        propertiesOrig.setProperty("keyStorePassword", "wso2carbon");
+        propertiesOrig.put("keyStorePassword", "wso2carbon".getBytes());
         ClassUtils.setToPrivateField(masterKeyConfigurationOrig, "masterKeys", propertiesOrig);
         ClassUtils.setToPrivateField(masterKeyConfigurationOrig, "permanent", true);
         ClassUtils.setToPrivateField(masterKeyConfigurationOrig, "relocation",
@@ -209,7 +210,7 @@ public class DefaultMasterKeyReaderTest {
         List<MasterKey> masterKeys = new ArrayList<>();
         masterKeys.add(new MasterKey("MasterKey1"));
         try {
-            masterKeyReader.readMasterKeys(masterKeys);
+            masterKeyReaderWithInvaildPath.readMasterKeys(masterKeys);
             Assert.assertEquals(new String(masterKeys.get(0).getMasterKeyValue().get()), "MyPasswordFromEnv");
         } catch (SecureVaultException e) {
             Assert.fail("An exception occurred while reading master keys.");
@@ -224,7 +225,7 @@ public class DefaultMasterKeyReaderTest {
         List<MasterKey> masterKeys = new ArrayList<>();
         masterKeys.add(new MasterKey("MasterKey1"));
         try {
-            masterKeyReader.readMasterKeys(masterKeys);
+            masterKeyReaderWithInvaildPath.readMasterKeys(masterKeys);
             Assert.assertEquals(new String(masterKeys.get(0).getMasterKeyValue().get()), "MyPasswordFromSys");
         } catch (SecureVaultException e) {
             Assert.fail("An exception occurred while reading master keys.");
@@ -237,13 +238,15 @@ public class DefaultMasterKeyReaderTest {
      * @param masterKeyReaderPath master key reader path
      * @throws SecureVaultException on initializing master key reader
      */
-    private void setMasterKeyReader(Path masterKeyReaderPath) throws SecureVaultException {
+    private MasterKeyReader getMasterKeyReader(Path masterKeyReaderPath) throws SecureVaultException {
+
         MasterKeyReaderConfiguration configuration = new MasterKeyReaderConfiguration();
         configuration.setParameter(SecureVaultConstants.MASTER_KEYS_YAML_CONFIG_PROPERTY, masterKeyReaderPath
                 .toAbsolutePath().toString());
 
         // Set and init master key reader
-        masterKeyReader = new DefaultMasterKeyReader();
+        MasterKeyReader masterKeyReader = new DefaultMasterKeyReader();
         masterKeyReader.init(configuration);
+        return masterKeyReader;
     }
 }
