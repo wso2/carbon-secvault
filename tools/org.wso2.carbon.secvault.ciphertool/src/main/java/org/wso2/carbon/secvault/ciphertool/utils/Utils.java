@@ -89,7 +89,7 @@ public class Utils {
 
         try {
             Method initMethod = objCipherTool.getClass()
-                    .getMethod(CipherToolConstants.INIT_METHOD, URLClassLoader.class);
+                    .getMethod(CipherToolConstants.INIT_METHOD, URLClassLoader.class, Path.class);
             initMethod.invoke(objCipherTool, urlClassLoader, secureVaultConfigPath);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new CipherToolException("Failed to initialize Cipher Tool", e);

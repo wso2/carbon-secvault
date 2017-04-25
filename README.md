@@ -14,7 +14,7 @@ There are three files that are needed by the SecureVault:
             type: org.wso2.carbon.secvault.repository.DefaultSecretRepository
             parameters:
               privateKeyAlias: wso2carbon
-              keystoreLocation: resources/security/wso2carbon.jks
+              keystoreLocation: resources/security/securevault.jks
               secretPropertiesFile: conf/secrets.properties
           masterKeyReader:
             type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader

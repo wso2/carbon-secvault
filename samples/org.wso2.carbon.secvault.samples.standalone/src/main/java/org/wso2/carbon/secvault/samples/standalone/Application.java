@@ -90,7 +90,7 @@ public class Application {
      */
     private static void deleteCopiedFiles() {
         try {
-            Files.deleteIfExists(Paths.get(FILE_FOLDER, "resources", "security", "wso2carbon.jks"));
+            Files.deleteIfExists(Paths.get(FILE_FOLDER, "resources", "security", "securevault.jks"));
             Files.deleteIfExists(Paths.get(FILE_FOLDER, "resources", "security"));
             Files.deleteIfExists(Paths.get(FILE_FOLDER, "resources"));
             Files.deleteIfExists(Paths.get(FILE_FOLDER, "securevault", "conf", SecureVaultConstants
@@ -115,7 +115,7 @@ public class Application {
         String[] masterKeysPaths = {"securevault", "conf", SecureVaultConstants.MASTER_KEYS_FILE_NAME};
         String[] secretPropertiesPath = {"securevault", "conf", SecureVaultConstants.SECRETS_PROPERTIES_FILE_NAME};
         String[] secureVaultYamlPath = {"securevault", "conf", SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME};
-        String[] jksResourcePath = {"resources", "security", "wso2carbon.jks"};
+        String[] jksResourcePath = {"resources", "security", "securevault.jks"};
 
         // Copy config files
         try {
@@ -134,7 +134,7 @@ public class Application {
                      .orElseThrow(() -> new IOException("Error in copying " +
                              SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME));
              InputStream jksInputStream = getResourceInputStream(jksResourcePath)
-                     .orElseThrow(() -> new IOException("Error in copying file wso2carbon.jks"))) {
+                     .orElseThrow(() -> new IOException("Error in copying file securevault.jks"))) {
             Files.copy(masterKeyInputStream, Paths.get(FILE_FOLDER, masterKeysPaths));
             Files.copy(secretPropertiesInputStream, Paths.get(FILE_FOLDER, secretPropertiesPath));
             Files.copy(secureVaultYamlInputStream, Paths.get(FILE_FOLDER, secureVaultYamlPath));

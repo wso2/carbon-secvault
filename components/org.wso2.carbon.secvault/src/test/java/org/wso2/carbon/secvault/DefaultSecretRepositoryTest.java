@@ -82,7 +82,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon"));
         replay(secretRepositoryConfiguration);
@@ -101,7 +101,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "nonExisting", "wso2carbon.jks").toString()));
+                        "nonExisting", "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon"));
         replay(secretRepositoryConfiguration);
@@ -120,7 +120,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("nonExistingWso2carbon"));
         replay(secretRepositoryConfiguration);
@@ -150,7 +150,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
@@ -176,7 +176,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
@@ -198,7 +198,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
@@ -221,7 +221,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
@@ -246,7 +246,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))
@@ -271,7 +271,7 @@ public class DefaultSecretRepositoryTest {
 
         expect(secretRepositoryConfiguration.getParameter("keystoreLocation"))
                 .andReturn(Optional.of(Paths.get("src", "test", "resources", "resources", "security",
-                        "wso2carbon.jks").toString()));
+                        "securevault.jks").toString()));
         expect(secretRepositoryConfiguration.getParameter("privateKeyAlias"))
                 .andReturn(Optional.of("wso2carbon")).anyTimes();
         expect(secretRepositoryConfiguration.getParameter(SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY))

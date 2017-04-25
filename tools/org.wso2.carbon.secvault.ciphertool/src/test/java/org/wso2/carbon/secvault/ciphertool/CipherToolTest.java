@@ -62,8 +62,8 @@ public class CipherToolTest {
         }
 
         String originalPassword = "ABC@1234";
-        char[] cipherText = cipherTool.encryptText(originalPassword);
-        char[] plainText = cipherTool.decryptText(new String(cipherText));
-        Assert.assertEquals(plainText, originalPassword.toCharArray());
+        String cipherText = cipherTool.encryptText(originalPassword);
+        String plainText = cipherTool.decryptText(new String(cipherText));
+        Assert.assertEquals(plainText, originalPassword);
     }
 }
