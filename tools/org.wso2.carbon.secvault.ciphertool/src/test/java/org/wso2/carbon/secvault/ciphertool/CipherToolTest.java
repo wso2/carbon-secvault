@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit tests class for CipherTool
+ * Unit tests class for CipherTool.
  *
  * @since 5.0.0
  */
