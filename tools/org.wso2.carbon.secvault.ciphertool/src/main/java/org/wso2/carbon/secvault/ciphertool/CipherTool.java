@@ -80,10 +80,10 @@ public class CipherTool {
      * @return encrypted text
      * @throws SecureVaultException error on encrypting plain text
      */
-    public String encryptText(String plainText) throws SecureVaultException {
+    public char[] encryptText(String plainText) throws SecureVaultException {
         byte[] encryptedPassword = secretRepository.encrypt(SecureVaultUtils.toBytes(plainText.trim()));
-        String base64Encoded = new String(SecureVaultUtils.toChars(SecureVaultUtils.base64Encode(encryptedPassword)));
-        logger.info("Encrypted value : " + base64Encoded);
+        char[] base64Encoded = SecureVaultUtils.toChars(SecureVaultUtils.base64Encode(encryptedPassword));
+        logger.info("Encrypted value : " + new String(base64Encoded));
         return base64Encoded;
     }
 
@@ -94,11 +94,10 @@ public class CipherTool {
      * @return decrypted text (plain text)
      * @throws SecureVaultException error on decrypting text
      */
-    public String decryptText(String cipherText) throws SecureVaultException {
+    public char[] decryptText(String cipherText) throws SecureVaultException {
         byte[] decryptedPassword = secretRepository.decrypt(SecureVaultUtils
                 .base64Decode(SecureVaultUtils.toBytes(cipherText)));
-        String plainText = new String(SecureVaultUtils.toChars(decryptedPassword));
-        logger.info("Decrypted value : " + plainText);
-        return plainText;
+        logger.info("Decrypted value : " + new String(SecureVaultUtils.toChars(decryptedPassword)));
+        return SecureVaultUtils.toChars(decryptedPassword);
     }
 }
