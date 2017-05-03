@@ -93,7 +93,7 @@ public class CipherToolInitializerTest {
         EasyMock.expect(Utils.createCipherTool(urlClassLoader, Paths.get(commandLineParser.getCustomConfigPath().get
                 ()))).andReturn(cipherTool);
 
-        EasyMock.expect(cipherTool.encryptText(EasyMock.anyObject())).andReturn("dummy");
+        EasyMock.expect(cipherTool.encryptText(EasyMock.anyObject())).andReturn("dummy".toCharArray());
 
         PowerMock.replayAll();
         EasyMock.replay(urlClassLoader);
@@ -116,7 +116,7 @@ public class CipherToolInitializerTest {
         EasyMock.expect(Utils.createCipherTool(urlClassLoader, Paths.get(commandLineParser.getCustomConfigPath().get
                 ()))).andReturn(cipherTool);
 
-        EasyMock.expect(cipherTool.decryptText(EasyMock.anyObject())).andReturn("dummy");
+        EasyMock.expect(cipherTool.decryptText(EasyMock.anyObject())).andReturn("dummy".toCharArray());
 
         PowerMock.replayAll();
         EasyMock.replay(urlClassLoader);
