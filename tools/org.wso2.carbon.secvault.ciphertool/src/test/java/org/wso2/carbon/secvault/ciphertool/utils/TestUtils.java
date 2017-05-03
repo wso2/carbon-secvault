@@ -44,8 +44,11 @@ import java.util.Properties;
  */
 public class TestUtils {
     private static final String WSO2_CARBON_PASSWORD = "wso2carbon";
+    private static final String OS_NAME_KEY = "os.name";
+    private static final String WINDOWS_PARAM = "indow";
+
     /**
-     * Create master key file
+     * Create master key file.
      *
      * @param file                   file instance
      * @param masterKeyConfiguration master key configuration
@@ -98,9 +101,14 @@ public class TestUtils {
      * @return path of the resources
      */
     public static Optional<Path> getResourcePath(String... resourcePaths) {
-        URL resourceURL = SecureVaultUtils.class.getClassLoader().getResource(Paths.get("", resourcePaths).toString());
+        URL resourceURL = SecureVaultUtils.class.getClassLoader().getResource("");
         if (resourceURL != null) {
-            return Optional.ofNullable(Paths.get(resourceURL.getPath()));
+            String resourcePath = resourceURL.getPath();
+            if (resourcePath != null) {
+                resourcePath = System.getProperty(OS_NAME_KEY).contains(WINDOWS_PARAM) ?
+                        resourcePath.substring(1) : resourcePath;
+                return Optional.ofNullable(Paths.get(resourcePath, resourcePaths));
+            }
         }
         return Optional.empty(); // Resource do not exist
     }
