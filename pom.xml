@@ -187,7 +187,7 @@
         <carbon.secure.vault.package.export.version>5.0.0</carbon.secure.vault.package.export.version>
 
         <!-- Carbon dependencies -->
-        <carbon.utils.version>1.2.0</carbon.utils.version>
+        <carbon.utils.version>1.2.1</carbon.utils.version>
         <carbon.utils.package.import.version.range>[1.0.0, 2.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
