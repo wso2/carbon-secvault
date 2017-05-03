@@ -80,7 +80,7 @@ public class SecureVaultConfigurationProviderTest {
                 "org.wso2.carbon.secvault.repository.DefaultSecretRepository");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("privateKeyAlias").get(), "wso2carbon");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("keystoreLocation").get(),
-                "src/test/resources/resources/security/wso2carbon.jks");
+                "src/test/resources/resources/security/securevault.jks");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("secretPropertiesFile").get(),
                 "src/test/resources/securevault/conf/secrets.properties");
         Assert.assertEquals(secretRepositoryConfiguration.getParameter("nonExistingParam"), Optional.empty());
