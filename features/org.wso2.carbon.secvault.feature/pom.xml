@@ -53,6 +53,7 @@
                                         <include>bin/**</include>
                                         <include>conf/**</include>
                                         <include>resources/**</include>
+                                        <include>config-docs/**</include>
                                         <include>p2.inf</include>
                                         <include>build.properties</include>
                                     </includes>
