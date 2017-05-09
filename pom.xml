@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.secvault</groupId>
     <artifactId>carbon-secvault</artifactId>
-    <version>5.0.3</version>
+    <version>5.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Secure Vault - Parent</name>
     <url>http://wso2.com</url>
@@ -32,7 +32,7 @@
         <url>https://github.com/wso2/carbon-secvault.git</url>
         <developerConnection>scm:git:https://github.com/wso2/carbon-secvault.git</developerConnection>
         <connection>scm:git:https://github.com/wso2/carbon-secvault.git</connection>
-        <tag>v5.0.3</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <modules>
