@@ -16,12 +16,11 @@
 
 package org.wso2.carbon.secvault.ciphertool;
 
-import org.wso2.carbon.secvault.SecureVaultConstants;
-import org.wso2.carbon.secvault.SecureVaultUtils;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolException;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolRuntimeException;
 import org.wso2.carbon.secvault.ciphertool.utils.CommandLineParser;
 import org.wso2.carbon.secvault.ciphertool.utils.Utils;
+import org.wso2.carbon.utils.Constants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -67,9 +66,10 @@ public class CipherToolInitializer {
 
         if (commandLineParser.getCustomConfigPath().isPresent()) {
             secureVaultConfigPath = Paths.get(commandLineParser.getCustomConfigPath().get());
-        } else if (SecureVaultUtils.isOSGIEnv()) {
-            secureVaultConfigPath = org.wso2.carbon.utils.Utils.getCarbonConfigHome().resolve
-                    (SecureVaultConstants.SECURE_VAULT_CONFIG_YAML_FILE_NAME);
+        } else if (System.getProperty(Constants.CARBON_HOME) != null || System.getenv(Constants.CARBON_HOME_ENV) !=
+                null) {
+            secureVaultConfigPath = org.wso2.carbon.utils.Utils.getRuntimeConfigPath().resolve(Constants
+                    .DEPLOYMENT_CONFIG_YAML);
         } else {
             throw new CipherToolRuntimeException("Secure vault YAML path is not set");
         }
