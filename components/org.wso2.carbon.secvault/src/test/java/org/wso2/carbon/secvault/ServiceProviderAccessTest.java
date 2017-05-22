@@ -44,6 +44,6 @@ public class ServiceProviderAccessTest {
         String alias = "wso2.sample.password2";
         SecureVault secureVault = new SecureVaultFactory().getSecureVault(secureVaultYAMLPath)
                 .orElseThrow(() -> new SecureVaultException("Error in obtaining secure vault instance"));
-        Assert.assertEquals(String.valueOf(secureVault.resolve(alias)), "ABC@123");
+        Assert.assertEquals(String.valueOf(secureVault.resolve(alias)), "ABC@1234");
     }
 }

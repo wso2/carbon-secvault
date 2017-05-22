@@ -7,6 +7,11 @@ There are three files that are needed by the SecureVault:
 
 1. secure-vault.yaml: 
     Configurations that are required for configuring the SecureVault are given in this file. It has two major sections (`secretRepository:` and `masterKeyReader:`) which corresponds to the initialization of SecretRepository and MasterKeyReader.
+
+    **In OSGi mode**, Separate configuration file (secure-vault.yaml) is not maintained, instead SecureVault configurations are saved in deployment.yaml (global configuration file).
+
+    **In non-OSGi mode**, SecureVault configuration can be maintained as a separate file (secure-vault.yaml) or can be merged it to server configuration file.
+
     Example:
     
         wso2.securevault:
@@ -14,7 +19,7 @@ There are three files that are needed by the SecureVault:
             type: org.wso2.carbon.secvault.repository.DefaultSecretRepository
             parameters:
               privateKeyAlias: wso2carbon
-              keystoreLocation: resources/security/wso2carbon.jks
+              keystoreLocation: resources/security/securevault.jks
               secretPropertiesFile: conf/secrets.properties
           masterKeyReader:
             type: org.wso2.carbon.secvault.reader.DefaultMasterKeyReader

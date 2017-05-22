@@ -82,7 +82,9 @@ public class CipherTool {
      */
     public char[] encryptText(String plainText) throws SecureVaultException {
         byte[] encryptedPassword = secretRepository.encrypt(SecureVaultUtils.toBytes(plainText.trim()));
-        return SecureVaultUtils.toChars(SecureVaultUtils.base64Encode(encryptedPassword));
+        char[] base64Encoded = SecureVaultUtils.toChars(SecureVaultUtils.base64Encode(encryptedPassword));
+        logger.info("Encrypted value : " + new String(base64Encoded));
+        return base64Encoded;
     }
 
     /**
@@ -95,6 +97,7 @@ public class CipherTool {
     public char[] decryptText(String cipherText) throws SecureVaultException {
         byte[] decryptedPassword = secretRepository.decrypt(SecureVaultUtils
                 .base64Decode(SecureVaultUtils.toBytes(cipherText)));
+        logger.info("Decrypted value : " + new String(SecureVaultUtils.toChars(decryptedPassword)));
         return SecureVaultUtils.toChars(decryptedPassword);
     }
 }
