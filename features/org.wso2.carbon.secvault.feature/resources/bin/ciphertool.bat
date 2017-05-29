@@ -29,10 +29,20 @@ goto end
 rem ----- Only set CARBON_HOME if not already set ----------------------------
 :checkServer
 rem %~sdp0 is expanded pathname of the current script under NT with spaces in the path removed
-if "%CARBON_HOME%"=="" set CARBON_HOME=%~sdp0..
+if "%CARBON_HOME%"=="" set CARBON_HOME=%~sdp0..\..\..
 SET curDrive=%cd:~0,1%
 SET wsasDrive=%CARBON_HOME:~0,1%
 if not "%curDrive%" == "%wsasDrive%" %wsasDrive%:
+
+rem ----- Only set RUNTIME_HOME if not already set ----------------------------
+:setRuntimeHome
+if "%RUNTIME_HOME%"=="" set RUNTIME_HOME=%~sdp0..
+rem --- derive RUNTIME NAME from the RUNTIME_HOME path.
+cd /d %RUNTIME_HOME%
+set path1=%cd%
+cd ..
+set path2=%cd%
+call set "RUNTIME=%%path1:%path2%\=%%"
 
 rem find CARBON_HOME if it does not exist due to either an invalid value passed
 rem by the user or the %0 problem on Windows 9x
@@ -64,11 +74,15 @@ goto jdk16
 :jdk16
 goto runTool
 
+rem ----------------- Execute The Requested Command ----------------------------
 :runTool
 echo JAVA_HOME environment variable is set to %JAVA_HOME%
 echo CARBON_HOME environment variable is set to %CARBON_HOME%
-cd %CARBON_HOME%\bin\bootstrap\tools
-java -jar org.wso2.carbon.secvault.ciphertool.jar %*
+echo RUNTIME_HOME environment variable is set to %RUNTIME_HOME%
+
+cd %RUNTIME_HOME%
+set CMD_LINE_ARGS= -Dcarbon.home="%CARBON_HOME%" -Dwso2.runtime.path="%RUNTIME_HOME%" -Dwso2.runtime="%RUNTIME%"
+"%JAVA_HOME%\bin\java" %CMD_LINE_ARGS% -jar bin\bootstrap\tools\org.wso2.carbon.secvault.ciphertool.jar %*
 
 :end
 goto endlocal
