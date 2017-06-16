@@ -62,6 +62,7 @@ CipherTool also depends on the configurations given in the file. Therefore, it i
 
 For more information, Please refer document link below,
 
+* [How to use ciphertool scripts](tools/org.wso2.carbon.secvault.ciphertool/README.md)
 * [How to Implement the Custom Master Key Reader](docs/CustomMasterKeyReader.md)
 * [How to Implement the Secret Repository](docs/CustomSecretRepository.md)
-* [Installing Secure Vault Feature](docs/InstallingSecvaultFeature.md)
+* [How to install Secure Vault Feature](docs/InstallingSecvaultFeature.md)
