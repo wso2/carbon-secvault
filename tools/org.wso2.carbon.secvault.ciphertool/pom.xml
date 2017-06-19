@@ -104,7 +104,7 @@
                             </descriptors>
                             <finalName>org.wso2.carbon.secvault.ciphertool</finalName>
                             <outputDirectory>
-                                ../../features/org.wso2.carbon.secvault.feature/resources/bin/bootstrap/tools
+                                ../../features/org.wso2.carbon.secvault.tool.feature/resources/bin/bootstrap/tools
                             </outputDirectory>
                         </configuration>
                     </execution>

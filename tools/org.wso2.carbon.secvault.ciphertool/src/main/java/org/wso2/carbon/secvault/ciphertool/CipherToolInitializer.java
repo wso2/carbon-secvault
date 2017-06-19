@@ -22,8 +22,11 @@ import org.wso2.carbon.secvault.ciphertool.utils.CommandLineParser;
 import org.wso2.carbon.secvault.ciphertool.utils.Utils;
 import org.wso2.carbon.utils.Constants;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,17 +71,40 @@ public class CipherToolInitializer {
             secureVaultConfigPath = Paths.get(commandLineParser.getCustomConfigPath().get());
         } else if (System.getProperty(Constants.CARBON_HOME) != null || System.getenv(Constants.CARBON_HOME_ENV) !=
                 null) {
-            secureVaultConfigPath = org.wso2.carbon.utils.Utils.getRuntimeConfigPath().resolve(Constants
-                    .DEPLOYMENT_CONFIG_YAML);
+            try {
+                URL configResource = CipherToolInitializer.class.getResource("secure-vault.yaml");
+                secureVaultConfigPath = Paths.get(configResource.toURI());
+            } catch (URISyntaxException e) {
+                throw new CipherToolRuntimeException("Error while reading the securevault yaml file");
+            }
         } else {
             throw new CipherToolRuntimeException("Secure vault YAML path is not set");
         }
 
         try {
-            Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
-            processCommand(commandLineParser.getCommandName().orElse(""),
-                    commandLineParser.getCommandParam().orElse(""), objCipherTool);
-        } catch (CipherToolException e) {
+            String commandName = commandLineParser.getCommandName().orElse("");
+            String commandParam = commandLineParser.getCommandParam().orElse("");
+            String runtime = commandLineParser.getCommandName().isPresent() ? commandLineParser.getRuntime().orElse
+                    ("") : commandLineParser.getRuntime().orElseGet(() -> {
+                logger.info("runtime is not provided. Hence encrypting all runtimes");
+                return "ALL";
+            });
+            if ("ALL".equals(runtime)) {
+                org.wso2.carbon.utils.Utils.getCarbonRuntimes().forEach(carbonRuntime -> {
+                    try {
+                        System.setProperty(Constants.RUNTIME, carbonRuntime);
+                        Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
+                        processCommand(commandName, commandParam, objCipherTool);
+                    } catch (CipherToolException e) {
+                        throw new CipherToolRuntimeException("Error while running ciphertool in all runtimes.", e);
+                    }
+                });
+            } else {
+                System.setProperty(Constants.RUNTIME, runtime);
+                Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
+                processCommand(commandName, commandParam, objCipherTool);
+            }
+        } catch (CipherToolException | IOException e) {
             throw new CipherToolRuntimeException("Unable to run CipherTool", e);
         }
     }

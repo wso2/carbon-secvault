@@ -41,6 +41,7 @@
         <module>features/org.wso2.carbon.secvault.feature</module>
         <module>tests/org.wso2.carbon.secvault.tests.coverage</module>
         <module>samples/org.wso2.carbon.secvault.samples.standalone</module>
+        <module>features/org.wso2.carbon.secvault.tool.feature</module>
     </modules>
 
     <dependencyManagement>
@@ -187,7 +188,7 @@
         <carbon.secure.vault.package.export.version>5.0.0</carbon.secure.vault.package.export.version>
 
         <!-- Carbon dependencies -->
-        <carbon.utils.version>1.2.1</carbon.utils.version>
+        <carbon.utils.version>1.2.2-SNAPSHOT</carbon.utils.version>
         <carbon.utils.package.import.version.range>[1.0.0, 2.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->

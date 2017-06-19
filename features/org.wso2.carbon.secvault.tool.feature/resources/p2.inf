@@ -1,0 +1,6 @@
+instructions.configure = \
+org.wso2.carbon.extensions.touchpoint.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault_${feature.version}/bin,target:${installFolder}/../../bin/,overwrite:true);\
+org.wso2.carbon.extensions.touchpoint.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault_${feature.version}/bin/bootstrap/tools,target:${installFolder}/../../bin/bootstrap/tools,overwrite:true);\
+org.wso2.carbon.extensions.touchpoint.chmod(targetDir:${installFolder}/../../bin,targetFile:ciphertool.sh,permissions:755);\
+org.wso2.carbon.extensions.touchpoint.chmod(targetDir:${installFolder}/../../bin,targetFile:ciphertool.bat,permissions:755);\
+org.wso2.carbon.extensions.touchpoint.chmod(targetDir:${installFolder}/../../bin/bootstrap/tools,targetFile:org.wso2.carbon.secvault.ciphertool.jar,permissions:755);\
