@@ -52,20 +52,13 @@ done
 #Set the runtimehome based on carbon.sh location
 TEMPCURDIR=`dirname "$PRG"`
 
-# Only set RUNTIME_HOME if not already set
-[ -z "$RUNTIME_HOME" ] && RUNTIME_HOME=`cd "$TEMPCURDIR/.." ; pwd`
-
 # Only set CARBON_HOME if not already set
-[ -z "$CARBON_HOME" ] && CARBON_HOME=`cd "$TEMPCURDIR/../../../" ; pwd`
-
-# Only set RUNTIME if not already set
-[ -z "$RUNTIME" ] && RUNTIME=${RUNTIME_HOME##*/}
+[ -z "$CARBON_HOME" ] && CARBON_HOME=`cd "$TEMPCURDIR/.." ; pwd`
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin; then
   [ -n "$JAVA_HOME" ] && JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
   [ -n "$CARBON_HOME" ] && CARBON_HOME=`cygpath --unix "$CARBON_HOME"`
-  [ -n "$RUNTIME_HOME" ] && RUNTIME_HOME=`cygpath --unix "$RUNTIME_HOME"`
   [ -n "$CLASSPATH" ] && CLASSPATH=`cygpath --path --unix "$CLASSPATH"`
 fi
 
@@ -126,18 +119,14 @@ fi
 if $cygwin; then
   JAVA_HOME=`cygpath --absolute --windows "$JAVA_HOME"`
   CARBON_HOME=`cygpath --absolute --windows "$CARBON_HOME"`
-  RUNTIME_HOME=`cygpath --absolute --windows "$RUNTIME_HOME"`
   CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
 fi
 
 echo JAVA_HOME environment variable is set to $JAVA_HOME
 echo CARBON_HOME environment variable is set to $CARBON_HOME
-echo RUNTIME_HOME environment variable is set to $RUNTIME_HOME
 
-cd "$RUNTIME_HOME";
+cd "$CARBON_HOME";
 
 $JAVACMD \
     -Dcarbon.home="$CARBON_HOME" \
-    -Dwso2.runtime.path="$RUNTIME_HOME" \
-    -Dwso2.runtime="$RUNTIME" \
     -jar bin/bootstrap/tools/org.wso2.carbon.secvault.ciphertool.jar $*

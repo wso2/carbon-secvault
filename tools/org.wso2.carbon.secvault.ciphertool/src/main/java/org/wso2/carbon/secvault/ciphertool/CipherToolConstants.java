@@ -27,6 +27,7 @@ public class CipherToolConstants {
     public static final String ENCRYPT_TEXT_COMMAND = "-encryptText";
     public static final String DECRYPT_TEXT_COMMAND = "-decryptText";
     public static final String CUSTOM_LIB_PATH_COMMAND = "-customLibPath";
+    public static final String EXECUTE_RUNTIME = "-runtime";
 
     public static final String INIT_METHOD = "init";
     public static final String ENCRYPT_SECRETS_METHOD = "encryptSecrets";

@@ -32,6 +32,7 @@ public class CommandLineParser {
     private String customLibPath;
     private String commandName;
     private String commandParam;
+    private String runtime;
 
     public CommandLineParser(String... args) throws CipherToolException {
         if (args.length > 6 || args.length % 2 != 0) {
@@ -46,6 +47,9 @@ public class CommandLineParser {
                         break;
                     case CipherToolConstants.CUSTOM_LIB_PATH_COMMAND:
                         customLibPath = args[i + 1];
+                        break;
+                    case CipherToolConstants.EXECUTE_RUNTIME:
+                        runtime = args[i + 1];
                         break;
                     case CipherToolConstants.ENCRYPT_TEXT_COMMAND:
                         commandName = CipherToolConstants.ENCRYPT_TEXT_COMMAND;
@@ -96,5 +100,9 @@ public class CommandLineParser {
      */
     public Optional<String> getCommandParam() {
         return Optional.ofNullable(commandParam);
+    }
+
+    public Optional<String> getRuntime() {
+        return Optional.ofNullable(runtime);
     }
 }
