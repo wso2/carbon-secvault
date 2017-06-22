@@ -25,8 +25,6 @@ import org.wso2.carbon.utils.Constants;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,23 +69,19 @@ public class CipherToolInitializer {
             secureVaultConfigPath = Paths.get(commandLineParser.getCustomConfigPath().get());
         } else if (System.getProperty(Constants.CARBON_HOME) != null || System.getenv(Constants.CARBON_HOME_ENV) !=
                 null) {
-            try {
-                URL configResource = CipherToolInitializer.class.getResource("secure-vault.yaml");
-                secureVaultConfigPath = Paths.get(configResource.toURI());
-            } catch (URISyntaxException e) {
-                throw new CipherToolRuntimeException("Error while reading the securevault yaml file");
-            }
+            secureVaultConfigPath = org.wso2.carbon.utils.Utils.getRuntimeConfigPath().resolve(Constants
+                    .DEPLOYMENT_CONFIG_YAML);
         } else {
             throw new CipherToolRuntimeException("Secure vault YAML path is not set");
         }
 
+        String commandName = commandLineParser.getCommandName().orElse("");
+        String commandParam = commandLineParser.getCommandParam().orElse("");
+
         try {
-            String commandName = commandLineParser.getCommandName().orElse("");
-            String commandParam = commandLineParser.getCommandParam().orElse("");
-            String runtime = commandLineParser.getCommandName().isPresent() ? commandLineParser.getRuntime().orElse
-                    ("") : commandLineParser.getRuntime().orElseGet(() -> {
+            String runtime = commandLineParser.getRuntime().orElseGet(() -> {
                 logger.info("runtime is not provided. Hence encrypting all runtimes");
-                return "ALL";
+                return "";
             });
             if ("ALL".equals(runtime)) {
                 org.wso2.carbon.utils.Utils.getCarbonRuntimes().forEach(carbonRuntime -> {
