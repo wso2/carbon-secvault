@@ -39,9 +39,9 @@
         <module>components/org.wso2.carbon.secvault</module>
         <module>tools/org.wso2.carbon.secvault.ciphertool</module>
         <module>features/org.wso2.carbon.secvault.feature</module>
+        <module>features/org.wso2.carbon.secvault.tool.feature</module>
         <module>tests/org.wso2.carbon.secvault.tests.coverage</module>
         <module>samples/org.wso2.carbon.secvault.samples.standalone</module>
-        <module>features/org.wso2.carbon.secvault.tool.feature</module>
     </modules>
 
     <dependencyManagement>
@@ -49,7 +49,7 @@
             <dependency>
                 <groupId>org.wso2.carbon.secvault</groupId>
                 <artifactId>org.wso2.carbon.secvault</artifactId>
-                <version>${project.version}</version>
+                <version>${carbon.secure.vault.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.eclipse.osgi</groupId>
@@ -185,7 +185,8 @@
         <javax.crypto.version.range>[0.0.0,1.0.0)</javax.crypto.version.range>
 
         <!-- Carbon Secure Vault version -->
-        <carbon.secure.vault.package.export.version>5.0.0</carbon.secure.vault.package.export.version>
+        <carbon.secure.vault.version>5.0.5-SNAPSHOT</carbon.secure.vault.version>
+        <carbon.secure.vault.package.export.version>5.0.5</carbon.secure.vault.package.export.version>
 
         <!-- Carbon dependencies -->
         <carbon.utils.version>1.2.2-SNAPSHOT</carbon.utils.version>

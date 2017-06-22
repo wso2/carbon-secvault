@@ -85,7 +85,7 @@
                             <bundles>
                                 <bundle>
                                     <symbolicName>org.wso2.carbon.secvault</symbolicName>
-                                    <version>${project.version}</version>
+                                    <version>${carbon.secure.vault.version}</version>
                                 </bundle>
                             </bundles>
                             <importFeatures>

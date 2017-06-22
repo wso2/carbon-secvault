@@ -35,7 +35,7 @@ public class CommandLineParser {
     private String runtime;
 
     public CommandLineParser(String... args) throws CipherToolException {
-        if (args.length > 6 || args.length % 2 != 0) {
+        if (args.length % 2 != 0) {
             throw new CipherToolException("Invalid argument count.");
         }
 
@@ -102,6 +102,11 @@ public class CommandLineParser {
         return Optional.ofNullable(commandParam);
     }
 
+    /**
+     * Get runtime
+     *
+     * @return runtime
+     */
     public Optional<String> getRuntime() {
         return Optional.ofNullable(runtime);
     }
