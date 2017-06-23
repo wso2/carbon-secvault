@@ -49,11 +49,11 @@ while [ -h "$PRG" ]; do
   fi
 done
 
-#Set the runtimehome based on carbon.sh location
-TEMPCURDIR=`dirname "$PRG"`
+# Get standard environment variables
+PRGDIR=`dirname "$PRG"`
 
 # Only set CARBON_HOME if not already set
-[ -z "$CARBON_HOME" ] && CARBON_HOME=`cd "$TEMPCURDIR/.." ; pwd`
+[ -z "$CARBON_HOME" ] && CARBON_HOME=`cd "$PRGDIR/.." ; pwd`
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin; then
@@ -129,4 +129,4 @@ cd "$CARBON_HOME";
 
 $JAVACMD \
     -Dcarbon.home="$CARBON_HOME" \
-    -jar bin/bootstrap/tools/org.wso2.carbon.secvault.ciphertool.jar $*
+    -cp "bin/tools/*" org.wso2.carbon.secvault.ciphertool.CipherToolInitializer $*

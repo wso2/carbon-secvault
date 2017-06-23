@@ -1,0 +1,5 @@
+instructions.configure = \
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault.tools_${feature.version}/bin,target:${installFolder}/../../bin/,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../lib/features/org.wso2.carbon.secvault.tools_${feature.version}/tools/,target:${installFolder}/../../bin/tools/,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.chmod(targetDir:${installFolder}/../../bin,targetFile:ciphertool.sh,permissions:755);\
+org.eclipse.equinox.p2.touchpoint.natives.chmod(targetDir:${installFolder}/../../bin,targetFile:ciphertool.bat,permissions:755);\

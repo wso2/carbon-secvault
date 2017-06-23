@@ -16,6 +16,8 @@
 
 package org.wso2.carbon.secvault.ciphertool;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolException;
 import org.wso2.carbon.secvault.ciphertool.exceptions.CipherToolRuntimeException;
 import org.wso2.carbon.secvault.ciphertool.utils.CommandLineParser;
@@ -28,8 +30,6 @@ import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * The Java class which defines the CipherToolInitializer as a CarbonTool.
@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  */
 public class CipherToolInitializer {
 
-    private static final Logger logger = Logger.getLogger(CipherToolInitializer.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(CipherToolInitializer.class.getName());
 
     private CipherToolInitializer() {
     }
@@ -57,46 +57,68 @@ public class CipherToolInitializer {
         try {
             commandLineParser = Utils.createCommandLineParser(toolArgs);
         } catch (CipherToolException e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.error("Unable to run CipherTool", e);
             printHelpMessage();
             throw new CipherToolRuntimeException("Unable to run CipherTool", e);
         }
 
         URLClassLoader urlClassLoader = Utils.getCustomClassLoader(commandLineParser.getCustomLibPath());
-        Path secureVaultConfigPath;
 
-        if (commandLineParser.getCustomConfigPath().isPresent()) {
-            secureVaultConfigPath = Paths.get(commandLineParser.getCustomConfigPath().get());
-        } else if (System.getProperty(Constants.CARBON_HOME) != null || System.getenv(Constants.CARBON_HOME_ENV) !=
-                null) {
-            secureVaultConfigPath = org.wso2.carbon.utils.Utils.getRuntimeConfigPath().resolve(Constants
-                    .DEPLOYMENT_CONFIG_YAML);
-        } else {
-            throw new CipherToolRuntimeException("Secure vault YAML path is not set");
-        }
+        String customConfigPath = commandLineParser.getRuntime().isPresent() ? null : commandLineParser
+                .getCustomConfigPath()
+                .orElseThrow(() -> new CipherToolRuntimeException("Secure Vault configuration file path or runtime " +
+                        "is not provided."));
 
         String commandName = commandLineParser.getCommandName().orElse("");
         String commandParam = commandLineParser.getCommandParam().orElse("");
 
         try {
             String runtime = commandLineParser.getRuntime().orElseGet(() -> {
-                logger.info("runtime is not provided. Hence encrypting all runtimes");
+                logger.debug("Runtime is not provided.");
                 return "";
             });
             if ("ALL".equals(runtime)) {
+                String carbonHome = System.getProperty(Constants.CARBON_HOME);
+                if (carbonHome == null) {
+                    throw new CipherToolRuntimeException("Unable to run ciphertool in all runtimes, carbon home is " +
+                            "not set");
+                }
                 org.wso2.carbon.utils.Utils.getCarbonRuntimes().forEach(carbonRuntime -> {
                     try {
                         System.setProperty(Constants.RUNTIME, carbonRuntime);
-                        Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
+                        Object objCipherTool = Utils.createCipherTool(urlClassLoader, org.wso2.carbon.utils.Utils
+                                .getRuntimeConfigPath().resolve(Constants.DEPLOYMENT_CONFIG_YAML));
                         processCommand(commandName, commandParam, objCipherTool);
+                        if (commandLineParser.getCommandName().isPresent()) {
+                            logger.info("Command: " + commandName + " executed successfully in runtime: " +
+                                    carbonRuntime);
+                        } else {
+                            logger.info("Secrets encrypted successfully in runtime: " + carbonRuntime);
+                        }
                     } catch (CipherToolException e) {
                         throw new CipherToolRuntimeException("Error while running ciphertool in all runtimes.", e);
                     }
                 });
             } else {
                 System.setProperty(Constants.RUNTIME, runtime);
+                Path secureVaultConfigPath;
+                if (customConfigPath == null) {
+                    secureVaultConfigPath = org.wso2.carbon.utils.Utils.getRuntimeConfigPath().resolve(Constants
+                            .DEPLOYMENT_CONFIG_YAML);
+                } else {
+                    secureVaultConfigPath = Paths.get(customConfigPath);
+                }
                 Object objCipherTool = Utils.createCipherTool(urlClassLoader, secureVaultConfigPath);
                 processCommand(commandName, commandParam, objCipherTool);
+                if (logger.isDebugEnabled()) {
+                    if (commandLineParser.getCommandName().isPresent()) {
+                        logger.debug("Command: " + commandName + " executed successfully with configuration file " +
+                                "path: " + secureVaultConfigPath.toString());
+                    } else {
+                        logger.debug("Secrets encrypted successfully with configuration file path: " +
+                                secureVaultConfigPath.toString());
+                    }
+                }
             }
         } catch (CipherToolException | IOException e) {
             throw new CipherToolRuntimeException("Unable to run CipherTool", e);
@@ -139,19 +161,23 @@ public class CipherToolInitializer {
     private static void printHelpMessage() {
         logger.info("\nIncorrect usage of the cipher tool.\n\n"
                 + "Instructions: sh ciphertool.sh [<command> <parameter>]\n\n"
-                + "If no commandline options are provided, CipherTool will encrypt the secrets given in the\n"
-                + "[CARBON_HOME]/conf/security/secrets.properties file. This is the default behaviour.\n"
-                + "CipherTool will read the configurations from secure-vault.yaml file. Hence it is mandatory\n"
-                + "to update the [CARBON_HOME]/conf/secure-vault.yaml file before running CipherTool\n\n"
+                + "Command line options should be provided. If you pass the runtime, CipherTool will encrypt the \n"
+                + "secrets given in the [CARBON_HOME]/conf/${runtime}/secrets.properties file.\n"
+                + "If you need to encrypt secrets in all runtimes, You need to pass command as -runtime ALL"
+                + "CipherTool will read the configurations from deployment.yaml file. Hence it is mandatory\n"
+                + "to update the [CARBON_HOME]/conf/${runtime}/deployment.yaml file before running CipherTool\n\n"
                 + "Usages:\n\n"
-                + "1. With no option specified, cipher tool will encrypt the secrets given in the\n"
-                + "   [CARBON_HOME]conf/security/secrets.properties file.\n\n"
-                + "2. -encryptText : this option will first encrypt a given text and then prints the base64 encoded\n"
+                + "1. If you runtime as -runtime XxXx, cipher tool will encrypt the secrets given in the\n"
+                + "   [CARBON_HOME]conf/XxXx/secrets.properties file.\n"
+                + "     Eg: ciphertool.sh -runtime XxXx\n\n"
+                + "2. If you need to encrypt secrets in all runtimes, you need to pass command as -runtime ALL\n"
+                + "     Eg: ciphertool.sh -runtime ALL\n\n"
+                + "3. -encryptText : this option will first encrypt a given text and then prints the base64 encoded\n"
                 + "   string of the encoded cipher text in the console.\n"
-                + "     Eg: ciphertool.sh -encryptText Abc@123\n\n"
-                + "3. -decryptText : this option accepts base64 encoded cipher text and prints the decoded plain text\n"
+                + "     Eg: ciphertool.sh -encryptText Abc@123 -runtime XxXx\n\n"
+                + "4. -decryptText : this option accepts base64 encoded cipher text and prints the decoded plain text\n"
                 + "   in the console.\n"
-                + "     Eg: ciphertool.sh -decryptText XxXxXx\n"
+                + "     Eg: ciphertool.sh -decryptText XxXxXx -runtime XxXx\n"
         );
     }
 }

@@ -160,8 +160,8 @@ public class CipherToolInitializerTest {
         CipherToolInitializer.execute(toolArgs);
     }
 
-    @Test(expectedExceptions = {CipherToolRuntimeException.class}, expectedExceptionsMessageRegExp = "Secure vault " +
-            "YAML path is not set")
+    @Test(expectedExceptions = {CipherToolRuntimeException.class}, expectedExceptionsMessageRegExp = "Secure Vault " +
+            "configuration file path or runtime is not provided.")
     public void testExecuteWithoutConfigPath() {
         String [] toolArgs = new String[]{};
         CipherToolInitializer.execute(toolArgs);
