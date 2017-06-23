@@ -10,7 +10,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>org.wso2.carbon.secvault.tool.feature</artifactId>
+    <artifactId>org.wso2.carbon.secvault.tools.feature</artifactId>
     <packaging>carbon-feature</packaging>
     <name>WSO2 Carbon Secure Vault - Tool Feature</name>
     <description>Secure vault Feature</description>
@@ -43,7 +43,9 @@
                                     <groupId>org.wso2.carbon.secvault</groupId>
                                     <artifactId>org.wso2.carbon.secvault.ciphertool</artifactId>
                                     <version>${carbon.secure.vault.version}</version>
+                                    <classifier>jar-with-dependencies</classifier>
                                     <outputDirectory>${project.build.directory}/lib/tools</outputDirectory>
+                                    <destFileName>org.wso2.carbon.secvault.ciphertool.${project.version}.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
