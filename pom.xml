@@ -109,7 +109,7 @@
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.utils</groupId>
-                <artifactId>carbon-utils</artifactId>
+                <artifactId>org.wso2.carbon.utils</artifactId>
                 <version>${carbon.utils.version}</version>
             </dependency>
             <dependency>
@@ -187,8 +187,8 @@
         <carbon.secure.vault.package.export.version>5.0.0</carbon.secure.vault.package.export.version>
 
         <!-- Carbon dependencies -->
-        <carbon.utils.version>1.2.1</carbon.utils.version>
-        <carbon.utils.package.import.version.range>[1.0.0, 2.0.0)</carbon.utils.package.import.version.range>
+        <carbon.utils.version>2.0.1</carbon.utils.version>
+        <carbon.utils.package.import.version.range>[2.0.0, 3.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
         <slf4j.api.version>1.7.12</slf4j.api.version>
