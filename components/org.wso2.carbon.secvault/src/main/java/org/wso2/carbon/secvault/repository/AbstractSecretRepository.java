@@ -23,6 +23,7 @@ import org.wso2.carbon.secvault.SecureVaultConstants;
 import org.wso2.carbon.secvault.SecureVaultUtils;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.model.SecretRepositoryConfiguration;
+import org.wso2.carbon.secvault.util.LogEncoder;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -67,7 +68,8 @@ public abstract class AbstractSecretRepository implements SecretRepository {
             String[] tokens = value.split(SecureVaultConstants.SPACE);
 
             if (tokens.length != 2) {
-                logger.error("Secret properties file contains an invalid entry at key : {}", key);
+                logger.error("Secret properties file contains an invalid entry at key : {}",
+                        LogEncoder.getEncodedString(key));
                 continue;
             }
 
@@ -103,7 +105,8 @@ public abstract class AbstractSecretRepository implements SecretRepository {
             byte[] encryptedPassword;
             String[] tokens = value.split(SecureVaultConstants.SPACE);
             if (tokens.length != 2) {
-                logger.error("Secret properties file contains an invalid entry at key : {}", key);
+                logger.error("Secret properties file contains an invalid entry at key : {}",
+                        LogEncoder.getEncodedString(key));
                 continue;
             }
 
