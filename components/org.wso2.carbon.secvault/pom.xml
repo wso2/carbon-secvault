@@ -58,6 +58,10 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.orbit.org.owasp.encoder</groupId>
+            <artifactId>encoder</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>
@@ -132,6 +136,7 @@
             org.slf4j.*;version="${slf4j.logging.package.import.version.range}",
             org.osgi.framework.*;version="${osgi.framework.package.import.version.range}",
             org.yaml.snakeyaml.*;version="${org.snakeyaml.package.import.version.range}",
+            org.owasp.encoder.*;version="${owasp.encoder.version.range}",
             javax.crypto.*;version="${javax.crypto.version.range}",
         </import.package>
     </properties>

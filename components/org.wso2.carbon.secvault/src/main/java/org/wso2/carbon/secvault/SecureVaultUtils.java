@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.internal.SecureVaultDataHolder;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
+import org.wso2.carbon.secvault.util.LogEncoder;
 import org.wso2.carbon.utils.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -82,8 +83,8 @@ public class SecureVaultUtils {
                     "configuration file path is not provided");
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Loading Secure Vault Configurations from the file: " + secureVaultConfigPath
-                    .toString());
+            logger.debug(LogEncoder.getEncodedString("Loading Secure Vault Configurations from the file: "
+                    + secureVaultConfigPath.toString()));
         }
         String resolvedFileContent = SecureVaultUtils.resolveFileToString(secureVaultConfigPath);
         Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
@@ -195,7 +196,7 @@ public class SecureVaultUtils {
             String sysPropValue = function.apply(sysPropKey);
             if (StringUtils.isNullOrEmpty(sysPropValue)) {
                 String msg = "A value for placeholder '" + sysPropKey + "' is not specified";
-                logger.error(msg);
+                logger.error(LogEncoder.getEncodedString(msg));
                 throw new SecureVaultException(msg);
             }
 

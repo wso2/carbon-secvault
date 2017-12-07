@@ -118,6 +118,11 @@
                 <version>${jacoco.version}</version>
                 <classifier>runtime</classifier>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.orbit.org.owasp.encoder</groupId>
+                <artifactId>encoder</artifactId>
+                <version>${owasp.encoder.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
@@ -206,5 +211,8 @@
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
         <maven.java.doc.plugin.version>2.10.4</maven.java.doc.plugin.version>
         <carbon.feature.plugin.version>3.1.0</carbon.feature.plugin.version>
+
+        <owasp.encoder.version>1.2.0.wso2v2</owasp.encoder.version>
+        <owasp.encoder.version.range>[1.2.0, 1.3.0)</owasp.encoder.version.range>
     </properties>
 </project>
