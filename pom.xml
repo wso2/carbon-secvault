@@ -181,7 +181,7 @@
         <!-- Version ranges -->
         <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
         <osgi.framework.package.import.version.range>[1.8.0, 2.0.0)</osgi.framework.package.import.version.range>
-        <org.snakeyaml.package.import.version.range>[1.17.0,2.0.0)</org.snakeyaml.package.import.version.range>
+        <org.snakeyaml.package.import.version.range>[1.21.0,2.0.0)</org.snakeyaml.package.import.version.range>
         <javax.crypto.version.range>[0.0.0,1.0.0)</javax.crypto.version.range>
 
         <!-- Carbon Secure Vault version -->
@@ -197,7 +197,7 @@
         <slf4j.api.version>1.7.12</slf4j.api.version>
         <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
         <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
-        <org.snakeyaml.version>1.17</org.snakeyaml.version>
+        <org.snakeyaml.version>1.21</org.snakeyaml.version>
         <testng.version>6.9.4</testng.version>
         <easymock.version>3.4</easymock.version>
         <powermock.api.easymock.version>1.6.5</powermock.api.easymock.version>
