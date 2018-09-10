@@ -39,14 +39,21 @@ public class SecureVaultActivator implements BundleActivator {
 
     @Override
     public void start(BundleContext bundleContext) throws Exception {
-        SecureVaultDataHolder.getInstance().setBundleContext(bundleContext);
-        logger.debug("Starting Secure Vault bundle");
-        logger.debug("Initializing Secure Vault config...");
-        Path secureVaultYAMLPath = Utils.getRuntimeConfigPath().resolve(Constants.DEPLOYMENT_CONFIG_YAML);
-        SecureVaultDataHolder.getInstance().setSecureVaultConfiguration(SecureVaultUtils.getSecureVaultConfig
-                (secureVaultYAMLPath).orElseThrow(() -> new SecureVaultException("Error occurred when obtaining " +
-                "secure vault configuration.")));
-        logger.debug("Secure vault config successfully initialized");
+        try {
+            SecureVaultDataHolder.getInstance().setBundleContext(bundleContext);
+            logger.debug("Starting Secure Vault bundle");
+            logger.debug("Initializing Secure Vault config...");
+            Path secureVaultYAMLPath = Utils.getRuntimeConfigPath().resolve(Constants.DEPLOYMENT_CONFIG_YAML);
+            SecureVaultDataHolder.getInstance().setSecureVaultConfiguration(SecureVaultUtils.getSecureVaultConfig
+                    (secureVaultYAMLPath).orElseThrow(() -> new SecureVaultException("Error occurred when obtaining " +
+                    "secure vault configuration.")));
+            logger.debug("Secure vault config successfully initialized");
+        } catch (Throwable throwable) {
+            logger.error("Error occurred when initializing secure vault " + throwable.getMessage(),
+                    throwable);
+            throw new SecureVaultException("Error occurred when initializing secure vault " + throwable.getMessage(),
+                    throwable);
+        }
     }
 
     @Override
