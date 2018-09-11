@@ -49,10 +49,8 @@ public class SecureVaultActivator implements BundleActivator {
                     "secure vault configuration.")));
             logger.debug("Secure vault config successfully initialized");
         } catch (Throwable throwable) {
-            logger.error("Error occurred when initializing secure vault " + throwable.getMessage(),
-                    throwable);
-            throw new SecureVaultException("Error occurred when initializing secure vault " + throwable.getMessage(),
-                    throwable);
+            logger.error("Error occurred when initializing secure vault.", throwable);
+            throw new SecureVaultException("Error occurred when initializing secure vault.", throwable);
         }
     }
 
