@@ -1,9 +1,0 @@
-target
-.classpath
-.settings
-.project
-*.iml
-*.iws
-*.ipr
-.idea
-*.exec
