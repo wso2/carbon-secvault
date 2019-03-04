@@ -26,12 +26,17 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.secret.SecretCallbackHandler;
 import org.wso2.securevault.secret.SecretCallbackHandlerFactory;
 import org.wso2.securevault.secret.SecretManager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 import javax.xml.namespace.QName;
-import java.util.*;
 
 /**
  * Factory for creating <code>SecretResolver</code> instances
@@ -178,14 +183,11 @@ public class SecretResolverFactory {
             prefix += ".";
         }
 
-        initPasswordManager(secretResolver, properties.getProperty(prefix +
-                                                                           SecurityConstants.SECRET_PROVIDER));
+        initPasswordManager(secretResolver, properties.getProperty(prefix + SecurityConstants.SECRET_PROVIDER));
         if (secretResolver.isInitialized()) {
-            String protectedTokens = properties.getProperty(prefix +
-                                                            SecurityConstants.PROTECTED_TOKENS_SIMPLE);
+            String protectedTokens = properties.getProperty(prefix + SecurityConstants.PROTECTED_TOKENS_SIMPLE);
             if (protectedTokens != null && !"".equals(protectedTokens.trim())) {
-                ArrayList<String> tokens = new ArrayList<String>(Arrays
-                                                                         .asList(protectedTokens.split(",")));
+                ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(protectedTokens.split(",")));
                 for (String token : tokens) {
                     secretResolver.addProtectedToken(token);
                 }
@@ -216,18 +218,19 @@ public class SecretResolverFactory {
         }
 
         initPasswordManager(secretResolver,passwordProvider);
-        
+
         if (secretResolver.isInitialized()) {
 
-            for(Map.Entry entry : properties.entrySet()){
+            for (Map.Entry entry : properties.entrySet()) {
                 String attributeValue = (String) entry.getValue();
-                if( attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
-                                    attributeValue.contains(SecurityConstants.NS_SEPARATOR)){
+                String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
+                if (protectedToken != null && protectedToken.length() > 0) {
+                    secretResolver.addProtectedToken(protectedToken);
+                } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
+                        attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                     String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
-                    if(values != null && values.length == 2){
-                        if(SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])){
-                            secretResolver.addProtectedToken(values[1]);
-                        }
+                    if (values.length == 2 && SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])) {
+                        secretResolver.addProtectedToken(values[1]);
                     }
                 }
             }
@@ -245,7 +248,7 @@ public class SecretResolverFactory {
     public static SecretResolver create(NamedNodeMap namedNodeMap) {
 
         SecretResolver secretResolver = new SecretResolver();
-        String passwordProvider = SecretManager.getInstance().getGlobalSecretProvider();
+        String passwordProvider;
         Node namedItem = namedNodeMap.getNamedItem(SecurityConstants.PASSWORD_PROVIDER_SIMPLE);
         if (namedItem != null) {
             passwordProvider = namedItem.getNodeValue();
@@ -261,8 +264,7 @@ public class SecretResolverFactory {
             if (protectedTokenAttr != null) {
                 String protectedTokens = protectedTokenAttr.getNodeValue();
                 if (protectedTokens != null && protectedTokens.trim().length() > 0) {
-                    protectedTokenList = new ArrayList<String>(Arrays.asList(protectedTokens
-                                                                                     .split(",")));
+                    protectedTokenList = new ArrayList<>(Arrays.asList(protectedTokens.split(",")));
                     for (String token : protectedTokenList) {
                         if (token != null && !"".equals(token)) {
                             secretResolver.addProtectedToken(token);
@@ -307,13 +309,17 @@ public class SecretResolverFactory {
             if (nodeMap != null) {
                 for (int j = 0; j < nodeMap.getLength(); j++) {
                     String attributeValue = nodeMap.item(j).getNodeValue();
-                    if (attributeValue != null &&
-                                attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS)) {
-                        if(attributeValue.contains(SecurityConstants.NS_SEPARATOR)){
-                            String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
-                            if(values != null && values.length == 2){
-                                if(SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])){
-                                    secretResolver.addProtectedToken(values[1]);     
+                    if (attributeValue != null) {
+                        String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
+                        if (protectedToken != null && protectedToken.length() > 0) {
+                            secretResolver.addProtectedToken(protectedToken);
+                        } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS)) {
+                            if (attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
+                                String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
+                                if (values != null && values.length == 2) {
+                                    if (SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])) {
+                                        secretResolver.addProtectedToken(values[1]);
+                                    }
                                 }
                             }
                         }
@@ -333,6 +339,13 @@ public class SecretResolverFactory {
 
         while (iterator.hasNext()) {
             OMElement omElement = (OMElement) iterator.next();
+            if (MiscellaneousUtil.elementHasText(omElement)){
+                String protectedToken = MiscellaneousUtil.getProtectedToken(omElement.getText());
+                if (protectedToken != null && protectedToken.length() > 0) {
+                    secretResolver.addProtectedToken(protectedToken);
+                    continue;
+                }
+            }
             String attributeValue = omElement.
                     getAttributeValue(new QName(secureVaultNamespace.getNamespaceURI(),
                                                 SecurityConstants.SECURE_VAULT_ALIAS,
@@ -352,17 +365,18 @@ public class SecretResolverFactory {
         while(iterator.hasNext()){
             OMElement omElement = (OMElement)iterator.next();
             Iterator attributeIterator = omElement.getAllAttributes();
-            while(attributeIterator.hasNext()){
-                OMAttribute attribute = ((OMAttribute)attributeIterator.next());
-                if(attribute.getAttributeValue() != null){
-                    String attributeValue =  attribute.getAttributeValue();
-                    if( attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
-                                        attributeValue.contains(SecurityConstants.NS_SEPARATOR)){
+            while (attributeIterator.hasNext()) {
+                OMAttribute attribute = ((OMAttribute) attributeIterator.next());
+                if (attribute.getAttributeValue() != null) {
+                    String attributeValue = attribute.getAttributeValue();
+                    String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
+                    if (protectedToken != null && protectedToken.isEmpty()) {
+                        secretResolver.addProtectedToken(protectedToken);
+                    } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
+                            attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                         String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
-                        if(values != null && values.length == 2){
-                            if(SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])){
-                                secretResolver.addProtectedToken(values[1]);
-                            }
+                        if (values.length == 2 && SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])) {
+                            secretResolver.addProtectedToken(values[1]);
                         }
                     }
                 }

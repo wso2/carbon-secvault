@@ -18,9 +18,11 @@
  */
 package org.wso2.securevault.commons;
 
+import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.SecureVaultException;
+import org.wso2.securevault.SecurityConstants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -37,6 +39,7 @@ public class MiscellaneousUtil {
     private static Log log = LogFactory.getLog(MiscellaneousUtil.class);
 
     private MiscellaneousUtil() {
+
     }
 
     /**
@@ -170,14 +173,36 @@ public class MiscellaneousUtil {
         return out.toByteArray();
     }
 
-
     /**
      * Helper methods for handle errors.
      *
      * @param msg The error message
      */
     private static void handleException(String msg) {
+
         log.error(msg);
         throw new SecureVaultException(msg);
+    }
+
+    public static String getProtectedToken(String text) {
+
+        int indexOfStartingChars = -1;
+        int indexOfClosingBrace;
+        String protectedToken = null;
+        String start = "$" + SecurityConstants.SECURE_VAULT_VALUE + "{";
+        while (indexOfStartingChars < text.indexOf(start)
+                && (indexOfStartingChars = text.indexOf(start)) != -1
+                && (indexOfClosingBrace = text.indexOf('}')) != -1) {
+            protectedToken = text.substring(indexOfStartingChars + start.length(),
+                    indexOfClosingBrace);
+
+        }
+        return protectedToken;
+    }
+
+    public static boolean elementHasText(OMElement element) {
+
+        String text = element.getText();
+        return text != null && text.trim().length() != 0;
     }
 }
