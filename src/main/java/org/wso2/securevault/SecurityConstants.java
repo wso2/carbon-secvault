@@ -38,6 +38,7 @@ public class SecurityConstants {
     public static final String SECURE_VAULT_CAP= "SecureVault";
     public static final String SECURE_VAULT_ATTRIBUTE = "provider";
     public static final String SECURE_VAULT_ALIAS= "secretAlias";
+    public static final String SECURE_VAULT_VALUE = "secret";
     public static final String NS_SEPARATOR= ":";
 
 }
