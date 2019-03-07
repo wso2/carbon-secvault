@@ -30,6 +30,7 @@ public class SecretManager {
     private final static String PROP_SECRET_MANAGER_CONF = "secret.manager.conf";
     /* Property key for secretRepositories*/
     private final static String PROP_SECRET_REPOSITORIES = "secretRepositories";
+    private final static String PROP_SECRET_MANAGER_ENABLED = "enabled";
     /* Type of the secret repository */
     private final static String PROP_PROVIDER = "provider";
     /* Dot string */
@@ -85,6 +86,11 @@ public class SecretManager {
             }
             configurationProperties = properties;
 
+        }
+
+        String enable = MiscellaneousUtil.getProperty(configurationProperties, PROP_SECRET_MANAGER_ENABLED, "true");
+        if (!Boolean.parseBoolean(enable)) {
+            return;
         }
 
         globalSecretProvider = MiscellaneousUtil.getProperty(configurationProperties, PROP_SECRET_PROVIDER,null);
