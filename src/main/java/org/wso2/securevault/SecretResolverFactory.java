@@ -316,7 +316,7 @@ public class SecretResolverFactory {
                         } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS)) {
                             if (attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                                 String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
-                                if (values != null && values.length == 2) {
+                                if (values.length == 2) {
                                     if (SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])) {
                                         secretResolver.addProtectedToken(values[1]);
                                     }
@@ -370,7 +370,7 @@ public class SecretResolverFactory {
                 if (attribute.getAttributeValue() != null) {
                     String attributeValue = attribute.getAttributeValue();
                     String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
-                    if (protectedToken != null && protectedToken.isEmpty()) {
+                    if (protectedToken != null && !protectedToken.isEmpty()) {
                         secretResolver.addProtectedToken(protectedToken);
                     } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
                             attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
