@@ -45,9 +45,6 @@ public class FileBaseSecretRepository implements SecretRepository {
     private static final String LOCATION = "location";
     private static final String KEY_STORE = "keyStore";
     private static final String DOT = ".";
-    private static final String SECRET = "secret";
-    private static final String ALIAS = "alias";
-    private static final String ALIASES = "aliases";
     private static final String ALGORITHM = "algorithm";
     private static final String DEFAULT_ALGORITHM = "RSA";
     private static final String TRUSTED = "trusted";
@@ -56,9 +53,9 @@ public class FileBaseSecretRepository implements SecretRepository {
     /* Parent secret repository */
     private SecretRepository parentRepository;
     /*Map of secrets keyed by alias for property name */
-    private final Map<String, String> secrets = new HashMap<String, String>();
+    private final Map<String, String> secrets = new HashMap<>();
     /*Map of encrypted values keyed by alias for property name */
-    private final Map<String, String> encryptedData = new HashMap<String, String>();
+    private final Map<String, String> encryptedData = new HashMap<>();
     /*Wrapper for Identity KeyStore */
     private IdentityKeyStoreWrapper identity;
     /* Wrapper for trusted KeyStore */
@@ -78,13 +75,12 @@ public class FileBaseSecretRepository implements SecretRepository {
      * @param id         Identifier to identify properties related to the corresponding repository
      */
     public void init(Properties properties, String id) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(id);
-        sb.append(DOT);
-        sb.append(LOCATION);
 
+        String sb = id
+                    + DOT
+                    + LOCATION;
         String filePath = MiscellaneousUtil.getProperty(properties,
-                sb.toString(), DEFAULT_CONF_LOCATION);
+                                                        sb, DEFAULT_CONF_LOCATION);
 
         Properties cipherProperties = MiscellaneousUtil.loadProperties(filePath);
         if (cipherProperties.isEmpty()) {
@@ -94,20 +90,18 @@ public class FileBaseSecretRepository implements SecretRepository {
             return;
         }
 
-        StringBuffer sbTwo = new StringBuffer();
-        sbTwo.append(id);
-        sbTwo.append(DOT);
-        sbTwo.append(ALGORITHM);
         //Load algorithm
+        String sbTwo = id
+                       + DOT
+                       + ALGORITHM;
         String algorithm = MiscellaneousUtil.getProperty(properties,
-                sbTwo.toString(), DEFAULT_ALGORITHM);
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(DOT);
-        buffer.append(KEY_STORE);
+                                                         sbTwo, DEFAULT_ALGORITHM);
 
         //Load keyStore
+        String buffer = DOT
+                        + KEY_STORE;
         String keyStore = MiscellaneousUtil.getProperty(properties,
-                buffer.toString(), null);
+                                                        buffer, null);
         KeyStoreWrapper keyStoreWrapper;
         if (TRUSTED.equals(keyStore)) {
             keyStoreWrapper = trust;
@@ -161,10 +155,7 @@ public class FileBaseSecretRepository implements SecretRepository {
             return alias;
         }
 
-        StringBuffer sb = new StringBuffer();
-        sb.append(alias);
-
-        String secret = secrets.get(sb.toString());
+        String secret = secrets.get(alias);
         if (secret == null || "".equals(secret)) {
             if (log.isDebugEnabled()) {
                 log.debug("There is no secret found for alias '" + alias + "' returning itself");
@@ -192,10 +183,7 @@ public class FileBaseSecretRepository implements SecretRepository {
             return alias;
         }
 
-        StringBuffer sb = new StringBuffer();
-        sb.append(alias);
-
-        String encryptedValue = encryptedData.get(sb.toString());
+        String encryptedValue = encryptedData.get(alias);
         if (encryptedValue == null || "".equals(encryptedValue)) {
             if (log.isDebugEnabled()) {
                 log.debug("There is no secret found for alias '" + alias + "' returning itself");

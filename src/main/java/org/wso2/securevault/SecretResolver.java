@@ -35,14 +35,13 @@ import java.util.ArrayList;
 public class SecretResolver {
 
     private static Log log = LogFactory.getLog(SecretResolver.class);
+    private static final String DEFAULT_PROMPT = "password > ";
 
     private boolean initialized = false;
 
     private final ArrayList<String> protectedTokens = new ArrayList<String>();
 
     private SecretLoadingModule secretLoadingModule;
-
-    private final static String DEFAULT_PROMPT = "password > ";
 
     /**
      * Initializes by giving an instance of <code>SecretCallbackHandler </code> to be used to

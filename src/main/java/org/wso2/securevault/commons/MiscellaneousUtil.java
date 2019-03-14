@@ -18,18 +18,24 @@
  */
 package org.wso2.securevault.commons;
 
+import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.securevault.SecretResolver;
 import org.wso2.securevault.SecureVaultException;
 import org.wso2.securevault.SecurityConstants;
+import org.wso2.securevault.XMLSecretResolver;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import javax.xml.namespace.QName;
 
 /**
  * TODO - This is a copy of class in synapse commons
@@ -37,6 +43,8 @@ import java.util.Properties;
 public class MiscellaneousUtil {
 
     private static Log log = LogFactory.getLog(MiscellaneousUtil.class);
+    private static final String SECURED_PROPERTY_PREFIX = '$' + SecurityConstants.SECURE_VAULT_VALUE + '{';
+    private static final char SECURED_PROPERTY_SUFFIX = '}';
 
     private MiscellaneousUtil() {
 
@@ -204,5 +212,100 @@ public class MiscellaneousUtil {
 
         String text = element.getText();
         return text != null && text.trim().length() != 0;
+    }
+
+    public static String resolve(OMElement omElement, SecretResolver secretResolver) {
+        String resolvedValue;
+        String value;
+        XMLSecretResolver xmlSecretResolver;
+        if (secretResolver instanceof XMLSecretResolver) {
+            xmlSecretResolver = (XMLSecretResolver) secretResolver;
+        } else {
+            throw new SecureVaultException("Secret resolver type mismatch. Require: " + XMLSecretResolver.class + " "
+                                           + "found: " + secretResolver.getClass());
+        }
+        OMAttribute attribute = omElement.getAttribute(
+                new QName(xmlSecretResolver.getSecureVaultNamespace(),
+                          xmlSecretResolver.getSecureVaultAlias()));
+        if (attribute != null && attribute.getAttributeValue() != null
+            && !attribute.getAttributeValue().isEmpty()) {
+            resolvedValue = resolve(attribute, xmlSecretResolver);
+        } else {
+            value = omElement.getText();
+            resolvedValue = resolve(value, xmlSecretResolver);
+        }
+        return resolvedValue;
+    }
+
+    public static String resolve(String inputText, SecretResolver secretResolver) {
+        String resolvedValue;
+        List<ProtectedToken> tokenList = extractProtectedTokens(inputText);
+        if (tokenList.isEmpty()) {
+            if (secretResolver.isTokenProtected(inputText)) {
+                return secretResolver.resolve(inputText);
+            }
+            return inputText;
+        }
+
+        StringBuilder resolvedValueBuilder = new StringBuilder(inputText);
+        for (int i = tokenList.size() - 1; i > -1; i--) {
+            ProtectedToken token = tokenList.get(i);
+            if (secretResolver.isTokenProtected(token.getValue())) {
+                String decryptedValue = secretResolver.resolve(token.getValue());
+                resolvedValueBuilder.replace(token.getStartIndex(), token.getEndIndex() + 1, decryptedValue);
+            }
+        }
+        resolvedValue = resolvedValueBuilder.toString();
+        return resolvedValue;
+    }
+
+    public static String resolve(OMAttribute attribute, SecretResolver secretResolver) {
+        String value = attribute.getAttributeValue();
+        return resolve(value, secretResolver);
+    }
+
+    static List<ProtectedToken> extractProtectedTokens(String text) {
+        List<ProtectedToken> tokenList = new ArrayList<>();
+
+        int idx = 0;
+        while (idx < text.length()) {
+            int startsWithIdx = text.indexOf(SECURED_PROPERTY_PREFIX, idx);
+            if (startsWithIdx == -1) {
+                break;
+            }
+            int endIdx = text.indexOf(SECURED_PROPERTY_SUFFIX, startsWithIdx);
+            int tokenStartIdx = startsWithIdx + SECURED_PROPERTY_PREFIX.length();
+            String token = text.substring(tokenStartIdx, endIdx);
+            ProtectedToken protectedToken = new ProtectedToken(startsWithIdx, endIdx, token);
+            tokenList.add(protectedToken);
+            idx = endIdx + 1;
+        }
+
+        return tokenList;
+    }
+
+    static class ProtectedToken {
+
+        private int startIndex;
+        private int endIndex;
+        private String value;
+
+        ProtectedToken(int startIndex, int endIndex, String value) {
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+            this.value = value;
+        }
+
+        int getStartIndex() {
+            return startIndex;
+        }
+
+        String getValue() {
+            return value;
+        }
+
+        int getEndIndex() {
+            return endIndex;
+        }
     }
 }

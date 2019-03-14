@@ -43,6 +43,9 @@ import javax.xml.namespace.QName;
  */
 public class SecretResolverFactory {
 
+    private SecretResolverFactory() {
+    }
+
     /**
      * Creates an <code>SecretResolver</code> instance from an XML
      *
@@ -51,7 +54,7 @@ public class SecretResolverFactory {
      * @return an <code>SecretResolver</code> instance
      */
     public static SecretResolver create(Element configuration, boolean isCapLetter) {
-        SecretResolver secretResolver = new SecretResolver();
+        XMLSecretResolver secretResolver = new XMLSecretResolver();
         String secureVaultElementName;
         String passwordProvider = SecretManager.getInstance().getGlobalSecretProvider();
         String secureVaultNamespace = null;
@@ -64,7 +67,7 @@ public class SecretResolverFactory {
         }
 
         NamedNodeMap nodeMap = configuration.getAttributes();
-        String namespaceUri = null;
+        String namespaceUri;
 
         for (int i = 0; i < nodeMap.getLength(); i++) {
             String nodeName = nodeMap.item(i).getNodeName();
@@ -73,6 +76,7 @@ public class SecretResolverFactory {
             namespaceUri = nodeMap.item(i).getNodeValue();
             if (namespaceUri.startsWith(SecurityConstants.SECURE_VAULT_NS)) {
                 secureVaultNamespace = namespaceUri;
+                secretResolver.setSecureVaultNamespace(secureVaultNamespace);
                 break;
             }
         }
@@ -116,7 +120,7 @@ public class SecretResolverFactory {
      */
     public static SecretResolver create(OMElement configuration, boolean isCapLetter) {
 
-        SecretResolver secretResolver = new SecretResolver();
+        XMLSecretResolver secretResolver = new XMLSecretResolver();
         String secureVaultElementName;
         String passwordProvider = SecretManager.getInstance().getGlobalSecretProvider();
         OMNamespace secureVaultNamespace = null;
@@ -142,6 +146,7 @@ public class SecretResolverFactory {
                 OMNamespace omNamespace = (OMNamespace) iterator.next();
                 if (omNamespace.getNamespaceURI().startsWith(SecurityConstants.SECURE_VAULT_NS)) {
                     secureVaultNamespace = omNamespace;
+                    secretResolver.setSecureVaultNamespace(secureVaultNamespace.getNamespaceURI());
                     break;
                 }
             }
@@ -284,7 +289,7 @@ public class SecretResolverFactory {
         }
     }
 
-    private static void addProtectedTokensFromElement(Node node, SecretResolver secretResolver,
+    private static void addProtectedTokensFromElement(Node node, XMLSecretResolver xmlSecretResolver,
                                            String secureVaultNamespacePrefix) {
         NodeList nodeList = node.getChildNodes();
         for (int i = 0; i < nodeList.getLength(); i++) {
@@ -294,15 +299,15 @@ public class SecretResolverFactory {
                     String attributeName = nodeMap.item(j).getNodeName();
                     if ((secureVaultNamespacePrefix + SecurityConstants.NS_SEPARATOR +
                          SecurityConstants.SECURE_VAULT_ALIAS).equals(attributeName)) {
-                        secretResolver.addProtectedToken(nodeMap.item(j).getNodeValue());
+                        xmlSecretResolver.addProtectedToken(nodeMap.item(j).getNodeValue());
                     }
                 }
             }
-            addProtectedTokensFromElement(nodeList.item(i), secretResolver, secureVaultNamespacePrefix);
+            addProtectedTokensFromElement(nodeList.item(i), xmlSecretResolver, secureVaultNamespacePrefix);
         }
     }
 
-    private static void addProtectedTokensFromAttributes(Node node, SecretResolver secretResolver) {
+    private static void addProtectedTokensFromAttributes(Node node, XMLSecretResolver xmlSecretResolver) {
         NodeList nodeList = node.getChildNodes();
         for (int i = 0; i < nodeList.getLength(); i++) {
             NamedNodeMap nodeMap = nodeList.item(i).getAttributes();
@@ -312,13 +317,13 @@ public class SecretResolverFactory {
                     if (attributeValue != null) {
                         String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
                         if (protectedToken != null && protectedToken.length() > 0) {
-                            secretResolver.addProtectedToken(protectedToken);
+                            xmlSecretResolver.addProtectedToken(protectedToken);
                         } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS)) {
                             if (attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                                 String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
                                 if (values.length == 2) {
                                     if (SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])) {
-                                        secretResolver.addProtectedToken(values[1]);
+                                        xmlSecretResolver.addProtectedToken(values[1]);
                                     }
                                 }
                             }
@@ -326,13 +331,13 @@ public class SecretResolverFactory {
                     }
                 }
             }
-            addProtectedTokensFromAttributes(nodeList.item(i), secretResolver);
+            addProtectedTokensFromAttributes(nodeList.item(i), xmlSecretResolver);
         }
     }
 
     private static void addProtectedTokensFromElement(OMElement configuration,
                                            OMNamespace secureVaultNamespace,
-                                           SecretResolver secretResolver) {
+                                           XMLSecretResolver xmlSecretResolver) {
 
         Iterator iterator = configuration.
                 getChildrenWithNamespaceURI(secureVaultNamespace.getNamespaceURI());
@@ -342,7 +347,7 @@ public class SecretResolverFactory {
             if (MiscellaneousUtil.elementHasText(omElement)){
                 String protectedToken = MiscellaneousUtil.getProtectedToken(omElement.getText());
                 if (protectedToken != null && protectedToken.length() > 0) {
-                    secretResolver.addProtectedToken(protectedToken);
+                    xmlSecretResolver.addProtectedToken(protectedToken);
                     continue;
                 }
             }
@@ -352,14 +357,14 @@ public class SecretResolverFactory {
                                                 secureVaultNamespace.getPrefix()));
 
             if (attributeValue != null && !attributeValue.equals("")) {
-                secretResolver.addProtectedToken(attributeValue);
+                xmlSecretResolver.addProtectedToken(attributeValue);
             }
-            addProtectedTokensFromElement(omElement, secureVaultNamespace, secretResolver);
+            addProtectedTokensFromElement(omElement, secureVaultNamespace, xmlSecretResolver);
         }
     }
 
     private static void addProtectedTokensFromAttributes(OMElement configuration,
-                                           SecretResolver secretResolver) {
+                                                         XMLSecretResolver xmlSecretResolver) {
 
         Iterator iterator = configuration.getChildElements();
         while(iterator.hasNext()){
@@ -371,17 +376,17 @@ public class SecretResolverFactory {
                     String attributeValue = attribute.getAttributeValue();
                     String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
                     if (protectedToken != null && !protectedToken.isEmpty()) {
-                        secretResolver.addProtectedToken(protectedToken);
+                        xmlSecretResolver.addProtectedToken(protectedToken);
                     } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
                             attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                         String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
                         if (values.length == 2 && SecurityConstants.SECURE_VAULT_ALIAS.equals(values[0])) {
-                            secretResolver.addProtectedToken(values[1]);
+                            xmlSecretResolver.addProtectedToken(values[1]);
                         }
                     }
                 }
             }
-            addProtectedTokensFromAttributes(omElement, secretResolver);
+            addProtectedTokensFromAttributes(omElement, xmlSecretResolver);
         }
     }
 }
