@@ -215,21 +215,29 @@ public class MiscellaneousUtil {
     }
 
     public static String resolve(OMElement omElement, SecretResolver secretResolver) {
+
         String resolvedValue;
         String value;
         XMLSecretResolver xmlSecretResolver;
+        if (!(secretResolver != null && secretResolver.isInitialized())) {
+            return omElement.getText();
+        }
         if (secretResolver instanceof XMLSecretResolver) {
             xmlSecretResolver = (XMLSecretResolver) secretResolver;
         } else {
             throw new SecureVaultException("Secret resolver type mismatch. Require: " + XMLSecretResolver.class + " "
-                                           + "found: " + secretResolver.getClass());
+                    + "found: " + secretResolver.getClass());
         }
         OMAttribute attribute = omElement.getAttribute(
                 new QName(xmlSecretResolver.getSecureVaultNamespace(),
-                          xmlSecretResolver.getSecureVaultAlias()));
+                        xmlSecretResolver.getSecureVaultAlias()));
         if (attribute != null && attribute.getAttributeValue() != null
-            && !attribute.getAttributeValue().isEmpty()) {
-            resolvedValue = resolve(attribute, xmlSecretResolver);
+                && !attribute.getAttributeValue().isEmpty()) {
+            if (secretResolver.isTokenProtected(attribute.getAttributeValue())) {
+                resolvedValue = resolve(attribute, xmlSecretResolver);
+            } else {
+                resolvedValue = omElement.getText();
+            }
         } else {
             value = omElement.getText();
             resolvedValue = resolve(value, xmlSecretResolver);
@@ -238,7 +246,11 @@ public class MiscellaneousUtil {
     }
 
     public static String resolve(String inputText, SecretResolver secretResolver) {
+
         String resolvedValue;
+        if (!(secretResolver != null && secretResolver.isInitialized())) {
+            return inputText;
+        }
         List<ProtectedToken> tokenList = extractProtectedTokens(inputText);
         if (tokenList.isEmpty()) {
             if (secretResolver.isTokenProtected(inputText)) {
@@ -260,11 +272,13 @@ public class MiscellaneousUtil {
     }
 
     public static String resolve(OMAttribute attribute, SecretResolver secretResolver) {
+
         String value = attribute.getAttributeValue();
         return resolve(value, secretResolver);
     }
 
     static List<ProtectedToken> extractProtectedTokens(String text) {
+
         List<ProtectedToken> tokenList = new ArrayList<>();
 
         int idx = 0;
@@ -291,20 +305,24 @@ public class MiscellaneousUtil {
         private String value;
 
         ProtectedToken(int startIndex, int endIndex, String value) {
+
             this.startIndex = startIndex;
             this.endIndex = endIndex;
             this.value = value;
         }
 
         int getStartIndex() {
+
             return startIndex;
         }
 
         String getValue() {
+
             return value;
         }
 
         int getEndIndex() {
+
             return endIndex;
         }
     }

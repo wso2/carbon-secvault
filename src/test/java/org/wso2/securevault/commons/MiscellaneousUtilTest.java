@@ -19,7 +19,6 @@
 
 package org.wso2.securevault.commons;
 
-
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
@@ -28,6 +27,7 @@ import org.apache.axiom.om.impl.OMNamespaceImpl;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.wso2.securevault.SecretResolver;
 import org.wso2.securevault.SecurityConstants;
 import org.wso2.securevault.XMLSecretResolver;
 
@@ -40,15 +40,16 @@ public class MiscellaneousUtilTest {
 
     @Test(dataProvider = "tokenDataProvider")
     public void testExtractProtectedTokens(String input, MiscellaneousUtil.ProtectedToken... tokens) {
+
         List<MiscellaneousUtil.ProtectedToken> tokenList = MiscellaneousUtil.extractProtectedTokens(input);
 
         Assert.assertEquals(tokens.length, tokenList.size(), "token size mismatch");
         for (int i = 0; i < tokens.length; i++) {
             Assert.assertEquals(tokenList.get(i).getValue(), tokens[i].getValue(), "String token mismatch");
             Assert.assertEquals(tokenList.get(i).getStartIndex(), tokens[i].getStartIndex(),
-                                "Token start index mismatch");
+                    "Token start index mismatch");
             Assert.assertEquals(tokenList.get(i).getEndIndex(), tokens[i].getEndIndex(),
-                                "Token end index mismatch");
+                    "Token end index mismatch");
         }
     }
 
@@ -68,8 +69,9 @@ public class MiscellaneousUtilTest {
 
         OMElement omElement = omFactory.createOMElement("TestElement", SecurityConstants.SECURE_VAULT_NS, "ns");
         OMAttribute omAttribute = omFactory.createOMAttribute(SecurityConstants.SECURE_VAULT_ALIAS,
-                                                     new OMNamespaceImpl(SecurityConstants.SECURE_VAULT_NS, "ns"), inputText);
+                new OMNamespaceImpl(SecurityConstants.SECURE_VAULT_NS, "ns"), inputText);
         omElement.addAttribute(omAttribute);
+        omElement.setText(inputText);
 
         String resolvedValue = MiscellaneousUtil.resolve(omElement, new TestSecretResolver(decryptedValue));
 
@@ -78,6 +80,7 @@ public class MiscellaneousUtilTest {
 
     @Test(dataProvider = "resolverDataProvider")
     public void testResolveWithOMAttribute(String inputText, String expectedOutput, String decryptedValue) {
+
         OMAttribute omAttribute = omFactory.createOMAttribute("testAttribute", null, "");
         omAttribute.setAttributeValue(inputText);
 
@@ -86,8 +89,58 @@ public class MiscellaneousUtilTest {
         Assert.assertEquals(resolvedValue, expectedOutput, "Expected Value mismatch");
     }
 
+    @Test(dataProvider = "resolverDataForSecretNotInitialized")
+    void testResolveWithSecretResolverNotInitializedText(String input, String actual) {
+
+        String resolvedValue = MiscellaneousUtil.resolve(input, null);
+        Assert.assertEquals(resolvedValue, actual, "Value mismatch");
+        String resolvedValue2 = MiscellaneousUtil.resolve(input, new SecretResolver() {
+            @Override
+            public boolean isInitialized() {
+
+                return true;
+            }
+
+            @Override
+            public boolean isTokenProtected(String token) {
+
+                return true;
+            }
+
+            @Override
+            public String resolve(String encryptedPassword) {
+
+                return "password";
+            }
+        });
+        Assert.assertEquals(resolvedValue2, "password", "Value mismatch");
+    }
+
+    @Test
+    void testResolveWithSecretResolverNotInitializedElement() {
+
+        OMElement omElement = omFactory.createOMElement("TestElement", SecurityConstants.SECURE_VAULT_NS, "ns");
+        OMAttribute omAttribute = omFactory.createOMAttribute(SecurityConstants.SECURE_VAULT_ALIAS,
+                new OMNamespaceImpl(SecurityConstants.SECURE_VAULT_NS, "ns"), "element1");
+        omElement.addAttribute(omAttribute);
+        omElement.setText("element1");
+
+        String resolvedValue = MiscellaneousUtil.resolve(omElement, new SecretResolver() {
+            @Override
+            public boolean isInitialized() {
+
+                return false;
+            }
+        });
+
+        Assert.assertEquals(resolvedValue, "element1", "Value mismatch");
+        resolvedValue = MiscellaneousUtil.resolve(omElement, null);
+        Assert.assertEquals(resolvedValue, "element1", "Value mismatch");
+    }
+
     @DataProvider(name = "tokenDataProvider")
     Object[][] getTokenTestData() {
+
         return new Object[][]{
                 {"$secret{value1}", new MiscellaneousUtil.ProtectedToken(0, 14, "value1")},
                 {"test:$secret{value2}", new MiscellaneousUtil.ProtectedToken(5, 19, "value2")},
@@ -107,40 +160,61 @@ public class MiscellaneousUtilTest {
 
     @DataProvider(name = "resolverDataProvider")
     Object[][] getResolveDataProvider() {
+
         return new Object[][]{
                 {"$secret{value1}", "decryptedValue", "decryptedValue"},
                 {"user$secret{value2}OtherValue", "userPasswordOtherValue", "Password"},
                 {"user$secret{value3}OtherValue$secret{value4}Rest", "userPassword1OtherValuePassword1Rest",
-                 "Password1"},
+                        "Password1"},
                 {PLAIN_TEXT, PLAIN_TEXT, "resolvedValue1"}
-                };
+        };
+    }
+
+    @DataProvider(name = "resolverDataForSecretNotInitialized")
+    Object[][] getResolverDataForSecretNotInitialized() {
+
+        return new Object[][]{
+                {"$secret{a_b_c}", "$secret{a_b_c}"},
+                {"a_b_c", "a_b_c"}
+        };
     }
 
     private static class TestSecretResolver extends XMLSecretResolver {
 
+        @Override
+        public boolean isInitialized() {
+
+            return true;
+        }
+
         String resolvedOutput;
 
         TestSecretResolver(String resolvedOutput) {
+
             this.resolvedOutput = resolvedOutput;
         }
 
         @Override
         public String resolve(String encryptedPassword) {
+
             return resolvedOutput;
         }
 
         @Override
         public boolean isTokenProtected(String token) {
+
             return !token.contains(PLAIN_TEXT);
         }
 
         @Override
         public String getSecureVaultNamespace() {
+
             return SecurityConstants.SECURE_VAULT_NS;
         }
 
         @Override
         public String getSecureVaultAlias() {
+
             return SecurityConstants.SECURE_VAULT_ALIAS;
         }
     }
