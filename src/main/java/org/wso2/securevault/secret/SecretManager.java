@@ -30,7 +30,7 @@ public class SecretManager {
     private final static String PROP_SECRET_MANAGER_CONF = "secret.manager.conf";
     /* Property key for secretRepositories*/
     private final static String PROP_SECRET_REPOSITORIES = "secretRepositories";
-    private final static String PROP_SECRET_MANAGER_ENABLED = "enabled";
+    private final static String PROP_SECRET_MANAGER_ENABLED = "secVault.enabled";
     /* Type of the secret repository */
     private final static String PROP_PROVIDER = "provider";
     /* Dot string */
