@@ -196,6 +196,14 @@ public class SecretResolverFactory {
                 for (String token : tokens) {
                     secretResolver.addProtectedToken(token);
                 }
+            } else {
+                for (Map.Entry entry : properties.entrySet()) {
+                    String attributeValue = (String) entry.getValue();
+                    String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
+                    if (protectedToken != null && protectedToken.length() > 0) {
+                        secretResolver.addProtectedToken(protectedToken);
+                    }
+                }
             }
         }
         return secretResolver;
