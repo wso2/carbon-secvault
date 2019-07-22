@@ -77,7 +77,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>1.4.0</version>
+                <version>3.2.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -108,20 +108,15 @@
             <version>${axiom.version}</version>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
             <groupId>jline</groupId>
             <artifactId>jline</artifactId>
             <version>${jline.version}</version>
         </dependency>
         <!-- direct dependencies for 3rd party JARs / Util JARs -->
         <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>${commons.logging.version}</version>
+            <groupId>org.ops4j.pax.logging</groupId>
+            <artifactId>pax-logging-api</artifactId>
+            <version>${pax.logging.api.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet</groupId>
@@ -176,11 +171,11 @@
         <axiom.version>1.2.11</axiom.version>
         <commons.logging.version>1.1.1</commons.logging.version>
         <junit.version>3.8.2</junit.version>
-        <log4j.version>1.2.14</log4j.version>
         <commons-cli.version>1.0</commons-cli.version>
         <jline.version>0.9.94</jline.version>
         <commons_io.version>2.0</commons_io.version>
         <commons-codec.version>1.2</commons-codec.version>
+        <pax.logging.api.version>1.10.1</pax.logging.api.version>
     </properties>
     <pluginRepositories>
 	<pluginRepository> 
