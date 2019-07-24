@@ -42,4 +42,12 @@ public class SecureVaultConfiguration {
     public MasterKeyReaderConfiguration getMasterKeyReaderConfig() {
         return masterKeyReader;
     }
+
+    public void setSecretRepository(SecretRepositoryConfiguration secretRepository) {
+        this.secretRepository = secretRepository;
+    }
+
+    public void setMasterKeyReader(MasterKeyReaderConfiguration masterKeyReader) {
+        this.masterKeyReader = masterKeyReader;
+    }
 }

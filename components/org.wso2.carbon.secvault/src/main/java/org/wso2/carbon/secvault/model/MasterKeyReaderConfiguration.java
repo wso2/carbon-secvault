@@ -40,6 +40,15 @@ public class MasterKeyReaderConfiguration {
     }
 
     /**
+     * Set master key reader implementation type.
+     *
+     * @param type master key reader implementation type
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
      * Get master key reader configuration parameters.
      *
      * @param key parameter key

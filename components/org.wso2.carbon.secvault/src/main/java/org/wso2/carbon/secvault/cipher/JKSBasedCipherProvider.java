@@ -52,8 +52,8 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class JKSBasedCipherProvider {
     private static Logger logger = LoggerFactory.getLogger(JKSBasedCipherProvider.class);
-    private static final String LOCATION = "keystoreLocation";
-    private static final String ALIAS = "privateKeyAlias";
+    public static final String LOCATION = "keystoreLocation";
+    public static final String ALIAS = "privateKeyAlias";
     public static final String KEY_STORE_PASSWORD = "keyStorePassword";
     public static final String PRIVATE_KEY_PASSWORD = "privateKeyPassword";
     private static final String JKS = "JKS";

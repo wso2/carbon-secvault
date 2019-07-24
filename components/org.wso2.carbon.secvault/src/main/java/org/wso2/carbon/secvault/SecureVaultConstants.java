@@ -35,6 +35,18 @@ public class SecureVaultConstants {
     public static final String MASTER_KEYS_YAML_CONFIG_PROPERTY = "masterKeyReaderFile";
     public static final String SECRET_PROPERTIES_CONFIG_PROPERTY = "secretPropertiesFile";
 
+    public static final String DEFAULT_SECRET_REPOSITORY =
+                                                    "org.wso2.carbon.secvault.repository.DefaultSecretRepository";
+    public static final String DEFAULT_PRIVATE_KEY_ALIAS = "wso2carbon";
+    public static final String DEFAULT_KEYSTORE_LOCATION = "${sys:carbon.home}/resources/security/securevault.jks";
+    public static final String DEFAULT_SECRET_PROPERTIES_FILE =
+                                                    "${sys:carbon.home}/conf/${sys:wso2.runtime}/secrets.properties";
+
+    public static final String DEFAULT_MASTER_KEY_READER = "org.wso2.carbon.secvault.reader.DefaultMasterKeyReader";
+    public static final String DEFAULT_MASTER_KEY_READER_FILE =
+                                                    "${sys:carbon.home}/conf/${sys:wso2.runtime}/master-keys.yaml";
+
+
     /**
      * Remove default constructor and make it not available to initialize.
      */
