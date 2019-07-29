@@ -275,8 +275,12 @@ public class SecureVaultUtils {
 
         if (configurationMap == null || configurationMap.isEmpty() ||
                 configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE) == null) {
-            logger.debug("Secure vault configuration no found returning empty string.");
-            return "";
+            if (SecureVaultUtils.isOSGIEnv()) {
+                logger.debug("Secure vault configuration not found in OSGi mode, returning null.");
+                return "";
+            } else {
+                throw new SecureVaultException("Error initializing securevault, secure configuration does not exist");
+            }
         }
         return yaml.dumpAsMap(configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE));
     }
