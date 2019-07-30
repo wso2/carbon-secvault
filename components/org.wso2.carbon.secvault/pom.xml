@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.wso2.carbon.secvault</groupId>
         <artifactId>carbon-secvault</artifactId>
-        <version>5.0.14-SNAPSHOT</version>
+        <version>5.0.14</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
