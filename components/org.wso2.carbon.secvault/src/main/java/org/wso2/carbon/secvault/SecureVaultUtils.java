@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.internal.SecureVaultDataHolder;
+import org.wso2.carbon.secvault.model.MasterKeyReaderConfiguration;
+import org.wso2.carbon.secvault.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
 import org.wso2.carbon.utils.StringUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -49,6 +51,17 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_KEYSTORE_LOCATION;
+import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_MASTER_KEY_READER;
+import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_MASTER_KEY_READER_FILE;
+import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_PRIVATE_KEY_ALIAS;
+import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_SECRET_PROPERTIES_FILE;
+import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_SECRET_REPOSITORY;
+import static org.wso2.carbon.secvault.SecureVaultConstants.MASTER_KEYS_YAML_CONFIG_PROPERTY;
+import static org.wso2.carbon.secvault.SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY;
+import static org.wso2.carbon.secvault.cipher.JKSBasedCipherProvider.ALIAS;
+import static org.wso2.carbon.secvault.cipher.JKSBasedCipherProvider.LOCATION;
 
 /**
  * Secure Vault utility methods.
@@ -86,12 +99,32 @@ public class SecureVaultUtils {
                     .toString());
         }
         String resolvedFileContent = SecureVaultUtils.resolveFileToString(secureVaultConfigPath);
-        Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
-                SecureVaultConfiguration.class.getClassLoader()));
-        yaml.setBeanAccess(BeanAccess.FIELD);
-        SecureVaultConfiguration secureVaultConfiguration = yaml.loadAs(resolvedFileContent, SecureVaultConfiguration
-                .class);
-        logger.debug("Secure vault configurations loaded successfully.");
+        SecureVaultConfiguration secureVaultConfiguration;
+        if (!resolvedFileContent.isEmpty()) {
+            Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
+                    SecureVaultConfiguration.class.getClassLoader()));
+            yaml.setBeanAccess(BeanAccess.FIELD);
+            secureVaultConfiguration = yaml.loadAs(resolvedFileContent, SecureVaultConfiguration.class);
+            logger.debug("Secure vault configurations loaded successfully.");
+        } else {
+
+            MasterKeyReaderConfiguration masterKeyReader = new MasterKeyReaderConfiguration();
+            masterKeyReader.setType(DEFAULT_MASTER_KEY_READER);
+            masterKeyReader.setParameter(MASTER_KEYS_YAML_CONFIG_PROPERTY,
+                    SecureVaultUtils.substituteVariables(DEFAULT_MASTER_KEY_READER_FILE));
+
+            SecretRepositoryConfiguration secretRepository = new SecretRepositoryConfiguration();
+            secretRepository.setType(DEFAULT_SECRET_REPOSITORY);
+            secretRepository.setParameter(ALIAS, DEFAULT_PRIVATE_KEY_ALIAS);
+            secretRepository.setParameter(LOCATION, SecureVaultUtils.substituteVariables(DEFAULT_KEYSTORE_LOCATION));
+            secretRepository.setParameter(SECRET_PROPERTIES_CONFIG_PROPERTY,
+                    SecureVaultUtils.substituteVariables(DEFAULT_SECRET_PROPERTIES_FILE));
+
+            secureVaultConfiguration = new SecureVaultConfiguration();
+            secureVaultConfiguration.setMasterKeyReader(masterKeyReader);
+            secureVaultConfiguration.setSecretRepository(secretRepository);
+        }
+
         return Optional.ofNullable(secureVaultConfiguration);
     }
 
@@ -242,7 +275,12 @@ public class SecureVaultUtils {
 
         if (configurationMap == null || configurationMap.isEmpty() ||
                 configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE) == null) {
-            throw new SecureVaultException("Error initializing securevault, secure configuration does not exist");
+            if (SecureVaultUtils.isOSGIEnv()) {
+                logger.debug("Secure vault configuration not found in OSGi mode, returning null.");
+                return "";
+            } else {
+                throw new SecureVaultException("Error initializing securevault, secure configuration does not exist");
+            }
         }
         return yaml.dumpAsMap(configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE));
     }

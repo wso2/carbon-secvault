@@ -40,6 +40,15 @@ public class SecretRepositoryConfiguration {
     }
 
     /**
+     * Set secret repository implementation type.
+     *
+     * @param type secret repository implementation type
+     */
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    /**
      * Get secret repository configuration parameters.
      *
      * @param key parameter key
