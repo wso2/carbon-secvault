@@ -60,6 +60,8 @@ import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_SECRET_PROPE
 import static org.wso2.carbon.secvault.SecureVaultConstants.DEFAULT_SECRET_REPOSITORY;
 import static org.wso2.carbon.secvault.SecureVaultConstants.MASTER_KEYS_YAML_CONFIG_PROPERTY;
 import static org.wso2.carbon.secvault.SecureVaultConstants.SECRET_PROPERTIES_CONFIG_PROPERTY;
+import static org.wso2.carbon.secvault.SecureVaultConstants.SECUREVAULT_NAMESPACE;
+import static org.wso2.carbon.secvault.SecureVaultConstants.STREAMLINED_SECUREVAULT_NAMESPACE;
 import static org.wso2.carbon.secvault.cipher.JKSBasedCipherProvider.ALIAS;
 import static org.wso2.carbon.secvault.cipher.JKSBasedCipherProvider.LOCATION;
 
@@ -274,7 +276,8 @@ public class SecureVaultUtils {
         Map<String, Object> configurationMap = (Map<String, Object>) yaml.loadAs(configFileContent, Map.class);
 
         if (configurationMap == null || configurationMap.isEmpty() ||
-                configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE) == null) {
+                (configurationMap.get(STREAMLINED_SECUREVAULT_NAMESPACE) == null &&
+                                                        configurationMap.get(SECUREVAULT_NAMESPACE) == null)) {
             if (SecureVaultUtils.isOSGIEnv()) {
                 logger.debug("Secure vault configuration not found in OSGi mode, returning null.");
                 return "";
@@ -282,7 +285,11 @@ public class SecureVaultUtils {
                 throw new SecureVaultException("Error initializing securevault, secure configuration does not exist");
             }
         }
-        return yaml.dumpAsMap(configurationMap.get(SecureVaultConstants.SECUREVAULT_NAMESPACE));
+
+        if (configurationMap.get(STREAMLINED_SECUREVAULT_NAMESPACE) != null) {
+            return yaml.dumpAsMap(configurationMap.get(STREAMLINED_SECUREVAULT_NAMESPACE));
+        }
+        return yaml.dumpAsMap(configurationMap.get(SECUREVAULT_NAMESPACE));
     }
 
     /**
