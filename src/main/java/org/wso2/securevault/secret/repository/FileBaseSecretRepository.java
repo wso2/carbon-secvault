@@ -18,6 +18,7 @@
 */
 package org.wso2.securevault.secret.repository;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.CipherFactory;
@@ -34,6 +35,7 @@ import org.wso2.securevault.secret.SecretRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Holds all secrets in a file
@@ -49,6 +51,12 @@ public class FileBaseSecretRepository implements SecretRepository {
     private static final String DEFAULT_ALGORITHM = "RSA";
     private static final String TRUSTED = "trusted";
     private static final String DEFAULT_CONF_LOCATION = "cipher-text.properties";
+
+    //Constants used to resolve environment variables and system properties
+    public static final String SYS_PROPERTY_PLACEHOLDER_PREFIX = "$sys{";
+    public static final String ENV_VAR_PLACEHOLDER_PREFIX = "$env{";
+    public static final String DYNAMIC_PROPERTY_PLACEHOLDER_PREFIX = "${";
+    public static final String PLACEHOLDER_SUFFIX = "}";
 
     /* Parent secret repository */
     private SecretRepository parentRepository;
@@ -83,6 +91,7 @@ public class FileBaseSecretRepository implements SecretRepository {
                                                         sb, DEFAULT_CONF_LOCATION);
 
         Properties cipherProperties = MiscellaneousUtil.loadProperties(filePath);
+        resolveDynamicVariables(cipherProperties);
         if (cipherProperties.isEmpty()) {
             if (log.isDebugEnabled()) {
                 log.debug("Cipher texts cannot be loaded form : " + filePath);
@@ -200,4 +209,86 @@ public class FileBaseSecretRepository implements SecretRepository {
     public SecretRepository getParent() {
         return this.parentRepository;
     }
+
+    /**
+     * Resolves the dynamic variables in the cipher-text properties.
+     *
+     * @param cipherTextProperties entries of cipher-text.properties
+     */
+    private void resolveDynamicVariables(Properties cipherTextProperties) {
+
+        Set<String> aliases = cipherTextProperties.stringPropertyNames();
+        for (String alias : aliases) {
+            String text = cipherTextProperties.getProperty(alias);
+            String reference;
+            if ((reference = getEnvRef(text)) != null) {
+                cipherTextProperties.setProperty(alias, System.getenv(reference));
+            } else if ((reference = getSysRef(text)) != null) {
+                cipherTextProperties.setProperty(alias, System.getProperty(reference));
+            } else if ((reference = getDynamicRef(text)) != null) {
+                cipherTextProperties.setProperty(alias, resolveDynamicReference(reference));
+            }
+        }
+    }
+
+    /**
+     * Returns variable name for secrets defined as $sys{variable_name}.
+     *
+     * @param reference
+     * @return variable name
+     */
+    private String getSysRef(String reference) {
+
+        String sysRef = StringUtils.substringBetween(reference, SYS_PROPERTY_PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX);
+        if (sysRef != null) {
+            return sysRef;
+        }
+        return null;
+    }
+
+    /**
+     * Returns variable name for secrets defined as $env{variable_name}.
+     *
+     * @param reference
+     * @return variable name
+     */
+    private String getEnvRef(String reference) {
+
+        String evnRef = StringUtils.substringBetween(reference, ENV_VAR_PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX);
+        if (evnRef != null) {
+            return evnRef;
+        }
+        return null;
+    }
+
+    /**
+     * Returns variable name for secrets defined as ${variable_name}.
+     *
+     * @param reference
+     * @return variable name
+     */
+    private String getDynamicRef(String reference) {
+
+        String dynamicRef = StringUtils.substringBetween(reference, DYNAMIC_PROPERTY_PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX);
+        if (dynamicRef != null) {
+            return dynamicRef;
+        }
+        return null;
+    }
+
+    /**
+     * Resolves secrets defined as ${value}
+     *
+     * @param reference sys or env variable reference
+     * @return resolved value
+     */
+    private String resolveDynamicReference(String reference) {
+
+        String resolvedValue = System.getenv(reference);
+        if (resolvedValue == null) {
+            resolvedValue = System.getProperty(reference);
+        }
+        return resolvedValue;
+    }
+
 }
