@@ -25,6 +25,17 @@ import java.util.Properties;
  * Implementation can be any type - file,jdbc
  */
 public interface SecretRepository {
+
+    /**
+     * Provide the type of the secret repository
+     *
+     * @return secret repository type
+     */
+    default String getType() {
+
+        return "secret repository type";
+    }
+
     /**
      * Initializes the repository based on provided properties
      *

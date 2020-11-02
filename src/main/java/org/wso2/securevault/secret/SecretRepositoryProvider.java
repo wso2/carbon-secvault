@@ -21,6 +21,8 @@ package org.wso2.securevault.secret;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * Factory method for creating a instance of a SecretRepository
@@ -35,4 +37,29 @@ public interface SecretRepositoryProvider {
      * @return A SecretRepository implementation
      */
     public SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust);
+
+    /**
+     * Returns a List of initialized SecretRepositories
+     *
+     * @param configurationProperties Properties from secret configurations file
+     * @param key                     Provider type
+     * @return A List of initialized SecretRepositories
+     */
+    default HashMap<String, SecretRepository> initProvider(Properties configurationProperties, String key) {
+
+        return new HashMap<>();
+    }
+
+    /**
+     * Filter properties based on the provider and the repository
+     *
+     * @param properties Properties from secret configurations file
+     * @param provider   Provider string
+     * @param repository Repository string
+     * @return filtered set of properties
+     */
+    default Properties filterConfigurations(Properties properties, String provider, String repository) {
+
+        return new Properties();
+    }
 }
