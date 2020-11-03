@@ -126,47 +126,10 @@ public class SecretManager {
 
         validateSecureVaultStatus();
 
-        IdentityKeyStoreWrapper identityKeyStoreWrapper = null;
-        TrustKeyStoreWrapper trustKeyStoreWrapper = null;
+        IdentityKeyStoreWrapper identityKeyStoreWrapper = new IdentityKeyStoreWrapper();
+        TrustKeyStoreWrapper trustKeyStoreWrapper = new TrustKeyStoreWrapper();
         if (isLegacyProvidersExists) {
-            //Create a KeyStore Information  for private key entry KeyStore
-            IdentityKeyStoreInformation identityInformation =
-                    KeyStoreInformationFactory.createIdentityKeyStoreInformation(properties);
-
-            // Create a KeyStore Information for trusted certificate KeyStore
-            TrustKeyStoreInformation trustInformation =
-                    KeyStoreInformationFactory.createTrustKeyStoreInformation(properties);
-
-            String identityKeyPass = null;
-            String identityStorePass = null;
-            String trustStorePass = null;
-            if (identityInformation != null) {
-                identityKeyPass = identityInformation
-                        .getKeyPasswordProvider().getResolvedSecret();
-                identityStorePass = identityInformation
-                        .getKeyStorePasswordProvider().getResolvedSecret();
-            }
-
-            if (trustInformation != null) {
-                trustStorePass = trustInformation
-                        .getKeyStorePasswordProvider().getResolvedSecret();
-            }
-
-            if (!validatePasswords(identityStorePass, identityKeyPass, trustStorePass)) {
-                if (log.isDebugEnabled()) {
-                    log.info("Either Identity or Trust keystore password is mandatory" +
-                            " in order to initialized secret manager.");
-                }
-                return;
-            }
-
-            identityKeyStoreWrapper = new IdentityKeyStoreWrapper();
-            identityKeyStoreWrapper.init(identityInformation, identityKeyPass);
-
-            trustKeyStoreWrapper = new TrustKeyStoreWrapper();
-            if (trustInformation != null) {
-                trustKeyStoreWrapper.init(trustInformation);
-            }
+            createKeyStoreWrappers(identityKeyStoreWrapper, trustKeyStoreWrapper, properties);
         }
 
         SecretRepository currentParent = null;
@@ -174,7 +137,7 @@ public class SecretManager {
             providerType = (String) singleProvider.getKey();         //file,vault,hsm etc.
             String propertyName = (String) singleProvider.getValue();  //secretRepositories and secretProviders
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(propertyName);
             sb.append(DOT);
             sb.append(providerType);
@@ -501,7 +464,54 @@ public class SecretManager {
     }
 
     /**
-     * Return the properties for a given provider
+     * Creates the TrustKeyStoreWrapper and the IdentityKeyStoreWrapper
+     *
+     * @param identityKeyStoreWrapper   Represents the private keyStore entry
+     * @param trustKeyStoreWrapper      Represents the abstraction for trusted KeyStore
+     * @param properties                Configuration properties
+     */
+    private void createKeyStoreWrappers(IdentityKeyStoreWrapper identityKeyStoreWrapper,
+                                        TrustKeyStoreWrapper trustKeyStoreWrapper, Properties properties) {
+        //Create a KeyStore Information  for private key entry KeyStore
+        IdentityKeyStoreInformation identityInformation =
+                KeyStoreInformationFactory.createIdentityKeyStoreInformation(properties);
+
+        // Create a KeyStore Information for trusted certificate KeyStore
+        TrustKeyStoreInformation trustInformation =
+                KeyStoreInformationFactory.createTrustKeyStoreInformation(properties);
+
+        String identityKeyPass = null;
+        String identityStorePass = null;
+        String trustStorePass = null;
+        if (identityInformation != null) {
+            identityKeyPass = identityInformation
+                    .getKeyPasswordProvider().getResolvedSecret();
+            identityStorePass = identityInformation
+                    .getKeyStorePasswordProvider().getResolvedSecret();
+        }
+
+        if (trustInformation != null) {
+            trustStorePass = trustInformation
+                    .getKeyStorePasswordProvider().getResolvedSecret();
+        }
+
+        if (!validatePasswords(identityStorePass, identityKeyPass, trustStorePass)) {
+            if (log.isDebugEnabled()) {
+                log.info("Either Identity or Trust keystore password is mandatory" +
+                        " in order to initialized secret manager.");
+            }
+            return;
+        }
+
+        identityKeyStoreWrapper.init(identityInformation, identityKeyPass);
+
+        if (trustInformation != null) {
+            trustKeyStoreWrapper.init(trustInformation);
+        }
+    }
+
+    /**
+     * Util method to get the properties for a given provider
      *
      * @param provider           provider type
      * @param configProperties   All the configuration properties
