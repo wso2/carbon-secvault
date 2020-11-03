@@ -14,9 +14,10 @@ import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-import static java.util.Map.*;
 
 /**
  * Entry point for manage secrets
@@ -40,6 +41,7 @@ public class SecretManager {
     private final static String DOT = ".";
     /* Property key for secretProviders */
     private final static String PROP_SECRET_PROVIDERS = "secretProviders";
+    private final static String PROP_REPOSITORIES = "repositories";
     /* Delimiter string */
     private final static String DELIMITER = ":";
 
@@ -49,27 +51,29 @@ public class SecretManager {
     least one Secret Repository*/
     private boolean initialized = false;
     /* True if the property secretRepositories configured */
-    private boolean isPropSecretRepositoriesExists = false;
+    private boolean isLegacyProvidersExists = false;
     /* True if the property secretProviders configured */
-    private boolean isPropSecretProvidersExists =  false;
+    private boolean isNovelProvidersExists = false;
     /* Key of the providers hash map */
     private String providerType;
 
     // global password provider implementation class if defined in secret manager conf file
-    private String globalSecretProvider =null;
+    private String globalSecretProvider = null;
     // property key for global secret provider
-    private final static String PROP_SECRET_PROVIDER="carbon.secretProvider";
+    private final static String PROP_SECRET_PROVIDER = "carbon.secretProvider";
 
     /* Hash map to keep the providers listed under secretRepositories and secretProviders property */
     private HashMap<String, String> providers = new HashMap<>();
     /* Hash map to keep the secret repositories coming from a provider listed under secretProviders property */
-    private HashMap<String, SecretRepository> secretRepositories = new HashMap<>();
+    private HashMap<String, SecretRepository> novelSecretRepositories = new HashMap<>();
 
     public static SecretManager getInstance() {
+
         return SECRET_MANAGER;
     }
 
     private SecretManager() {
+
     }
 
     /**
@@ -111,18 +115,20 @@ public class SecretManager {
             return;
         }
 
-        globalSecretProvider = MiscellaneousUtil.getProperty(configurationProperties, PROP_SECRET_PROVIDER,null);
-        if(globalSecretProvider==null || "".equals(globalSecretProvider)){
-            if(log.isDebugEnabled()){
+        globalSecretProvider = MiscellaneousUtil.getProperty(configurationProperties, PROP_SECRET_PROVIDER, null);
+        if (globalSecretProvider == null || "".equals(globalSecretProvider)) {
+            if (log.isDebugEnabled()) {
                 log.debug("No global secret provider is configured.");
             }
         }
 
         getAllProviders(configurationProperties);
 
+        validateSecureVaultStatus();
+
         IdentityKeyStoreWrapper identityKeyStoreWrapper = null;
         TrustKeyStoreWrapper trustKeyStoreWrapper = null;
-        if (isPropSecretRepositoriesExists) {
+        if (isLegacyProvidersExists) {
             //Create a KeyStore Information  for private key entry KeyStore
             IdentityKeyStoreInformation identityInformation =
                     KeyStoreInformationFactory.createIdentityKeyStoreInformation(properties);
@@ -164,7 +170,7 @@ public class SecretManager {
         }
 
         SecretRepository currentParent = null;
-        for (Entry singleProvider : providers.entrySet()) {
+        for (Map.Entry singleProvider : providers.entrySet()) {
             providerType = (String) singleProvider.getKey();         //file,vault,hsm etc.
             String propertyName = (String) singleProvider.getValue();  //secretRepositories and secretProviders
 
@@ -191,13 +197,11 @@ public class SecretManager {
                 Object instance = aClass.newInstance();
 
                 if (instance instanceof SecretRepositoryProvider) {
-                    if (propertyName.equals(PROP_SECRET_PROVIDERS)) {
-                        secretRepositories = ((SecretRepositoryProvider) instance)
-                                .initProvider(configurationProperties, providerType);
-                        if (log.isDebugEnabled()) {
-                            log.debug("Successfully Initiate a Secret Repository provided by : "
-                                    + provider);
-                        }
+                    if (PROP_SECRET_PROVIDERS.equals(propertyName)) {
+                        Properties filteredConfigs = filterConfigurations(providerType, configurationProperties);
+                        novelSecretRepositories = ((SecretRepositoryProvider) instance)
+                                .initProvider(filteredConfigs, providerType);
+
                     } else {
                         SecretRepository secretRepository = ((SecretRepositoryProvider) instance).
                                 getSecretRepository(identityKeyStoreWrapper, trustKeyStoreWrapper);
@@ -207,10 +211,10 @@ public class SecretManager {
                         }
                         secretRepository.setParent(currentParent);
                         currentParent = secretRepository;
-                        if (log.isDebugEnabled()) {
-                            log.debug("Successfully Initiate a Secret Repository provided by : "
-                                    + provider);
-                        }
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("Successfully Initiate a Secret Repository provided by : "
+                                + provider);
                     }
                 } else {
                     handleException("Invalid class as SecretRepositoryProvider : Class Name : "
@@ -240,7 +244,7 @@ public class SecretManager {
 
         String[] secretAnnotationStrings = secretAnnotation.split(DELIMITER);
         if (secretAnnotationStrings.length == 1) {
-            if (isPropSecretRepositoriesExists) {
+            if (isLegacyProvidersExists) {
                 return getSecret(secretAnnotation);
             }
         }
@@ -252,9 +256,10 @@ public class SecretManager {
      * repositories belongs to providers listed under secretProviders property
      *
      * @param annotation  vaule retrieve by the resolveSecret as the value to be resolved
-     * @return            If there is a secret , otherwise , alias itself
+     * @return If there is a secret , otherwise , alias itself
      */
     public String resolveSecret(String[] annotation) {
+
         String provider, repository, alias;
 
         int length = annotation.length;
@@ -262,7 +267,7 @@ public class SecretManager {
             switch (length) {
                 case 1:
                     provider = providerType;
-                    repository = (String) secretRepositories.keySet().toArray()[0];
+                    repository = (String) novelSecretRepositories.keySet().toArray()[0];
                     alias = annotation[0];
                     return getSecret(provider, repository, alias);
                 case 3:
@@ -286,6 +291,7 @@ public class SecretManager {
      * @return If there is a secret , otherwise , alias itself
      */
     public String getSecret(String alias) {
+
         if (!initialized || parentRepository == null) {
             if (log.isDebugEnabled()) {
                 log.debug("There is no secret repository. Returning alias itself");
@@ -305,8 +311,9 @@ public class SecretManager {
      * @return If there is a secret , otherwise , alias itself
      */
     public String getSecret(String provider, String repository, String alias) {
-        if (providers.containsKey(provider) && secretRepositories.containsKey(repository)) {
-            return secretRepositories.get(repository).getSecret(alias);
+
+        if (providers.containsKey(provider) && novelSecretRepositories.containsKey(repository)) {
+            return novelSecretRepositories.get(repository).getSecret(alias);
         }
         if (log.isDebugEnabled()) {
             log.debug("No such secret repository listed under configurations");
@@ -321,6 +328,7 @@ public class SecretManager {
      * @return If there is a encrypted value , otherwise , alias itself
      */
     public String getEncryptedData(String alias) {
+
         if (!initialized || parentRepository == null) {
             if (log.isDebugEnabled()) {
                 log.debug("There is no secret repository. Returning alias itself");
@@ -331,21 +339,25 @@ public class SecretManager {
     }
 
     public boolean isInitialized() {
+
         return initialized;
     }
 
     public void shoutDown() {
+
         this.parentRepository = null;
         this.initialized = false;
     }
 
     private static void handleException(String msg) {
+
         log.error(msg);
         throw new SecureVaultException(msg);
     }
 
     private boolean validatePasswords(String identityStorePass,
                                       String identityKeyPass, String trustStorePass) {
+
         boolean isValid = false;
         if (trustStorePass != null && !"".equals(trustStorePass)) {
             if (log.isDebugEnabled()) {
@@ -366,6 +378,7 @@ public class SecretManager {
     }
 
     public String getGlobalSecretProvider() {
+
         return globalSecretProvider;
     }
 
@@ -373,27 +386,43 @@ public class SecretManager {
      * Get all the provider listed under both secretRepositories and secretProviders properties
      *
      * @param secretConfigurationProperties  All the configuration properties
-     * @return                               Hash map containing all the providers
      */
-    private HashMap<String, String> getAllProviders(Properties secretConfigurationProperties) {
+    private void getAllProviders(Properties secretConfigurationProperties) {
 
-        String repositoriesString =
+        readLegacyProviders(secretConfigurationProperties);
+        readNovelProviders(secretConfigurationProperties);
+    }
+
+    /**
+     * Read the providers listed under secretRepositories property
+     *
+     * @param secretConfigurationProperties  All the configuration properties
+     */
+    private void readLegacyProviders(Properties secretConfigurationProperties) {
+
+        String legacyProvidersString =
                 getPropertiesFromSecretConfigurations(secretConfigurationProperties, PROP_SECRET_REPOSITORIES);
-        if (validatePropValue(repositoriesString)) {
-            isPropSecretRepositoriesExists=true;
-            String[] repositories = addStringToArray(repositoriesString);
-            addToProvidersMap(repositories, PROP_SECRET_REPOSITORIES);
+        if (validatePropValue(legacyProvidersString)) {
+            isLegacyProvidersExists = true;
+            String[] legacyProvidersArr = addStringToArray(legacyProvidersString);
+            addToProvidersMap(legacyProvidersArr, PROP_SECRET_REPOSITORIES);
         }
+    }
 
-        String secretProvidersString =
+    /**
+     * Read the providers listed under secretProviders property
+     *
+     * @param secretConfigurationProperties  All the configuration properties
+     */
+    private void readNovelProviders(Properties secretConfigurationProperties) {
+
+        String novelProvidersString =
                 getPropertiesFromSecretConfigurations(secretConfigurationProperties, PROP_SECRET_PROVIDERS);
-        if (validatePropValue(secretProvidersString)) {
-            isPropSecretProvidersExists=true;
-            String[] secretProviders = addStringToArray(secretProvidersString);
-            addToProvidersMap(secretProviders, PROP_SECRET_PROVIDERS);
+        if (validatePropValue(novelProvidersString)) {
+            isNovelProvidersExists = true;
+            String[] novelProvidersArr = addStringToArray(novelProvidersString);
+            addToProvidersMap(novelProvidersArr, PROP_SECRET_PROVIDERS);
         }
-        validateSecureVaultStatus();
-        return providers;
     }
 
     /**
@@ -401,7 +430,7 @@ public class SecretManager {
      */
     private void validateSecureVaultStatus() {
 
-        if (!(isPropSecretRepositoriesExists || isPropSecretProvidersExists)) {
+        if (!(isLegacyProvidersExists || isNovelProvidersExists)) {
             if (log.isDebugEnabled()) {
                 log.debug("No secret repositories have been configured");
             }
@@ -418,12 +447,11 @@ public class SecretManager {
      *                      secretRepositories or secretProviders
      * @param providerType  secretRepositories or secretProviders
      */
-    void addToProvidersMap(String[] providersArr, String providerType) {
+    private void addToProvidersMap(String[] providersArr, String providerType) {
 
         for (String arrItem : providersArr) {
             providers.put(arrItem, providerType);
         }
-
     }
 
     /**
@@ -431,7 +459,7 @@ public class SecretManager {
      *
      * @param secretConfigProps   All the properties under secret configuration file
      * @param propName            Name of the property
-     * @return                    Returns the value for the give property
+     * @return Returns the value for the give property
      */
     private String getPropertiesFromSecretConfigurations(Properties secretConfigProps, String propName) {
 
@@ -442,7 +470,7 @@ public class SecretManager {
      * Validate the property value to avoid the processing of null values
      *
      * @param propValue  Value of the required property
-     * @return           Return true if not null
+     * @return Return true if not null
      */
     private boolean validatePropValue(String propValue) {
 
@@ -459,17 +487,38 @@ public class SecretManager {
      * Util method to add the split string of properties, secretRepositories or secretProviders to the Array
      *
      * @param propValue  Value of the property in the secret configuration file
-     * @return           An array containing the string
+     * @return An array containing the string
      */
     private String[] addStringToArray(String propValue) {
 
         String[] propValueArr = propValue.split(",");
-        if (propValueArr == null || propValueArr.length == 0) {
+        if (propValueArr.length == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("No secret repositories have been configured");
             }
         }
         return propValueArr;
+    }
+
+    /**
+     * Return the properties for a given provider
+     *
+     * @param provider           provider type
+     * @param configProperties   All the configuration properties
+     * @return Filtered set of properties for a given provider
+     */
+    public Properties filterConfigurations(String provider, Properties configProperties) {
+
+        Properties filteredProps = new Properties();
+        Enumeration keySet = configProperties.keys();
+
+        while (keySet.hasMoreElements()) {
+            String propertykey = (String) keySet.nextElement();
+            if (propertykey.contains(provider)) {
+                filteredProps.put(propertykey, configProperties.get(propertykey));
+            }
+        }
+        return filteredProps;
     }
 
 }

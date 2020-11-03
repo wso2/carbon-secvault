@@ -42,24 +42,12 @@ public interface SecretRepositoryProvider {
      * Returns a List of initialized SecretRepositories
      *
      * @param configurationProperties Properties from secret configurations file
-     * @param key                     Provider type
+     * @param providerType            Provider type
      * @return A List of initialized SecretRepositories
      */
-    default HashMap<String, SecretRepository> initProvider(Properties configurationProperties, String key) {
+    default HashMap<String, SecretRepository> initProvider(Properties configurationProperties, String providerType) {
 
         return new HashMap<>();
     }
 
-    /**
-     * Filter properties based on the provider and the repository
-     *
-     * @param properties Properties from secret configurations file
-     * @param provider   Provider string
-     * @param repository Repository string
-     * @return filtered set of properties
-     */
-    default Properties filterConfigurations(Properties properties, String provider, String repository) {
-
-        return new Properties();
-    }
 }
