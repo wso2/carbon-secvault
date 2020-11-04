@@ -35,17 +35,30 @@ public class SecretManager {
     private final static String PROP_PROVIDER = "provider";
     /* Dot string */
     private final static String DOT = ".";
+    /* Property key for secretProviders */
+    private final static String PROP_SECRET_PROVIDERS = "secretProviders";
+    /* Delimiter string */
+    private final static String DELIMITER = ":";
 
     /*Root Secret Repository */
     private SecretRepository parentRepository;
     /* True , if secret manage has been started up properly- need to have a at
     least one Secret Repository*/
     private boolean initialized = false;
+    /* True if the property secretRepositories configured */
+    private boolean isLegacyProvidersExists = false;
+    /* True if the property secretProviders configured */
+    private boolean isNovelProvidersExists = false;
 
     // global password provider implementation class if defined in secret manager conf file
     private String globalSecretProvider =null;
     // property key for global secret provider
     private final static String PROP_SECRET_PROVIDER="carbon.secretProvider";
+
+    /* Hash map to keep the providers listed under secretRepositories and secretProviders property */
+    private HashMap<String, String> providers = new HashMap<>();
+    /* Hash map to keep the secret repositories coming from a provider listed under secretProviders property */
+    private HashMap<String, SecretRepository> secretRepositories = new HashMap<>();
 
     public static SecretManager getInstance() {
         return SECRET_MANAGER;
@@ -100,14 +113,7 @@ public class SecretManager {
             }
         }
 
-        String repositoriesString = MiscellaneousUtil.getProperty(
-                configurationProperties, PROP_SECRET_REPOSITORIES, null);
-        if (repositoriesString == null || "".equals(repositoriesString)) {
-            if (log.isDebugEnabled()) {
-                log.debug("No secret repositories have been configured");
-            }
-            return;
-        }
+        getAllProviders(configurationProperties);
 
         String[] repositories = repositoriesString.split(",");
         if (repositories == null || repositories.length == 0) {
@@ -117,54 +123,15 @@ public class SecretManager {
             return;
         }
 
-
-        //Create a KeyStore Information  for private key entry KeyStore
-        IdentityKeyStoreInformation identityInformation =
-                KeyStoreInformationFactory.createIdentityKeyStoreInformation(properties);
-
-        // Create a KeyStore Information for trusted certificate KeyStore
-        TrustKeyStoreInformation trustInformation =
-                KeyStoreInformationFactory.createTrustKeyStoreInformation(properties);
-
-        String identityKeyPass = null;
-        String identityStorePass = null;
-        String trustStorePass = null;
-        if(identityInformation != null){
-            identityKeyPass = identityInformation
-                    .getKeyPasswordProvider().getResolvedSecret();
-            identityStorePass = identityInformation
-                    .getKeyStorePasswordProvider().getResolvedSecret();
-        }
-
-        if(trustInformation != null){
-            trustStorePass = trustInformation
-                .getKeyStorePasswordProvider().getResolvedSecret();
-        }
-
-
-        if (!validatePasswords(identityStorePass, identityKeyPass, trustStorePass)) {
-            if (log.isDebugEnabled()) {
-                log.info("Either Identity or Trust keystore password is mandatory" +
-                        " in order to initialized secret manager.");
-            }
-            return;
-        }
-
-        IdentityKeyStoreWrapper identityKeyStoreWrapper = new IdentityKeyStoreWrapper();
-        identityKeyStoreWrapper.init(identityInformation, identityKeyPass);
-
-        TrustKeyStoreWrapper trustKeyStoreWrapper = new TrustKeyStoreWrapper();
-        if(trustInformation != null){
-            trustKeyStoreWrapper.init(trustInformation);            
-        }
-
         SecretRepository currentParent = null;
-        for (String secretRepo : repositories) {
+        for (Map.Entry singleProvider : providers.entrySet()) {
+            String providerType = (String) singleProvider.getKey();         //file,vault,hsm etc.
+            String propertyName = (String) singleProvider.getValue();  //secretRepositories and secretProviders
 
-            StringBuffer sb = new StringBuffer();
-            sb.append(PROP_SECRET_REPOSITORIES);
+            StringBuilder sb = new StringBuilder();
+            sb.append(propertyName);
             sb.append(DOT);
-            sb.append(secretRepo);
+            sb.append(providerType);
             String id = sb.toString();
             sb.append(DOT);
             sb.append(PROP_PROVIDER);
@@ -176,7 +143,7 @@ public class SecretManager {
             }
 
             if (log.isDebugEnabled()) {
-                log.debug("Initiating a File Based Secret Repository");
+                log.debug("Initiating a Secret Repository");
             }
 
             try {
@@ -185,14 +152,21 @@ public class SecretManager {
                 Object instance = aClass.newInstance();
 
                 if (instance instanceof SecretRepositoryProvider) {
-                    SecretRepository secretRepository = ((SecretRepositoryProvider) instance).
-                            getSecretRepository(identityKeyStoreWrapper, trustKeyStoreWrapper);
-                    secretRepository.init(configurationProperties, id);
-                    if (parentRepository == null) {
-                        parentRepository = secretRepository;
+                    if (PROP_SECRET_PROVIDERS.equals(propertyName)) {
+                        Properties filteredConfigs = filterConfigurations(providerType, configurationProperties);
+                        HashMap<String, SecretRepository> providerBasedSecretRepositories =
+                                ((SecretRepositoryProvider) instance).initProvider(filteredConfigs, providerType);
+                        secretRepositories.putAll(providerBasedSecretRepositories);
+                    }else {
+                        SecretRepository secretRepository = ((SecretRepositoryProvider) instance).
+                                getSecretRepository(identityKeyStoreWrapper, trustKeyStoreWrapper);
+                        secretRepository.init(configurationProperties, id);
+                        if (parentRepository == null) {
+                            parentRepository = secretRepository;
+                        }
+                        secretRepository.setParent(currentParent);
+                        currentParent = secretRepository;
                     }
-                    secretRepository.setParent(currentParent);
-                    currentParent = secretRepository;
                     if (log.isDebugEnabled()) {
                         log.debug("Successfully Initiate a Secret Repository provided by : "
                                 + provider);
@@ -284,4 +258,190 @@ public class SecretManager {
     public String getGlobalSecretProvider() {
         return globalSecretProvider;
     }
+
+    /**
+     * Get all the provider listed under both secretRepositories and secretProviders properties
+     *
+     * @param secretConfigurationProperties All the configuration properties
+     */
+    private void getAllProviders(Properties secretConfigurationProperties) {
+
+        readLegacyProviders(secretConfigurationProperties);
+        readNovelProviders(secretConfigurationProperties);
+    }
+
+    /**
+     * Read the providers listed under secretRepositories property
+     *
+     * @param secretConfigurationProperties All the configuration properties
+     */
+    private void readLegacyProviders(Properties secretConfigurationProperties) {
+
+        String legacyProvidersString =
+                getPropertiesFromSecretConfigurations(secretConfigurationProperties, PROP_SECRET_REPOSITORIES);
+
+        if (validatePropValue(legacyProvidersString)) {
+            isLegacyProvidersExists = true;
+            String[] legacyProvidersArr = addStringToArray(legacyProvidersString);
+            addToProvidersMap(legacyProvidersArr, PROP_SECRET_REPOSITORIES);
+        }
+    }
+
+    /**
+     * Read the providers listed under secretProviders property
+     *
+     * @param secretConfigurationProperties All the configuration properties
+     */
+    private void readNovelProviders(Properties secretConfigurationProperties) {
+
+        String novelProvidersString =
+                getPropertiesFromSecretConfigurations(secretConfigurationProperties, PROP_SECRET_PROVIDERS);
+
+        if (validatePropValue(novelProvidersString)) {
+            isNovelProvidersExists = true;
+            String[] novelProvidersArr = addStringToArray(novelProvidersString);
+            addToProvidersMap(novelProvidersArr, PROP_SECRET_PROVIDERS);
+        }
+    }
+
+    /**
+     * Terminates if either properties, secretRepositories or secretProviders haven`t been configured
+     */
+    private void validateSecureVaultStatus() {
+
+        if (!(isLegacyProvidersExists || isNovelProvidersExists)) {
+            if (log.isDebugEnabled()) {
+                log.debug("No secret repositories have been configured");
+            }
+            return;
+        }
+    }
+
+    /**
+     * Util method to add all the providers from providers array to providers hash map along with the
+     * type (secretRepositories or secretProviders)
+     *
+     * @param providersArr repositories array and secretProviders array generated from the properties,
+     *                     secretRepositories or secretProviders
+     * @param providerType secretRepositories or secretProviders
+     */
+    private void addToProvidersMap(String[] providersArr, String providerType) {
+
+        for (String arrItem : providersArr) {
+            providers.put(arrItem, providerType);
+        }
+    }
+
+    /**
+     * Util method for getting property values from the secret-conf file
+     *
+     * @param secretConfigProps All the properties under secret configuration file
+     * @param propName          Name of the property
+     * @return Returns the value for the give property
+     */
+    private String getPropertiesFromSecretConfigurations(Properties secretConfigProps, String propName) {
+
+        return MiscellaneousUtil.getProperty(secretConfigProps, propName, null);
+    }
+
+    /**
+     * Validate the property value to avoid the processing of null values
+     *
+     * @param propValue Value of the required property
+     * @return Return true if not null
+     */
+    private boolean validatePropValue(String propValue) {
+
+        if (propValue == null || "".equals(propValue)) {
+            if (log.isDebugEnabled()) {
+                log.debug("No secret repositories have been configured");
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Util method to add the split string of properties, secretRepositories or secretProviders to the Array
+     *
+     * @param propValue Value of the property in the secret configuration file
+     * @return An array containing the string
+     */
+    private String[] addStringToArray(String propValue) {
+
+        String[] propValueArr = propValue.split(",");
+        if (propValueArr.length == 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("No secret repositories have been configured");
+            }
+        }
+        return propValueArr;
+    }
+
+    /**
+     * Creates the TrustKeyStoreWrapper and the IdentityKeyStoreWrapper
+     *
+     * @param identityKeyStoreWrapper Represents the private keyStore entry
+     * @param trustKeyStoreWrapper    Represents the abstraction for trusted KeyStore
+     * @param properties              Configuration properties
+     */
+    private void createKeyStoreWrappers(IdentityKeyStoreWrapper identityKeyStoreWrapper,
+                                        TrustKeyStoreWrapper trustKeyStoreWrapper, Properties properties) {
+        //Create a KeyStore Information  for private key entry KeyStore
+        IdentityKeyStoreInformation identityInformation =
+                KeyStoreInformationFactory.createIdentityKeyStoreInformation(properties);
+
+        // Create a KeyStore Information for trusted certificate KeyStore
+        TrustKeyStoreInformation trustInformation =
+                KeyStoreInformationFactory.createTrustKeyStoreInformation(properties);
+
+        String identityKeyPass = null;
+        String identityStorePass = null;
+        String trustStorePass = null;
+        if (identityInformation != null) {
+            identityKeyPass = identityInformation
+                    .getKeyPasswordProvider().getResolvedSecret();
+            identityStorePass = identityInformation
+                    .getKeyStorePasswordProvider().getResolvedSecret();
+        }
+
+        if (trustInformation != null) {
+            trustStorePass = trustInformation
+                    .getKeyStorePasswordProvider().getResolvedSecret();
+        }
+
+        if (!validatePasswords(identityStorePass, identityKeyPass, trustStorePass)) {
+            if (log.isDebugEnabled()) {
+                log.info("Either Identity or Trust keystore password is mandatory" +
+                        " in order to initialized secret manager.");
+            }
+            return;
+        }
+
+        identityKeyStoreWrapper.init(identityInformation, identityKeyPass);
+
+        if (trustInformation != null) {
+            trustKeyStoreWrapper.init(trustInformation);
+        }
+    }
+
+    /**
+     * Util method to get the properties for a given provider
+     *
+     * @param provider         provider type
+     * @param configProperties All the configuration properties
+     * @return Filtered set of properties for a given provider
+     */
+    private Properties filterConfigurations(String provider, Properties configProperties) {
+
+        Properties filteredProps = new Properties();
+
+        configProperties.forEach((propKey, propValue) -> {
+            if (propKey.toString().contains(provider)) {
+                filteredProps.put(propKey, propValue);
+            }
+        });
+        return filteredProps;
+    }
+
 }
