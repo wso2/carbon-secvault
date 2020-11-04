@@ -41,7 +41,7 @@ public class SecretManagerSecretCallbackHandler extends AbstractSecretCallbackHa
 
         String id = singleSecretCallback.getId();
         if (id != null && !"".equals(id)) {
-            singleSecretCallback.setSecret(secretManager.getSecret(id));
+            singleSecretCallback.setSecret(secretManager.resolveSecret(id));
         }
     }
 }
