@@ -13,6 +13,9 @@ import org.wso2.securevault.definition.TrustKeyStoreInformation;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -115,12 +118,12 @@ public class SecretManager {
 
         getAllProviders(configurationProperties);
 
-        String[] repositories = repositoriesString.split(",");
-        if (repositories == null || repositories.length == 0) {
-            if (log.isDebugEnabled()) {
-                log.debug("No secret repositories have been configured");
-            }
-            return;
+        validateSecureVaultStatus();
+
+        IdentityKeyStoreWrapper identityKeyStoreWrapper = new IdentityKeyStoreWrapper();
+        TrustKeyStoreWrapper trustKeyStoreWrapper = new TrustKeyStoreWrapper();
+        if (isLegacyProvidersExists) {
+            createKeyStoreWrappers(identityKeyStoreWrapper, trustKeyStoreWrapper, properties);
         }
 
         SecretRepository currentParent = null;
@@ -189,6 +192,51 @@ public class SecretManager {
     }
 
     /**
+     * Check whether to use the provider listed under secretRepositories
+     * or secretProviders property for resolving secrets
+     *
+     * @param secretAnnotation String contains the alias, the provider type and the repository type
+     * @return plain text value for the required secret
+     */
+    public String resolveSecret(String secretAnnotation) {
+
+        String[] secretAnnotationStrings = secretAnnotation.split(DELIMITER);
+        if (secretAnnotationStrings.length == 1) {
+            if (isLegacyProvidersExists) {
+                return getSecret(secretAnnotation);
+            }
+        }
+        return resolveSecret(secretAnnotationStrings);
+    }
+
+    /**
+     * Resolve the secret annotation for the secrets coming from
+     * repositories belongs to providers listed under secretProviders property
+     *
+     * @param annotation vaule retrieve by the resolveSecret as the value to be resolved
+     * @return If there is a secret , otherwise , alias itself
+     */
+    public String resolveSecret(String[] annotation) {
+
+        int length = annotation.length;
+        try {
+            switch (length) {
+                case 1:
+                    return getSecret((String) providers.keySet().toArray()[0],
+                            (String) secretRepositories.keySet().toArray()[0],
+                            annotation[0]);
+                case 3:
+                    return getSecret(annotation[0], annotation[1], annotation[2]);
+                default:
+                    throw new IllegalArgumentException("invalid annotation");
+            }
+        } catch (NullPointerException e) {
+            handleException("No Secret Repositories have been initialized : ");
+        }
+        return Arrays.toString(annotation);
+    }
+
+    /**
      * Returns the secret corresponding to the given alias name
      *
      * @param alias The logical or alias name
@@ -203,6 +251,27 @@ public class SecretManager {
         }
         return parentRepository.getSecret(alias);
     }
+
+    /**
+     * Returns the encrypted value corresponding to the given secretAnnotation name where
+     * secretAnnotation consists of provider type, repository type and the alias
+     *
+     * @param provider   provider type
+     * @param repository repository type
+     * @param alias      alias to be resolved
+     * @return If there is a secret , otherwise , alias itself
+     */
+    public String getSecret(String provider, String repository, String alias) {
+
+        if (providers.containsKey(provider) && secretRepositories.containsKey(repository)) {
+            return secretRepositories.get(repository).getSecret(alias);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("No such secret repository listed under configurations");
+        }
+        return alias;
+    }
+
 
     /**
      * Returns the encrypted value corresponding to the given alias name
