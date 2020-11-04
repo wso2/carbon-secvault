@@ -14,7 +14,6 @@ import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -41,7 +40,6 @@ public class SecretManager {
     private final static String DOT = ".";
     /* Property key for secretProviders */
     private final static String PROP_SECRET_PROVIDERS = "secretProviders";
-    private final static String PROP_REPOSITORIES = "repositories";
     /* Delimiter string */
     private final static String DELIMITER = ":";
 
@@ -54,8 +52,6 @@ public class SecretManager {
     private boolean isLegacyProvidersExists = false;
     /* True if the property secretProviders configured */
     private boolean isNovelProvidersExists = false;
-    /* Key of the providers hash map */
-    private String providerType;
 
     // global password provider implementation class if defined in secret manager conf file
     private String globalSecretProvider = null;
@@ -65,7 +61,7 @@ public class SecretManager {
     /* Hash map to keep the providers listed under secretRepositories and secretProviders property */
     private HashMap<String, String> providers = new HashMap<>();
     /* Hash map to keep the secret repositories coming from a provider listed under secretProviders property */
-    private HashMap<String, SecretRepository> novelSecretRepositories = new HashMap<>();
+    private HashMap<String, SecretRepository> secretRepositories = new HashMap<>();
 
     public static SecretManager getInstance() {
 
@@ -134,7 +130,7 @@ public class SecretManager {
 
         SecretRepository currentParent = null;
         for (Map.Entry singleProvider : providers.entrySet()) {
-            providerType = (String) singleProvider.getKey();         //file,vault,hsm etc.
+            String providerType = (String) singleProvider.getKey();         //file,vault,hsm etc.
             String propertyName = (String) singleProvider.getValue();  //secretRepositories and secretProviders
 
             StringBuilder sb = new StringBuilder();
@@ -162,9 +158,9 @@ public class SecretManager {
                 if (instance instanceof SecretRepositoryProvider) {
                     if (PROP_SECRET_PROVIDERS.equals(propertyName)) {
                         Properties filteredConfigs = filterConfigurations(providerType, configurationProperties);
-                        novelSecretRepositories = ((SecretRepositoryProvider) instance)
-                                .initProvider(filteredConfigs, providerType);
-
+                        HashMap<String, SecretRepository> providerBasedSecretRepositories =
+                                ((SecretRepositoryProvider) instance).initProvider(filteredConfigs, providerType);
+                        secretRepositories.putAll(providerBasedSecretRepositories);
                     } else {
                         SecretRepository secretRepository = ((SecretRepositoryProvider) instance).
                                 getSecretRepository(identityKeyStoreWrapper, trustKeyStoreWrapper);
@@ -223,21 +219,15 @@ public class SecretManager {
      */
     public String resolveSecret(String[] annotation) {
 
-        String provider, repository, alias;
-
         int length = annotation.length;
         try {
             switch (length) {
                 case 1:
-                    provider = providerType;
-                    repository = (String) novelSecretRepositories.keySet().toArray()[0];
-                    alias = annotation[0];
-                    return getSecret(provider, repository, alias);
+                    return getSecret((String) providers.keySet().toArray()[0],
+                            (String) secretRepositories.keySet().toArray()[0],
+                            annotation[0]);
                 case 3:
-                    provider = annotation[0];
-                    repository = annotation[1];
-                    alias = annotation[2];
-                    return getSecret(provider, repository, alias);
+                    return getSecret(annotation[0], annotation[1], annotation[2]);
                 default:
                     throw new IllegalArgumentException("invalid annotation");
             }
@@ -275,8 +265,8 @@ public class SecretManager {
      */
     public String getSecret(String provider, String repository, String alias) {
 
-        if (providers.containsKey(provider) && novelSecretRepositories.containsKey(repository)) {
-            return novelSecretRepositories.get(repository).getSecret(alias);
+        if (providers.containsKey(provider) && secretRepositories.containsKey(repository)) {
+            return secretRepositories.get(repository).getSecret(alias);
         }
         if (log.isDebugEnabled()) {
             log.debug("No such secret repository listed under configurations");
@@ -351,7 +341,6 @@ public class SecretManager {
      * @param secretConfigurationProperties  All the configuration properties
      */
     private void getAllProviders(Properties secretConfigurationProperties) {
-
         readLegacyProviders(secretConfigurationProperties);
         readNovelProviders(secretConfigurationProperties);
     }
@@ -370,6 +359,7 @@ public class SecretManager {
             String[] legacyProvidersArr = addStringToArray(legacyProvidersString);
             addToProvidersMap(legacyProvidersArr, PROP_SECRET_REPOSITORIES);
         }
+
     }
 
     /**
@@ -517,17 +507,15 @@ public class SecretManager {
      * @param configProperties   All the configuration properties
      * @return Filtered set of properties for a given provider
      */
-    public Properties filterConfigurations(String provider, Properties configProperties) {
+    private Properties filterConfigurations(String provider, Properties configProperties) {
 
         Properties filteredProps = new Properties();
-        Enumeration keySet = configProperties.keys();
 
-        while (keySet.hasMoreElements()) {
-            String propertykey = (String) keySet.nextElement();
-            if (propertykey.contains(provider)) {
-                filteredProps.put(propertykey, configProperties.get(propertykey));
+        configProperties.forEach((propKey, propValue) -> {
+            if (propKey.toString().contains(provider)) {
+                filteredProps.put(propKey, propValue);
             }
-        }
+        });
         return filteredProps;
     }
 
