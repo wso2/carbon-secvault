@@ -35,4 +35,6 @@ public interface SecretRepositoryProvider {
      * @return A SecretRepository implementation
      */
     public SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust);
+
+    public SecretRepository getSecretRepositoryY(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust);
 }
