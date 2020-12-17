@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
 import javax.xml.namespace.QName;
 
 /**
@@ -275,6 +276,26 @@ public class MiscellaneousUtil {
 
         String value = attribute.getAttributeValue();
         return resolve(value, secretResolver);
+    }
+
+    /**
+     * Validate the property value to avoid the processing of null values.
+     *
+     * @param propValue Value of the required property.
+     * @return Return true if not null.
+     */
+    public static boolean isValidPropertyValue(String propValue) {
+
+        if (propValue == null || "".equals(propValue)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Could not find a value as: " + propValue);
+            }
+            return false;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Retrieved value: " + propValue);
+        }
+        return true;
     }
 
     static List<ProtectedToken> extractProtectedTokens(String text) {
