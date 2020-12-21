@@ -41,7 +41,12 @@ public class SecretManagerSecretCallbackHandler extends AbstractSecretCallbackHa
 
         String id = singleSecretCallback.getId();
         if (id != null && !"".equals(id)) {
-            singleSecretCallback.setSecret(secretManager.getSecret(id));
+            if (log.isDebugEnabled()) {
+                log.debug("The secret annotation provided is: " + id);
+            }
+            singleSecretCallback.setSecret(secretManager.resolveSecret(id));
+        } else {
+            log.error("The provided Secret Annotation is empty.");
         }
     }
 }
