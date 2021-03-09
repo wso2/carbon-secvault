@@ -108,13 +108,6 @@ if [ -z "$JAVA_HOME" ]; then
   exit 1
 fi
 
-jdk_18=`$JAVA_HOME/bin/java -version 2>&1 | grep "1.[8]"`
-if [ "$jdk_18" = "" ]; then
-   echo " Starting WSO2 Carbon (in unsupported JDK)"
-   echo " [ERROR] CARBON is supported only on JDK 1.8"
-   exit 1
-fi
-
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
   JAVA_HOME=`cygpath --absolute --windows "$JAVA_HOME"`
