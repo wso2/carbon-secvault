@@ -51,19 +51,6 @@ goto findJdk
 
 set CMD=RUN %*
 
-:checkJdk16
-"%JAVA_HOME%\bin\java" -version 2>&1 | findstr /r "1.[8]" >NUL
-IF ERRORLEVEL 1 goto unknownJdk
-goto jdk16
-
-:unknownJdk
-echo Starting WSO2 Carbon (in unsupported JDK)
-echo [ERROR] CARBON is supported only on JDK 1.8
-goto jdk16
-
-:jdk16
-goto runTool
-
 rem ----------------- Execute The Requested Command ----------------------------
 :runTool
 cd %CARBON_HOME%
@@ -71,7 +58,7 @@ echo JAVA_HOME environment variable is set to %JAVA_HOME%
 echo CARBON_HOME environment variable is set to %CARBON_HOME%
 
 set CMD_LINE_ARGS= -Dcarbon.home="%CARBON_HOME%" -Dwso2.runtime.path="%RUNTIME_HOME%" -Dwso2.runtime="%RUNTIME%"
-java -cp "\bin\tools\*" -Dcarbon.home="%CARBON_HOME%" org.wso2.carbon.secvault.ciphertool.CipherToolInitializer %*
+java -cp "bin\tools\*" -Dcarbon.home="%CARBON_HOME%" org.wso2.carbon.secvault.ciphertool.CipherToolInitializer %*
 
 :end
 goto endlocal
