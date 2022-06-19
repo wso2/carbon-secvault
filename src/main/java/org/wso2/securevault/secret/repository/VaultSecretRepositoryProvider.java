@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.wso2.securevault.SecurityConstants.PROP_ENCRYPTION_ENABLED;
+
 /**
  * This class is responsible for initializing SecretRepositories which belongs to a particular provider.
  * This is being called by the SecretManager by providing the secret configuration properties and the provider type
@@ -58,6 +60,12 @@ public class VaultSecretRepositoryProvider implements SecretRepositoryProvider {
 
     // Contains all initialized secret repositories under provider type vault.
     private final Map<String, SecretRepository> vaultRepositoryMap = new HashMap<>();
+
+    // Wrapper for identity key store.
+    private IdentityKeyStoreWrapper identityKeyStoreWrapper;
+
+    // Wrapper for trust key store.
+    private TrustKeyStoreWrapper trustKeyStoreWrapper;
 
     /**
      * @see org.wso2.securevault.secret.SecretRepositoryProvider
@@ -113,6 +121,20 @@ public class VaultSecretRepositoryProvider implements SecretRepositoryProvider {
 
                         if (repositoryImpl instanceof SecretRepository) {
                             Properties repositoryProperties = filterConfigurations(configurationProperties, repo);
+                            StringBuilder encryptionEnabledPropKey = new StringBuilder()
+                                    .append(repositoriesStringPropKey.toString())
+                                    .append(DOT)
+                                    .append(repo)
+                                    .append(DOT)
+                                    .append(PROPERTIES)
+                                    .append(DOT)
+                                    .append(PROP_ENCRYPTION_ENABLED);
+                            Boolean repoEncryptionEnabled = Boolean.parseBoolean(MiscellaneousUtil.getProperty(
+                                    configurationProperties, encryptionEnabledPropKey.toString(), null));
+                            if (repoEncryptionEnabled) {
+                                ((SecretRepository) repositoryImpl).setKeyStores(identityKeyStoreWrapper,
+                                        trustKeyStoreWrapper);
+                            }
                             ((SecretRepository) repositoryImpl).init(repositoryProperties, providerType);
                             vaultRepositoryMap.put(repo, (SecretRepository) repositoryImpl);
                         }
@@ -148,5 +170,18 @@ public class VaultSecretRepositoryProvider implements SecretRepositoryProvider {
             }
         });
         return filteredProps;
+    }
+
+    /**
+     * Sets the identity key store wrapper and trust key store wrapper.
+     *
+     * @param identityKeyStoreWrapper The identity key store wrapper to be set.
+     * @param trustKeyStoreWrapper The trust key store wrapper to be set.
+     */
+    public void setProviderKeyStores(IdentityKeyStoreWrapper identityKeyStoreWrapper,
+                               TrustKeyStoreWrapper trustKeyStoreWrapper) {
+
+        this.identityKeyStoreWrapper = identityKeyStoreWrapper;
+        this.trustKeyStoreWrapper = trustKeyStoreWrapper;
     }
 }

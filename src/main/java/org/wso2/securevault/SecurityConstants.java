@@ -20,6 +20,7 @@ package org.wso2.securevault;
 
 public class SecurityConstants {
 
+    public static final String PROP_ENCRYPTION_ENABLED = "encryptionEnabled";
     public static final String PROP_USER_NAME = "username";
     public static final String PROP_PASSWORD = "password";
     public static final String PROP_PASSWORD_PROMPT = "passwordPrompt";

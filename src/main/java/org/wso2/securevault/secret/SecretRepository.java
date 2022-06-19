@@ -18,6 +18,9 @@
  */
 package org.wso2.securevault.secret;
 
+import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
+import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
+
 import java.util.Properties;
 
 /**
@@ -67,4 +70,12 @@ public interface SecretRepository {
      */
     SecretRepository getParent();
 
+    /**
+     * Sets the identity key store wrapper and trust key store wrapper.
+     *
+     * @param identityKeyStoreWrapper The identity key store wrapper to be set.
+     * @param trustKeyStoreWrapper The trust key store wrapper to be set.
+     */
+    default void setKeyStores(IdentityKeyStoreWrapper identityKeyStoreWrapper,
+                              TrustKeyStoreWrapper trustKeyStoreWrapper) {}
 }
