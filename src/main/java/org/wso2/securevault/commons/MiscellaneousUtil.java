@@ -297,7 +297,7 @@ public class MiscellaneousUtil {
         return true;
     }
 
-    static List<ProtectedToken> extractProtectedTokens(String text) {
+    public static List<ProtectedToken> extractProtectedTokens(String text) {
 
         List<ProtectedToken> tokenList = new ArrayList<>();
 
@@ -318,7 +318,7 @@ public class MiscellaneousUtil {
         return tokenList;
     }
 
-    static class ProtectedToken {
+    public static class ProtectedToken {
 
         private int startIndex;
         private int endIndex;
@@ -331,17 +331,17 @@ public class MiscellaneousUtil {
             this.value = value;
         }
 
-        int getStartIndex() {
+        public int getStartIndex() {
 
             return startIndex;
         }
 
-        String getValue() {
+        public String getValue() {
 
             return value;
         }
 
-        int getEndIndex() {
+        public int getEndIndex() {
 
             return endIndex;
         }
