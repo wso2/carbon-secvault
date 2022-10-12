@@ -27,11 +27,14 @@ import org.wso2.securevault.definition.KeyStoreInformationFactory;
 import org.wso2.securevault.definition.TrustKeyStoreInformation;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
+import org.wso2.securevault.secret.repository.VaultSecretRepositoryProvider;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.wso2.securevault.SecurityConstants.PROP_ENCRYPTION_ENABLED;
 
 /**
  * Entry point for manage secrets
@@ -137,9 +140,10 @@ public class SecretManager {
             return;
         }
 
+        Boolean encryptionEnabled = getEncryptionEnabledStatus(properties);
         IdentityKeyStoreWrapper identityKeyStoreWrapper = new IdentityKeyStoreWrapper();
         TrustKeyStoreWrapper trustKeyStoreWrapper = new TrustKeyStoreWrapper();
-        if (legacyProvidersExist) {
+        if (legacyProvidersExist || (novelProvidersExist && encryptionEnabled)) {
             //Create a KeyStore Information  for private key entry KeyStore.
             IdentityKeyStoreInformation identityInformation =
                     KeyStoreInformationFactory.createIdentityKeyStoreInformation(properties);
@@ -196,6 +200,10 @@ public class SecretManager {
                 if (instance instanceof SecretRepositoryProvider) {
                     if (PROP_SECRET_PROVIDERS.equals(propertyName)) {
                         Properties filteredConfigs = filterConfigurations(providerType, configurationProperties);
+                        if (instance instanceof VaultSecretRepositoryProvider && encryptionEnabled) {
+                            ((VaultSecretRepositoryProvider) instance).setProviderKeyStores(identityKeyStoreWrapper,
+                                    trustKeyStoreWrapper);
+                        }
                         Map<String, SecretRepository> providerBasedSecretRepositories =
                                 ((SecretRepositoryProvider) instance).initProvider(filteredConfigs, providerType);
                         secretRepositories.putAll(providerBasedSecretRepositories);
@@ -573,6 +581,23 @@ public class SecretManager {
             log.debug("Returning the filtered properties.");
         }
         return filteredProps;
+    }
+
+    /**
+     * Gets whether encryption has been enabled for any of the secret repositories.
+     * @param properties Configuration properties from the secret-conf.properties file.
+     * @return The status of whether encryption is enabled or not.
+     */
+    private boolean getEncryptionEnabledStatus(Properties properties) {
+
+        for (Map.Entry config: properties.entrySet()) {
+            if (config.getKey().toString().contains(PROP_ENCRYPTION_ENABLED)) {
+                if (Boolean.parseBoolean(config.getValue().toString())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 
