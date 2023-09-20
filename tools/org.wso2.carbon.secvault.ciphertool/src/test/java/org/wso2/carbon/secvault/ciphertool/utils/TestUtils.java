@@ -62,7 +62,7 @@ public class TestUtils {
             DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
-            Representer representer = new Representer();
+            Representer representer = new Representer(options);
             representer.addClassTag(MasterKeyConfiguration.class, Tag.MAP);
             Yaml yaml = new Yaml(representer, options);
 
