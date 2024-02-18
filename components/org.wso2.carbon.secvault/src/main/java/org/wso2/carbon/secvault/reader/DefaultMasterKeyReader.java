@@ -27,6 +27,7 @@ import org.wso2.carbon.secvault.SecureVaultConstants;
 import org.wso2.carbon.secvault.exception.SecureVaultException;
 import org.wso2.carbon.secvault.model.MasterKeyReaderConfiguration;
 import org.wso2.carbon.secvault.model.masterkey.MasterKeyConfiguration;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -124,10 +125,11 @@ public class DefaultMasterKeyReader implements MasterKeyReader {
                      new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
 
             Yaml yaml = new Yaml(new CustomClassLoaderConstructor(MasterKeyConfiguration.class,
-                    MasterKeyConfiguration.class.getClassLoader()));
+                    MasterKeyConfiguration.class.getClassLoader(), new LoaderOptions()));
             yaml.setBeanAccess(BeanAccess.FIELD);
             MasterKeyConfiguration masterKeyConfiguration =
-                    Optional.ofNullable(yaml.loadAs(bufferedReader, MasterKeyConfiguration.class))
+                    (MasterKeyConfiguration) Optional.ofNullable(yaml.loadAs(bufferedReader,
+                                    MasterKeyConfiguration.class))
                             .orElseThrow(() -> new SecureVaultException("Unable to load master-keys.yaml file"));
 
             if (!masterKeyConfiguration.getRelocation().isEmpty()) {
