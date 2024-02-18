@@ -24,6 +24,7 @@ import org.wso2.carbon.secvault.model.MasterKeyReaderConfiguration;
 import org.wso2.carbon.secvault.model.SecretRepositoryConfiguration;
 import org.wso2.carbon.secvault.model.SecureVaultConfiguration;
 import org.wso2.carbon.utils.StringUtils;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -104,7 +105,7 @@ public class SecureVaultUtils {
         SecureVaultConfiguration secureVaultConfiguration;
         if (!resolvedFileContent.isEmpty()) {
             Yaml yaml = new Yaml(new CustomClassLoaderConstructor(SecureVaultConfiguration.class,
-                    SecureVaultConfiguration.class.getClassLoader()));
+                    SecureVaultConfiguration.class.getClassLoader(), new LoaderOptions()));
             yaml.setBeanAccess(BeanAccess.FIELD);
             secureVaultConfiguration = yaml.loadAs(resolvedFileContent, SecureVaultConfiguration.class);
             logger.debug("Secure vault configurations loaded successfully.");
