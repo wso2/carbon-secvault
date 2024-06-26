@@ -18,6 +18,8 @@
  */
 package org.wso2.securevault;
 
+import java.security.spec.AlgorithmParameterSpec;
+
 /**
  * Provides Decrypt operation
  */
@@ -30,4 +32,13 @@ public interface DecryptionProvider {
      * @return plain text as byte array
      */
     public byte[] decrypt(byte[] cipherText);
+
+    /**
+     * Initialized the cipher and decrypts input cipher bytes.
+     *
+     * @param cipherText as a byte array.
+     * @param params The algorithm parameters.
+     * @return plain text as byte array.
+     */
+    public byte[] cipherInitAndDecrypt(byte[] cipherText, AlgorithmParameterSpec params);
 }

@@ -32,6 +32,7 @@ import java.security.Key;
  */
 public class SymmetricCipher extends BaseCipher {
 
+    public static final String AES_GCM_NO_PADDING = "AES/GCM/NoPadding";
     private SecretKeySpec defaultKeySpec;
 
     public SymmetricCipher(CipherInformation cipherInformation,
@@ -56,6 +57,21 @@ public class SymmetricCipher extends BaseCipher {
             return defaultKeySpec;
         } else {
             return secretKey;
+        }
+    }
+
+    /**
+     * Initializes the cipher operation based on the symmetric algorithm provided.
+     *
+     * @param opMode The mode (encryption or decryption) in which the cipher should operate.
+     */
+    @Override
+    protected void cipherInit(CipherOperationMode opMode) {
+
+        String algorithm = cipherInformation.getAlgorithm();
+        // For AES-GCM mode, initialization happens during encryption or decryption
+        if (!AES_GCM_NO_PADDING.equals(algorithm)) {
+            super.cipherInit(opMode);
         }
     }
 

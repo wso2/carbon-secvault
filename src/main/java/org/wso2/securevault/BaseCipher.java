@@ -36,17 +36,19 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.spec.AlgorithmParameterSpec;
 
 /**
  * Wraps the cipher and expose abstraction need for synapse ciphering
  */
 public abstract class BaseCipher implements EncryptionProvider, DecryptionProvider {
 
-    private CipherInformation cipherInformation;
+    protected CipherInformation cipherInformation;
     private KeyStoreInformation keystoreInformation;
     private static Log log = LogFactory.getLog(BaseCipher.class);
     /* Underlying cipher instance*/
@@ -89,6 +91,27 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         init();
     }
 
+    /**
+     * Initializes the cipher operation based on the algorithm provided.
+     *
+     * @param opMode The mode (encryption or decryption) in which the cipher should operate.
+     */
+    protected void cipherInit(CipherOperationMode opMode) {
+
+        try {
+            if (opMode == CipherOperationMode.ENCRYPT) {
+                cipher.init(Cipher.ENCRYPT_MODE, key);
+            } else if (opMode == CipherOperationMode.DECRYPT) {
+                cipher.init(Cipher.DECRYPT_MODE, key);
+            } else {
+                throw new SecureVaultException("Invalid mode : " + opMode, log);
+            }
+        } catch (InvalidKeyException e) {
+            throw new SecureVaultException("Invalid key ", e, log);
+        }
+    }
+
+
     private void init() {
 
         String algorithm = cipherInformation.getAlgorithm();
@@ -111,13 +134,7 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
             } else {
                 cipher = Cipher.getInstance(algorithm);
             }
-            if (opMode == CipherOperationMode.ENCRYPT) {
-                cipher.init(Cipher.ENCRYPT_MODE, key);
-            } else if (opMode == CipherOperationMode.DECRYPT) {
-                cipher.init(Cipher.DECRYPT_MODE, key);
-            } else {
-                throw new SecureVaultException("Invalid mode : " + opMode, log);
-            }
+            cipherInit(opMode);
 
         } catch (NoSuchAlgorithmException e) {
             throw new SecureVaultException("There is no algorithm support for " +
@@ -125,8 +142,6 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         } catch (NoSuchPaddingException e) {
             throw new SecureVaultException("There is no padding scheme  for " +
                     "'" + algorithm + "' in the operation mode '" + opMode + "'" + e, log);
-        } catch (InvalidKeyException e) {
-            throw new SecureVaultException("Invalid key ", e, log);
         }
     }
 
@@ -200,5 +215,24 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
 
     public byte[] decrypt(byte[] cipherText) {
         return doCipherOperation(cipherText);
+    }
+
+    /**
+     * Decrypts input cipher bytes.
+     *
+     * @param cipherText as a byte array.
+     * @param params The algorithm parameters.
+     * @return plain text as byte array.
+     */
+    public byte[] cipherInitAndDecrypt(byte[] cipherText, AlgorithmParameterSpec params) {
+
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, key, params);
+            return doCipherOperation(cipherText);
+        } catch (InvalidKeyException e) {
+            throw new SecureVaultException("Invalid key ", e, log);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new SecureVaultException("Invalid algorithm parameters ", e, log);
+        }
     }
 }
