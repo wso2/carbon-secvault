@@ -157,7 +157,7 @@ public class FileBaseSecretRepository implements SecretRepository {
                 JsonObject jsonObject = getJsonObject(encryptedText.trim());
                 byte[] cipherText = getValueFromJson(jsonObject, "cipherText").getBytes();
                 byte[] iv = Base64Utils.decode(getValueFromJson(jsonObject, "iv"));
-                decryptedText = new String(baseCipher.cipherInitAndDecrypt(cipherText, new GCMParameterSpec(GCM_TAG_LENGTH, iv)));
+                decryptedText = new String(baseCipher.decrypt(cipherText, new GCMParameterSpec(GCM_TAG_LENGTH, iv)));
             } else {
                 byte[] cipherText = encryptedText.trim().getBytes();
                 decryptedText = new String(baseCipher.decrypt(cipherText));

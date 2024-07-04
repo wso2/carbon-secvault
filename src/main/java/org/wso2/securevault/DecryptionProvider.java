@@ -34,11 +34,11 @@ public interface DecryptionProvider {
     public byte[] decrypt(byte[] cipherText);
 
     /**
-     * Initialized the cipher and decrypts input cipher bytes.
+     * Decrypts input cipher bytes.
      *
      * @param cipherText as a byte array.
      * @param params The algorithm parameters.
      * @return plain text as byte array.
      */
-    public byte[] cipherInitAndDecrypt(byte[] cipherText, AlgorithmParameterSpec params);
+    public byte[] decrypt(byte[] cipherText, AlgorithmParameterSpec params);
 }
