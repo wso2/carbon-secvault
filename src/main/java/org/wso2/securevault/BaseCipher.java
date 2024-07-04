@@ -194,8 +194,8 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
     /**
      * Encrypts a plain text.
      *
-     * @param plainText as a byte array.
-     * @return cipher text as a byte array.
+     * @param plainText Plain text as a byte array.
+     * @return Cipher text as a byte array.
      */
     public byte[] encrypt(byte[] plainText) {
 
@@ -210,8 +210,8 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
     /**
      * Decrypts input cipher bytes.
      *
-     * @param cipherText as a byte array.
-     * @return plain text as byte array.
+     * @param cipherText Encrypted text as a byte array.
+     * @return Plain text as byte array.
      */
     public byte[] decrypt(byte[] cipherText) {
 
@@ -226,9 +226,9 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
     /**
      * Decrypts input cipher bytes.
      *
-     * @param cipherText as a byte array.
-     * @param params The algorithm parameters.
-     * @return plain text as byte array.
+     * @param cipherText    Encrypted text as a byte array.
+     * @param params        The algorithm parameters.
+     * @return Plain text as byte array.
      */
     public byte[] decrypt(byte[] cipherText, AlgorithmParameterSpec params) {
 

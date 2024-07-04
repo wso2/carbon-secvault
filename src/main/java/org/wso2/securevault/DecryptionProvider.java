@@ -36,9 +36,9 @@ public interface DecryptionProvider {
     /**
      * Decrypts input cipher bytes.
      *
-     * @param cipherText as a byte array.
-     * @param params The algorithm parameters.
-     * @return plain text as byte array.
+     * @param cipherText    Encrypted text as a byte array.
+     * @param params        The algorithm parameters.
+     * @return Plain text as byte array.
      */
     public byte[] decrypt(byte[] cipherText, AlgorithmParameterSpec params);
 }
