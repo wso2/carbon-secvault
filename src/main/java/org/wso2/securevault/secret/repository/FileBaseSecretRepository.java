@@ -75,6 +75,8 @@ public class FileBaseSecretRepository implements SecretRepository {
     private TrustKeyStoreWrapper trust;
     /* Whether this secret repository has been initiated successfully*/
     private boolean initialize = false;
+    private static final String IV = "iv";
+    private static final String CIPHER_TEXT = "cipherText";
 
     public FileBaseSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust) {
         this.identity = identity;
@@ -112,8 +114,8 @@ public class FileBaseSecretRepository implements SecretRepository {
         String sbTwo = id
                        + DOT
                        + ALGORITHM;
-        String algorithm = MiscellaneousUtil.getProperty(properties,
-                sbTwo, symmetricEncryptionEnabled ? DEFAULT_SYMMETRIC_ALGORITHM : DEFAULT_ASYMMETRIC_ALGORITHM);
+        String algorithm = MiscellaneousUtil.getProperty(properties, sbTwo,
+                getDefaultAlgorithm(symmetricEncryptionEnabled));
 
         //Load keyStore
         String buffer = DOT
@@ -155,8 +157,8 @@ public class FileBaseSecretRepository implements SecretRepository {
             String decryptedText;
             if (DEFAULT_SYMMETRIC_ALGORITHM.equals(algorithm)) {
                 JsonObject jsonObject = getJsonObject(encryptedText.trim());
-                byte[] cipherText = getValueFromJson(jsonObject, "cipherText").getBytes();
-                byte[] iv = Base64Utils.decode(getValueFromJson(jsonObject, "iv"));
+                byte[] cipherText = getValueFromJson(jsonObject, CIPHER_TEXT).getBytes();
+                byte[] iv = Base64Utils.decode(getValueFromJson(jsonObject, IV));
                 decryptedText = new String(baseCipher.decrypt(cipherText, new GCMParameterSpec(GCM_TAG_LENGTH, iv)));
             } else {
                 byte[] cipherText = encryptedText.trim().getBytes();
@@ -251,5 +253,10 @@ public class FileBaseSecretRepository implements SecretRepository {
 
     public SecretRepository getParent() {
         return this.parentRepository;
+    }
+
+    private static String getDefaultAlgorithm(boolean isSymmetric) {
+
+        return isSymmetric ? DEFAULT_SYMMETRIC_ALGORITHM : DEFAULT_ASYMMETRIC_ALGORITHM;
     }
 }

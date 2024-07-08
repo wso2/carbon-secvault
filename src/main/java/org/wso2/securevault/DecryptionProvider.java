@@ -40,5 +40,8 @@ public interface DecryptionProvider {
      * @param params        The algorithm parameters.
      * @return Plain text as byte array.
      */
-    public byte[] decrypt(byte[] cipherText, AlgorithmParameterSpec params);
+    default byte[] decrypt(byte[] cipherText, AlgorithmParameterSpec params) {
+
+        throw new UnsupportedOperationException("This method is not implemented");
+    }
 }
