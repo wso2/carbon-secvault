@@ -156,6 +156,7 @@ public class FileBaseSecretRepository implements SecretRepository {
 
             String decryptedText;
             if (DEFAULT_SYMMETRIC_ALGORITHM.equals(algorithm)) {
+                // Create self-contained ciphertext for AES-GCM mode.
                 JsonObject jsonObject = getJsonObject(encryptedText.trim());
                 byte[] cipherText = getValueFromJson(jsonObject, CIPHER_TEXT).getBytes();
                 byte[] iv = Base64Utils.decode(getValueFromJson(jsonObject, IV));
