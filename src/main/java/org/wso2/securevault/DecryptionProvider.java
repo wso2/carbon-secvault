@@ -18,6 +18,8 @@
  */
 package org.wso2.securevault;
 
+import java.security.spec.AlgorithmParameterSpec;
+
 /**
  * Provides Decrypt operation
  */
@@ -30,4 +32,16 @@ public interface DecryptionProvider {
      * @return plain text as byte array
      */
     public byte[] decrypt(byte[] cipherText);
+
+    /**
+     * Decrypts input cipher bytes.
+     *
+     * @param cipherText    Encrypted text as a byte array.
+     * @param params        The algorithm parameters.
+     * @return Plain text as byte array.
+     */
+    default byte[] decrypt(byte[] cipherText, AlgorithmParameterSpec params) {
+
+        throw new UnsupportedOperationException("This method is not implemented");
+    }
 }

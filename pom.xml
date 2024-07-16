@@ -153,6 +153,11 @@
             <artifactId>commons-cli</artifactId>
             <version>${commons-cli.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -179,6 +184,7 @@
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <gson.version>2.9.0</gson.version>
         <axiom.version>1.2.11</axiom.version>
         <commons.logging.version>1.1.1</commons.logging.version>
         <junit.version>3.8.2</junit.version>

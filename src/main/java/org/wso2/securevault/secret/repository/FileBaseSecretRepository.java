@@ -18,12 +18,19 @@
 */
 package org.wso2.securevault.secret.repository;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import org.apache.axiom.util.base64.Base64Utils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.CipherFactory;
 import org.wso2.securevault.CipherOperationMode;
 import org.wso2.securevault.DecryptionProvider;
 import org.wso2.securevault.EncodingType;
+import org.wso2.securevault.SecureVaultException;
 import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.definition.CipherInformation;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
@@ -34,6 +41,8 @@ import org.wso2.securevault.secret.SecretRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.crypto.spec.GCMParameterSpec;
 
 /**
  * Holds all secrets in a file
@@ -46,7 +55,11 @@ public class FileBaseSecretRepository implements SecretRepository {
     private static final String KEY_STORE = "keyStore";
     private static final String DOT = ".";
     private static final String ALGORITHM = "algorithm";
-    private static final String DEFAULT_ALGORITHM = "RSA";
+    private static final String SYMMETRIC = "symmetric";
+    private static final String ENCRYPTION_MODE = "encryptionMode";
+    private static final String DEFAULT_ASYMMETRIC_ALGORITHM = "RSA";
+    private static final String DEFAULT_SYMMETRIC_ALGORITHM = "AES/GCM/NoPadding";
+    private static final int GCM_TAG_LENGTH = 128;
     private static final String TRUSTED = "trusted";
     private static final String DEFAULT_CONF_LOCATION = "cipher-text.properties";
 
@@ -62,6 +75,8 @@ public class FileBaseSecretRepository implements SecretRepository {
     private TrustKeyStoreWrapper trust;
     /* Whether this secret repository has been initiated successfully*/
     private boolean initialize = false;
+    private static final String IV = "iv";
+    private static final String CIPHER_TEXT = "cipherText";
 
     public FileBaseSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust) {
         this.identity = identity;
@@ -90,12 +105,17 @@ public class FileBaseSecretRepository implements SecretRepository {
             return;
         }
 
+        // Load encryption mode.
+        String encryptionMode = id + DOT + ENCRYPTION_MODE;
+        boolean symmetricEncryptionEnabled = SYMMETRIC.equals(MiscellaneousUtil.getProperty(properties,
+                encryptionMode, null));
+
         //Load algorithm
         String sbTwo = id
                        + DOT
                        + ALGORITHM;
-        String algorithm = MiscellaneousUtil.getProperty(properties,
-                                                         sbTwo, DEFAULT_ALGORITHM);
+        String algorithm = MiscellaneousUtil.getProperty(properties, sbTwo,
+                getDefaultAlgorithm(symmetricEncryptionEnabled));
 
         //Load keyStore
         String buffer = DOT
@@ -116,6 +136,9 @@ public class FileBaseSecretRepository implements SecretRepository {
         cipherInformation.setAlgorithm(algorithm);
         cipherInformation.setCipherOperationMode(CipherOperationMode.DECRYPT);
         cipherInformation.setInType(EncodingType.BASE64); //TODO
+        if (symmetricEncryptionEnabled) {
+            cipherInformation.setType(SYMMETRIC);
+        }
         DecryptionProvider baseCipher =
                 CipherFactory.createCipher(cipherInformation, keyStoreWrapper);
 
@@ -131,10 +154,42 @@ public class FileBaseSecretRepository implements SecretRepository {
                 continue;
             }
 
-            String decryptedText = new String(baseCipher.decrypt(encryptedText.trim().getBytes()));
+            String decryptedText;
+            if (DEFAULT_SYMMETRIC_ALGORITHM.equals(algorithm)) {
+                // Create self-contained ciphertext for AES-GCM mode.
+                JsonObject jsonObject = getJsonObject(encryptedText.trim());
+                byte[] cipherText = getValueFromJson(jsonObject, CIPHER_TEXT).getBytes();
+                byte[] iv = Base64Utils.decode(getValueFromJson(jsonObject, IV));
+                decryptedText = new String(baseCipher.decrypt(cipherText, new GCMParameterSpec(GCM_TAG_LENGTH, iv)));
+            } else {
+                byte[] cipherText = encryptedText.trim().getBytes();
+                decryptedText = new String(baseCipher.decrypt(cipherText));
+            }
+            if (StringUtils.isEmpty(decryptedText)) {
+                log.warn("Error decrypting secret for the alias : " + alias);
+            }
             secrets.put(key, decryptedText);
         }
         initialize = true;
+    }
+
+    private JsonObject getJsonObject(String encryptedText) {
+
+        try {
+            String jsonString = new String(Base64Utils.decode(encryptedText));
+            return JsonParser.parseString(jsonString).getAsJsonObject();
+        } catch (JsonSyntaxException e) {
+            throw new SecureVaultException("Invalid encrypted text: JSON parsing failed.", log);
+        }
+    }
+
+    private String getValueFromJson(JsonObject jsonObject, String value) {
+
+        JsonElement jsonElement = jsonObject.get(value);
+        if (jsonElement == null) {
+            throw new SecureVaultException(String.format("Value \"%s\" not found in JSON", value), log);
+        }
+        return jsonElement.getAsString();
     }
 
     /**
@@ -199,5 +254,10 @@ public class FileBaseSecretRepository implements SecretRepository {
 
     public SecretRepository getParent() {
         return this.parentRepository;
+    }
+
+    private static String getDefaultAlgorithm(boolean isSymmetric) {
+
+        return isSymmetric ? DEFAULT_SYMMETRIC_ALGORITHM : DEFAULT_ASYMMETRIC_ALGORITHM;
     }
 }

@@ -36,10 +36,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.spec.AlgorithmParameterSpec;
 
 /**
  * Wraps the cipher and expose abstraction need for synapse ciphering
@@ -111,22 +113,12 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
             } else {
                 cipher = Cipher.getInstance(algorithm);
             }
-            if (opMode == CipherOperationMode.ENCRYPT) {
-                cipher.init(Cipher.ENCRYPT_MODE, key);
-            } else if (opMode == CipherOperationMode.DECRYPT) {
-                cipher.init(Cipher.DECRYPT_MODE, key);
-            } else {
-                throw new SecureVaultException("Invalid mode : " + opMode, log);
-            }
-
         } catch (NoSuchAlgorithmException e) {
             throw new SecureVaultException("There is no algorithm support for " +
                     "'" + algorithm + "' in the operation mode '" + opMode + "'" + e, log);
         } catch (NoSuchPaddingException e) {
             throw new SecureVaultException("There is no padding scheme  for " +
                     "'" + algorithm + "' in the operation mode '" + opMode + "'" + e, log);
-        } catch (InvalidKeyException e) {
-            throw new SecureVaultException("Invalid key ", e, log);
         }
     }
 
@@ -194,11 +186,59 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         }
     }
 
+    private static void handleInvalidKeyException(InvalidKeyException e) {
+
+        throw new SecureVaultException("Invalid key ", e, log);
+    }
+
+    /**
+     * Encrypts a plain text.
+     *
+     * @param plainText Plain text as a byte array.
+     * @return Cipher text as a byte array.
+     */
     public byte[] encrypt(byte[] plainText) {
+
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+        } catch (InvalidKeyException e) {
+            handleInvalidKeyException(e);
+        }
         return doCipherOperation(plainText);
     }
 
+    /**
+     * Decrypts input cipher bytes.
+     *
+     * @param cipherText Encrypted text as a byte array.
+     * @return Plain text as byte array.
+     */
     public byte[] decrypt(byte[] cipherText) {
+
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, key);
+        } catch (InvalidKeyException e) {
+            handleInvalidKeyException(e);
+        }
+        return doCipherOperation(cipherText);
+    }
+
+    /**
+     * Decrypts input cipher bytes.
+     *
+     * @param cipherText    Encrypted text as a byte array.
+     * @param params        The algorithm parameters.
+     * @return Plain text as byte array.
+     */
+    public byte[] decrypt(byte[] cipherText, AlgorithmParameterSpec params) {
+
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, key, params);
+        } catch (InvalidKeyException e) {
+            handleInvalidKeyException(e);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new SecureVaultException("Invalid algorithm parameters ", e, log);
+        }
         return doCipherOperation(cipherText);
     }
 }
