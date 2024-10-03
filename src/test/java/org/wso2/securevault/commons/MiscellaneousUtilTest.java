@@ -138,6 +138,17 @@ public class MiscellaneousUtilTest {
         Assert.assertEquals(resolvedValue, "element1", "Value mismatch");
     }
 
+    @Test(dataProvider = "tokenDataProvider2")
+    public void testGetProtectedTokens(String input, String... tokens) {
+
+        List<String> tokenList = MiscellaneousUtil.getProtectedTokens(input);
+
+        Assert.assertEquals(tokens.length, tokenList.size(), "token size mismatch");
+        for (int i = 0; i < tokens.length; i++) {
+            Assert.assertEquals(tokenList.get(i), tokens[i], "String token mismatch");
+        }
+    }
+
     @DataProvider(name = "tokenDataProvider")
     Object[][] getTokenTestData() {
 
@@ -154,6 +165,24 @@ public class MiscellaneousUtilTest {
                         "test:$secret{value4}middle$secret{value5}otherValue",
                         new MiscellaneousUtil.ProtectedToken(5, 19, "value4"),
                         new MiscellaneousUtil.ProtectedToken(26, 40, "value5")
+                }
+        };
+    }
+
+    @DataProvider(name = "tokenDataProvider2")
+    Object[][] getTokenTestData2() {
+
+        return new Object[][]{
+                {"$secret{value1}", "value1"},
+                {"test:$secret{value2}", "value2"},
+                {"test:$secret{value3}otherValue", "value3"},
+                {
+                        "test:$secret{value4}$secret{value5}otherValue",
+                        "value4", "value5"
+                },
+                {
+                        "test:$secret{value4}middle$secret{value5}otherValue",
+                        "value4", "value5"
                 }
         };
     }
