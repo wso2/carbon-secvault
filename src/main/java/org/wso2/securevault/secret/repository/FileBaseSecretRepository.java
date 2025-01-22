@@ -139,8 +139,6 @@ public class FileBaseSecretRepository implements SecretRepository {
         if (symmetricEncryptionEnabled) {
             cipherInformation.setType(SYMMETRIC);
         }
-        DecryptionProvider baseCipher =
-                CipherFactory.createCipher(cipherInformation, keyStoreWrapper);
 
         for (Object alias : cipherProperties.keySet()) {
             //decrypt the encrypted text 
@@ -153,6 +151,8 @@ public class FileBaseSecretRepository implements SecretRepository {
                 }
                 continue;
             }
+            DecryptionProvider baseCipher =
+                    CipherFactory.createCipher(cipherInformation, keyStoreWrapper);
 
             String decryptedText;
             if (DEFAULT_SYMMETRIC_ALGORITHM.equals(algorithm)) {
