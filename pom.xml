@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.wso2</groupId>
         <artifactId>wso2</artifactId>
-        <version>5</version>
+        <version>5.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.secvault</groupId>
@@ -66,6 +66,11 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.eclipse.osgi</groupId>
@@ -174,6 +179,27 @@
                     <artifactId>carbon-feature-plugin</artifactId>
                     <version>${carbon.feature.plugin.version}</version>
                 </plugin>
+                <plugin><!-- Overridden from parent pom to exclude generated sources -->
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <configuration combine.self="override">
+                        <effort>Max</effort>
+                        <threshold>Low</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <spotbugsXmlOutputDirectory>${project.build.directory}/findbugs
+                        </spotbugsXmlOutputDirectory>
+                        <!--Exclude generated sources-->
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>analyze-compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -181,7 +207,7 @@
         <!-- Version ranges -->
         <slf4j.logging.package.import.version.range>[1.7.1, 2.0.0)</slf4j.logging.package.import.version.range>
         <osgi.framework.package.import.version.range>[1.8.0, 2.0.0)</osgi.framework.package.import.version.range>
-        <org.snakeyaml.package.import.version.range>[1.30.0,2.0.0)</org.snakeyaml.package.import.version.range>
+        <org.snakeyaml.package.import.version.range>[2.0.0,3.0.0)</org.snakeyaml.package.import.version.range>
         <javax.crypto.version.range>[0.0.0,1.0.0)</javax.crypto.version.range>
 
         <!-- Carbon Secure Vault version -->
@@ -194,10 +220,10 @@
         <carbon.utils.package.import.version.range>[2.0.0, 3.0.0)</carbon.utils.package.import.version.range>
 
         <!-- Dependencies -->
-        <slf4j.api.version>1.7.12</slf4j.api.version>
+        <slf4j.api.version>1.7.36</slf4j.api.version>
         <equinox.osgi.version>3.11.0.v20160603-1336</equinox.osgi.version>
         <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>
-        <org.snakeyaml.version>1.33</org.snakeyaml.version>
+        <org.snakeyaml.version>2.0</org.snakeyaml.version>
         <testng.version>6.9.4</testng.version>
         <easymock.version>3.4</easymock.version>
         <powermock.api.easymock.version>1.6.5</powermock.api.easymock.version>
