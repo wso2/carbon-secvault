@@ -35,6 +35,7 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -100,7 +101,8 @@ public class Utils {
     private static List<URL> getJarURLs(String location) {
         File fileLocation = new File(location);
         List<URL> urls = new ArrayList<>();
-        File[] fileList = fileLocation.listFiles((File file) -> file.getPath().toLowerCase().endsWith(".jar"));
+        File[] fileList =
+                fileLocation.listFiles((File file) -> file.getPath().toLowerCase(Locale.ROOT).endsWith(".jar"));
         if (fileList != null) {
             for (File file : fileList) {
                 urls.addAll(getInternalJarURLs(file));

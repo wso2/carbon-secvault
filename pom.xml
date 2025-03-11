@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.wso2</groupId>
         <artifactId>wso2</artifactId>
-        <version>5</version>
+        <version>5.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.secvault</groupId>
@@ -66,6 +66,11 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.eclipse.osgi</groupId>
@@ -173,6 +178,27 @@
                     <groupId>org.wso2.carbon.maven</groupId>
                     <artifactId>carbon-feature-plugin</artifactId>
                     <version>${carbon.feature.plugin.version}</version>
+                </plugin>
+                <plugin><!-- Overridden from parent pom to exclude generated sources -->
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <configuration combine.self="override">
+                        <effort>Max</effort>
+                        <threshold>Low</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <spotbugsXmlOutputDirectory>${project.build.directory}/findbugs
+                        </spotbugsXmlOutputDirectory>
+                        <!--Exclude generated sources-->
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>analyze-compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
