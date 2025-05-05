@@ -18,7 +18,7 @@
  */
 package org.wso2.securevault.secret.handler;
 
-import jline.ConsoleReader;
+import jline.console.ConsoleReader;
 import org.wso2.securevault.secret.AbstractSecretCallbackHandler;
 import org.wso2.securevault.secret.SingleSecretCallback;
 
