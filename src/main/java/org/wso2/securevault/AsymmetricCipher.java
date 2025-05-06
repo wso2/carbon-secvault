@@ -24,7 +24,6 @@ import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.KeyStoreWrapper;
 
 import java.security.Key;
-
 /**
  * The Cipher doing asymmetric cryptographic operations
  */
