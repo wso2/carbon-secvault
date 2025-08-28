@@ -34,6 +34,7 @@ import org.wso2.securevault.secret.SecretManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.xml.namespace.QName;
@@ -228,9 +229,11 @@ public class SecretResolverFactory {
 
             for (Map.Entry entry : properties.entrySet()) {
                 String attributeValue = (String) entry.getValue();
-                String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
-                if (protectedToken != null && protectedToken.length() > 0) {
-                    secretResolver.addProtectedToken(protectedToken);
+                List<String> protectedTokens = MiscellaneousUtil.getProtectedTokens(attributeValue);
+                if (!protectedTokens.isEmpty()) {
+                    for (String token : protectedTokens) {
+                        secretResolver.addProtectedToken(token);
+                    }
                 } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
                         attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                     String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
@@ -315,9 +318,11 @@ public class SecretResolverFactory {
                 for (int j = 0; j < nodeMap.getLength(); j++) {
                     String attributeValue = nodeMap.item(j).getNodeValue();
                     if (attributeValue != null) {
-                        String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
-                        if (protectedToken != null && protectedToken.length() > 0) {
-                            xmlSecretResolver.addProtectedToken(protectedToken);
+                        List<String> protectedTokens = MiscellaneousUtil.getProtectedTokens(attributeValue);
+                        if (!protectedTokens.isEmpty()) {
+                            for (String token : protectedTokens) {
+                                xmlSecretResolver.addProtectedToken(token);
+                            }
                         } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS)) {
                             if (attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                                 String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);
@@ -345,9 +350,11 @@ public class SecretResolverFactory {
         while (iterator.hasNext()) {
             OMElement omElement = (OMElement) iterator.next();
             if (MiscellaneousUtil.elementHasText(omElement)){
-                String protectedToken = MiscellaneousUtil.getProtectedToken(omElement.getText());
-                if (protectedToken != null && protectedToken.length() > 0) {
-                    xmlSecretResolver.addProtectedToken(protectedToken);
+                List<String> protectedTokens = MiscellaneousUtil.getProtectedTokens(omElement.getText());
+                if (!protectedTokens.isEmpty()) {
+                    for (String token : protectedTokens) {
+                        xmlSecretResolver.addProtectedToken(token);
+                    }
                     continue;
                 }
             }
@@ -374,9 +381,11 @@ public class SecretResolverFactory {
                 OMAttribute attribute = ((OMAttribute) attributeIterator.next());
                 if (attribute.getAttributeValue() != null) {
                     String attributeValue = attribute.getAttributeValue();
-                    String protectedToken = MiscellaneousUtil.getProtectedToken(attributeValue);
-                    if (protectedToken != null && !protectedToken.isEmpty()) {
-                        xmlSecretResolver.addProtectedToken(protectedToken);
+                    List<String> protectedTokens = MiscellaneousUtil.getProtectedTokens(attributeValue);
+                    if (!protectedTokens.isEmpty()) {
+                        for (String token : protectedTokens) {
+                            xmlSecretResolver.addProtectedToken(token);
+                        }
                     } else if (attributeValue.startsWith(SecurityConstants.SECURE_VAULT_ALIAS) &&
                             attributeValue.contains(SecurityConstants.NS_SEPARATOR)) {
                         String[] values = attributeValue.split(SecurityConstants.NS_SEPARATOR);

@@ -33,8 +33,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.xml.namespace.QName;
 
 /**
@@ -206,6 +208,25 @@ public class MiscellaneousUtil {
 
         }
         return protectedToken;
+    }
+
+    public static List<String> getProtectedTokens(String text) {
+        List<String> tokenList = new ArrayList<>();
+
+        int index = 0;
+        while (index < text.length()) {
+            int startsWithIndex = text.indexOf(SECURED_PROPERTY_PREFIX, index);
+            if (startsWithIndex == -1) {
+                break;
+            }
+            int endIndex = text.indexOf(SECURED_PROPERTY_SUFFIX, startsWithIndex);
+            int tokenStartIdx = startsWithIndex + SECURED_PROPERTY_PREFIX.length();
+            String token = text.substring(tokenStartIdx, endIndex);
+            tokenList.add(token);
+            index = endIndex + 1;
+        }
+
+        return tokenList;
     }
 
     public static boolean elementHasText(OMElement element) {
