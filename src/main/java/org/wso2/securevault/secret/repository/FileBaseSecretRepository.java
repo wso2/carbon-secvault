@@ -49,7 +49,7 @@ import javax.crypto.spec.GCMParameterSpec;
  */
 public class FileBaseSecretRepository implements SecretRepository {
 
-    private static Log log = LogFactory.getLog(FileBaseSecretRepository.class);
+    private static final Log log = LogFactory.getLog(FileBaseSecretRepository.class);
 
     private static final String LOCATION = "location";
     private static final String KEY_STORE = "keyStore";
@@ -70,13 +70,14 @@ public class FileBaseSecretRepository implements SecretRepository {
     /*Map of encrypted values keyed by alias for property name */
     private final Map<String, String> encryptedData = new HashMap<>();
     /*Wrapper for Identity KeyStore */
-    private IdentityKeyStoreWrapper identity;
+    private final IdentityKeyStoreWrapper identity;
     /* Wrapper for trusted KeyStore */
-    private TrustKeyStoreWrapper trust;
+    private final TrustKeyStoreWrapper trust;
     /* Whether this secret repository has been initiated successfully*/
     private boolean initialize = false;
     private static final String IV = "iv";
     private static final String CIPHER_TEXT = "cipherText";
+    private static final String FILE_ALGORITHM = "secretRepositories.file.algorithm";
 
     public FileBaseSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust) {
         this.identity = identity;
@@ -94,8 +95,7 @@ public class FileBaseSecretRepository implements SecretRepository {
         String sb = id
                     + DOT
                     + LOCATION;
-        String filePath = MiscellaneousUtil.getProperty(properties,
-                                                        sb, DEFAULT_CONF_LOCATION);
+        String filePath = MiscellaneousUtil.getProperty(properties, sb, DEFAULT_CONF_LOCATION);
 
         Properties cipherProperties = MiscellaneousUtil.loadProperties(filePath);
         if (cipherProperties.isEmpty()) {
@@ -115,13 +115,12 @@ public class FileBaseSecretRepository implements SecretRepository {
                        + DOT
                        + ALGORITHM;
         String algorithm = MiscellaneousUtil.getProperty(properties, sbTwo,
-                getDefaultAlgorithm(symmetricEncryptionEnabled));
+                getAlgorithm(symmetricEncryptionEnabled, properties));
 
         //Load keyStore
         String buffer = DOT
                         + KEY_STORE;
-        String keyStore = MiscellaneousUtil.getProperty(properties,
-                                                        buffer, null);
+        String keyStore = MiscellaneousUtil.getProperty(properties, buffer, null);
         KeyStoreWrapper keyStoreWrapper;
         if (TRUSTED.equals(keyStore)) {
             keyStoreWrapper = trust;
@@ -139,8 +138,7 @@ public class FileBaseSecretRepository implements SecretRepository {
         if (symmetricEncryptionEnabled) {
             cipherInformation.setType(SYMMETRIC);
         }
-        DecryptionProvider baseCipher =
-                CipherFactory.createCipher(cipherInformation, keyStoreWrapper);
+        DecryptionProvider baseCipher = CipherFactory.createCipher(cipherInformation, keyStoreWrapper);
 
         for (Object alias : cipherProperties.keySet()) {
             //decrypt the encrypted text 
@@ -256,8 +254,11 @@ public class FileBaseSecretRepository implements SecretRepository {
         return this.parentRepository;
     }
 
-    private static String getDefaultAlgorithm(boolean isSymmetric) {
-
+    private static String getAlgorithm(boolean isSymmetric, Properties properties) {
+        String algorithm =  properties.getProperty(FILE_ALGORITHM);
+        if (StringUtils.isNotEmpty(algorithm)) {
+            return algorithm;
+        }
         return isSymmetric ? DEFAULT_SYMMETRIC_ALGORITHM : DEFAULT_ASYMMETRIC_ALGORITHM;
     }
 }

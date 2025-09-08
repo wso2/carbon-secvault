@@ -24,7 +24,9 @@ import org.wso2.securevault.ICACertsLoader;
 import org.wso2.securevault.IKeyStoreLoader;
 import org.wso2.securevault.KeyStoreType;
 import org.wso2.securevault.SecureVaultException;
+import org.wso2.securevault.keystore.BCFKSKeyStoreLoader;
 import org.wso2.securevault.keystore.CACertsLoader;
+import org.wso2.securevault.keystore.DefaultKeystoreLoader;
 import org.wso2.securevault.keystore.JKSKeyStoreLoader;
 import org.wso2.securevault.keystore.PKCS12KeyStoreLoader;
 import org.wso2.securevault.keystore.PKCS8KeyStoreLoader;
@@ -42,7 +44,6 @@ public abstract class KeyStoreInformation {
     protected final Log log;
 
     public static final String KEY_STORE_CERTIFICATE_FILE_PATH = "keyStoreCertificateFilePath";
-    public static final String ENABLE_HOST_NAME_VERIFIER = "enableHostnameVerifier";
     /* KeyStore type */
     private KeyStoreType storeType;
     /* Alias who belong this key */
@@ -130,7 +131,9 @@ public abstract class KeyStoreInformation {
                 IKeyStoreLoader jksKeyStoreLoader = new JKSKeyStoreLoader(location,
                         keyStorePassword);
                 return jksKeyStoreLoader.getKeyStore();
-
+            case BCFKS:
+                IKeyStoreLoader bcfksKeyStoreLoader = new BCFKSKeyStoreLoader(location, keyStorePassword);
+                return bcfksKeyStoreLoader.getKeyStore();
             case PKCS12:
                 IKeyStoreLoader pkcs12KeyStoreLoader = new PKCS12KeyStoreLoader(location,
                         keyStorePassword);
@@ -144,10 +147,9 @@ public abstract class KeyStoreInformation {
                 ICACertsLoader caCertsLoader = new CACertsLoader();
                 return caCertsLoader.loadTrustStore(location);
             default:
-                if (log.isDebugEnabled()) {
-                    log.debug("No KeyStore Found");
-                }
-                return null;
+                DefaultKeystoreLoader defaultKeystoreLoader = new DefaultKeystoreLoader(location,
+                        keyStorePassword, storeType.toString());
+                return defaultKeystoreLoader.getKeyStore();
         }
     }
 

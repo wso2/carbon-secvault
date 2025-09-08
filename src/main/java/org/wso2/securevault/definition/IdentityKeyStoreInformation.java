@@ -18,6 +18,8 @@
 */
 package org.wso2.securevault.definition;
 
+import org.wso2.securevault.commons.Constants;
+import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.secret.SecretInformation;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -48,8 +50,12 @@ public class IdentityKeyStoreInformation extends KeyStoreInformation {
             }
 
             KeyStore keyStore = this.getIdentityKeyStore();
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
-                    KeyManagerFactory.getDefaultAlgorithm());
+            KeyManagerFactory keyManagerFactory;
+            if (MiscellaneousUtil.getPreferredJceProvider() != null) {
+                keyManagerFactory = KeyManagerFactory.getInstance(Constants.PKIX, Constants.BCJSSE);
+            } else {
+                keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            }
             keyManagerFactory.init(keyStore, keyPasswordProvider.getResolvedSecret().toCharArray());
 
             return keyManagerFactory;

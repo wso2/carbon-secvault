@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -42,7 +43,7 @@ import javax.xml.namespace.QName;
  */
 public class MiscellaneousUtil {
 
-    private static Log log = LogFactory.getLog(MiscellaneousUtil.class);
+    private static final Log log = LogFactory.getLog(MiscellaneousUtil.class);
     private static final String SECURED_PROPERTY_PREFIX = '$' + SecurityConstants.SECURE_VAULT_VALUE + '{';
     private static final char SECURED_PROPERTY_SUFFIX = '}';
 
@@ -135,34 +136,23 @@ public class MiscellaneousUtil {
             return properties;
         }
 
-        InputStream in = null;
-        try {
-            in = new FileInputStream(configFile);
+        try (InputStream in = Files.newInputStream(configFile.toPath());) {
             properties.load(in);
         } catch (IOException e) {
             String msg = "Error loading properties from a file at :" + filePath;
             log.error(msg, e);
             throw new SecureVaultException(msg, e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ignored) {
-                    log.error("Error while closing input stream");
-                }
-            }
         }
         return properties;
     }
 
     public static byte[] asBytes(InputStream in) {
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int len;
-        try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             while ((len = in.read(buffer)) >= 0)
                 out.write(buffer, 0, len);
+            return out.toByteArray();
         } catch (IOException e) {
             throw new SecureVaultException("Error during converting a inputstream " +
                     "into a bytearray ", e, log);
@@ -173,12 +163,8 @@ public class MiscellaneousUtil {
                 } catch (IOException ignored) {
                 }
             }
-            try {
-                out.close();
-            } catch (IOException ignored) {
-            }
         }
-        return out.toByteArray();
+
     }
 
     /**
@@ -320,9 +306,9 @@ public class MiscellaneousUtil {
 
     public static class ProtectedToken {
 
-        private int startIndex;
-        private int endIndex;
-        private String value;
+        private final int startIndex;
+        private final int endIndex;
+        private final String value;
 
         ProtectedToken(int startIndex, int endIndex, String value) {
 
@@ -345,5 +331,19 @@ public class MiscellaneousUtil {
 
             return endIndex;
         }
+    }
+
+    /**
+     * Get the preferred JCE provider.
+     *
+     * @return the preferred JCE provider
+     */
+    public static String getPreferredJceProvider() {
+        String provider = System.getProperty(Constants.SECURITY_JCE_PROVIDER);
+        if (provider != null && (provider.equalsIgnoreCase(Constants.BOUNCY_CASTLE_FIPS_PROVIDER) ||
+                provider.equalsIgnoreCase(Constants.BOUNCY_CASTLE_PROVIDER))) {
+            return provider;
+        }
+        return null;
     }
 }
