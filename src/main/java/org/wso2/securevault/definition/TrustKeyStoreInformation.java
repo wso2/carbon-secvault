@@ -48,7 +48,6 @@ public class TrustKeyStoreInformation extends KeyStoreInformation {
                 trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             }
             trustManagerFactory.init(trustStore);
-
             return trustManagerFactory;
         } catch (Exception e) {
             handleException("Error getting TrustManagerFactory: ", e);

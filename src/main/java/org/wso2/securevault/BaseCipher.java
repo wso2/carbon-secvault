@@ -111,12 +111,21 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
                 } catch (NoSuchProviderException e) {
                     throw new SecureVaultException("Invalid Provider : " + provider, log);
                 }
-            } else {
+                cipher = Cipher.getInstance(algorithm);
+                if (log.isDebugEnabled()) {
+                    log.debug("Cipher instance created with algorithm: " + algorithm);
+                }
                 String jceProvider = MiscellaneousUtil.getPreferredJceProvider();
                 if (jceProvider != null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using preferred JCE provider: " + jceProvider + " for algorithm: " + algorithm);
+                    }
                     cipher = Cipher.getInstance(algorithm, jceProvider);
                 } else {
                     cipher = Cipher.getInstance(algorithm);
+                    if (log.isDebugEnabled()) {
+                        log.debug("No preferred JCE provider found. Using default provider for algorithm: " + algorithm);
+                    }
                 }
             }
         } catch (NoSuchAlgorithmException e) {

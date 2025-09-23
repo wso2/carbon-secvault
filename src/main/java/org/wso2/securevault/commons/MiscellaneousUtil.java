@@ -147,6 +147,7 @@ public class MiscellaneousUtil {
     }
 
     public static byte[] asBytes(InputStream in) {
+        log.debug("Converting input stream to byte array");
         byte[] buffer = new byte[1024];
         int len;
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -164,7 +165,6 @@ public class MiscellaneousUtil {
                 }
             }
         }
-
     }
 
     /**
@@ -339,9 +339,11 @@ public class MiscellaneousUtil {
      * @return the preferred JCE provider
      */
     public static String getPreferredJceProvider() {
+        log.debug("Retrieving preferred JCE provider");
         String provider = System.getProperty(Constants.SECURITY_JCE_PROVIDER);
         if (provider != null && (provider.equalsIgnoreCase(Constants.BOUNCY_CASTLE_FIPS_PROVIDER) ||
                 provider.equalsIgnoreCase(Constants.BOUNCY_CASTLE_PROVIDER))) {
+            log.debug("Found preferred JCE provider: " + provider);
             return provider;
         }
         return null;

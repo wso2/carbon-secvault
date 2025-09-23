@@ -38,10 +38,6 @@ public class DefaultKeystoreLoader extends AbstractKeyStoreLoader {
     public KeyStore getKeyStore() {
         String provider = MiscellaneousUtil.getPreferredJceProvider();
         if (provider != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Preferred JCE Provider : " + MiscellaneousUtil.getPreferredJceProvider()
-                        + " is set.");
-            }
             return getKeyStore(keyStorePath, keyStorePassword, storeType, provider);
         }
         return getKeyStore(keyStorePath, keyStorePassword, storeType, null);

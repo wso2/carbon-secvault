@@ -30,7 +30,7 @@ public class BCFKSKeyStoreLoader extends AbstractKeyStoreLoader {
     /**
      * constructs an instance of KeyStoreLoader
      *
-     * @param keyStorePath     - path to KeyStore file.  KeyStore must be in JKS format.
+     * @param keyStorePath     - path to KeyStore file.
      * @param keyStorePassword - password to access keyStore
      */
     public BCFKSKeyStoreLoader(String keyStorePath, String keyStorePassword) {

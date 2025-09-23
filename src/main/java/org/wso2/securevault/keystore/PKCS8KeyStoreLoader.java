@@ -96,6 +96,9 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
             }
             String provider = MiscellaneousUtil.getPreferredJceProvider();
             FileInputStream fileInputStream = new FileInputStream(file);
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully opened private key file for reading");
+            }
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
@@ -128,6 +131,9 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
             }
 
             FileInputStream certInputStream = new FileInputStream(certFile);
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully opened certificate file from path: " + certPath);
+            }
             BufferedInputStream certBufferedInputStream = new BufferedInputStream(certInputStream);
             CertificateFactory certFactory;
             if (provider != null) {

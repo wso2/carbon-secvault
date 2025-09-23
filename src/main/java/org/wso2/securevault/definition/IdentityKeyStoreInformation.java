@@ -57,6 +57,7 @@ public class IdentityKeyStoreInformation extends KeyStoreInformation {
                 keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             }
             keyManagerFactory.init(keyStore, keyPasswordProvider.getResolvedSecret().toCharArray());
+            log.info("Identity KeyManagerFactory initialized successfully");
 
             return keyManagerFactory;
         } catch (Exception e) {

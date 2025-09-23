@@ -132,6 +132,7 @@ public abstract class KeyStoreInformation {
                         keyStorePassword);
                 return jksKeyStoreLoader.getKeyStore();
             case BCFKS:
+                log.info("Loading BCFKS keystore from location: " + location);
                 IKeyStoreLoader bcfksKeyStoreLoader = new BCFKSKeyStoreLoader(location, keyStorePassword);
                 return bcfksKeyStoreLoader.getKeyStore();
             case PKCS12:
@@ -147,6 +148,7 @@ public abstract class KeyStoreInformation {
                 ICACertsLoader caCertsLoader = new CACertsLoader();
                 return caCertsLoader.loadTrustStore(location);
             default:
+                log.info("Loading keystore of type: " + storeType.toString() + " from location: " + location);
                 DefaultKeystoreLoader defaultKeystoreLoader = new DefaultKeystoreLoader(location,
                         keyStorePassword, storeType.toString());
                 return defaultKeystoreLoader.getKeyStore();

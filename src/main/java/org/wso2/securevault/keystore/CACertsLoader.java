@@ -41,6 +41,7 @@ public class CACertsLoader implements ICACertsLoader {
                         " in the given directory : " + CACertificateFilesPath);
             }
             String provider = MiscellaneousUtil.getPreferredJceProvider();
+            log.debug("Initializing KeyStore with provider: " + (provider != null ? provider : "default"));
             KeyStore trustStore;
             if (provider != null) {
                 trustStore = KeyStore.getInstance(Constants.BCFKS, provider);
@@ -52,7 +53,6 @@ public class CACertsLoader implements ICACertsLoader {
             File certsPath = new File(CACertificateFilesPath);
 
             File[] certs = certsPath.listFiles();
-
             if (certs != null) {
                 for (File currentCert : certs) {
                     try (FileInputStream inStream = new FileInputStream(currentCert);
@@ -65,9 +65,13 @@ public class CACertsLoader implements ICACertsLoader {
                         }
                         Certificate cert = certFactory.generateCertificate(bis);
                         trustStore.setCertificateEntry(currentCert.getName(), cert);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Successfully loaded certificate: " + currentCert.getName());
+                        }
                     }
                 }
             }
+            log.info("Successfully loaded trust store from: " + CACertificateFilesPath);
 
             return trustStore;
         } catch (IOException e) {
