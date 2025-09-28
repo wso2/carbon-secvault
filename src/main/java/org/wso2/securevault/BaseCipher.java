@@ -106,15 +106,8 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         try {
             String provider = cipherInformation.getProvider();
             if (provider != null && !"".equals(provider)) {
-                try {
-                    cipher = Cipher.getInstance(algorithm, provider.trim());
-                } catch (NoSuchProviderException e) {
-                    throw new SecureVaultException("Invalid Provider : " + provider, log);
-                }
-                cipher = Cipher.getInstance(algorithm);
-                if (log.isDebugEnabled()) {
-                    log.debug("Cipher instance created with algorithm: " + algorithm);
-                }
+                cipher = Cipher.getInstance(algorithm, provider.trim());
+            } else {
                 String jceProvider = MiscellaneousUtil.getPreferredJceProvider();
                 if (jceProvider != null) {
                     if (log.isDebugEnabled()) {
