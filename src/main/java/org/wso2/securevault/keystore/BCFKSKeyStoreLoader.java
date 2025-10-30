@@ -19,8 +19,7 @@ package org.wso2.securevault.keystore;
 
 import java.security.KeyStore;
 
-
-public class PKCS12KeyStoreLoader extends AbstractKeyStoreLoader {
+public class BCFKSKeyStoreLoader extends AbstractKeyStoreLoader {
 
     private final String keyStorePath;
     private final String keyStorePassword;
@@ -28,18 +27,21 @@ public class PKCS12KeyStoreLoader extends AbstractKeyStoreLoader {
     /**
      * constructs an instance of KeyStoreLoader
      *
-     * @param keystorePath     - path to KeyStore file.  KeyStore must be in pkcs12 format.
+     * @param keyStorePath     - path to KeyStore file.  KeyStore must be in BCFKS format.
      * @param keyStorePassword - password to access keyStore
      */
-    public PKCS12KeyStoreLoader(String keystorePath, String keyStorePassword) {
-        this.keyStorePath = keystorePath;
+    public BCFKSKeyStoreLoader(String keyStorePath, String keyStorePassword) {
+        super();
+        this.keyStorePath = keyStorePath;
         this.keyStorePassword = keyStorePassword;
     }
 
     /**
-     * returns KeyStore to be used
+     * Returns KeyStore to be used
+     *
+     * @return KeyStore instance
      */
     public KeyStore getKeyStore() {
-        return getKeyStore(keyStorePath, keyStorePassword, "PKCS12");
+        return getKeyStore(keyStorePath, keyStorePassword, "BCFKS");
     }
 }

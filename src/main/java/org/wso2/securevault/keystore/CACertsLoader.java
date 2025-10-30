@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.ICACertsLoader;
 import org.wso2.securevault.SecureVaultException;
+import org.wso2.securevault.commons.MiscellaneousUtil;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -22,7 +23,8 @@ import java.security.cert.CertificateFactory;
  */
 public class CACertsLoader implements ICACertsLoader {
 
-    private static Log log = LogFactory.getLog(CACertsLoader.class);
+    private static final Log log = LogFactory.getLog(CACertsLoader.class);
+    public static final String X509 = "X509";
 
     /**
      * Constructs a keyStore from the path provided.
@@ -38,7 +40,7 @@ public class CACertsLoader implements ICACertsLoader {
                         " in the given directory : " + CACertificateFilesPath);
             }
 
-            KeyStore trustStore = KeyStore.getInstance("JKS");
+            KeyStore trustStore = KeyStore.getInstance(MiscellaneousUtil.getKeyType());
             trustStore.load(null, null);
 
             File certsPath = new File(CACertificateFilesPath);
@@ -49,7 +51,7 @@ public class CACertsLoader implements ICACertsLoader {
                 FileInputStream inStream = new FileInputStream(currentCert);
                 BufferedInputStream bis = new BufferedInputStream(inStream);
 
-                CertificateFactory certFactory = CertificateFactory.getInstance("X509");
+                CertificateFactory certFactory = CertificateFactory.getInstance(X509);
                 Certificate cert = certFactory.generateCertificate(bis);
 
                 trustStore.setCertificateEntry(currentCert.getName(), cert);
