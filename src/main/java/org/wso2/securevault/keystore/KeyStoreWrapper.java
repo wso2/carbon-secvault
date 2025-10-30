@@ -88,11 +88,9 @@ public abstract class KeyStoreWrapper {
             } catch (KeyStoreException e) {
                 throw new SecureVaultException("Error loading key for alias : " + alias, e, log);
             } catch (NoSuchAlgorithmException e) {
-                throw new SecureVaultException("No such algorithm found while loading key for alias : " + alias,
-                        e, log);
+                throw new SecureVaultException("Error loading key for alias : " + alias, e, log);
             } catch (UnrecoverableKeyException e) {
-                throw new SecureVaultException("Unrecoverable key for alias: " + alias +
-                        ". The key password may be incorrect or the key is corrupted.", e, log);
+                throw new SecureVaultException("Error loading key for alias : " + alias, e, log);
             }
         }
         return null;

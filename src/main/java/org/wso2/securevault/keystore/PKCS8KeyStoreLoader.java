@@ -1,21 +1,3 @@
-/*
- *  Licensed to the Apache Software Foundation (ASF) under one
- *  or more contributor license agreements.  See the NOTICE file
- *  distributed with this work for additional information
- *  regarding copyright ownership.  The ASF licenses this file
- *  to you under the Apache License, Version 2.0 (the
- *  "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an
- *   * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either express or implied.  See the License for the
- *  specific language governing permissions and limitations
- *  under the License.
- */
 package org.wso2.securevault.keystore;
 
 import org.apache.axiom.util.base64.Base64Utils;
@@ -23,8 +5,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.IKeyStoreLoader;
 import org.wso2.securevault.SecureVaultException;
-import org.wso2.securevault.commons.Constants;
-import org.wso2.securevault.commons.MiscellaneousUtil;
 
 import java.io.*;
 import java.security.*;
@@ -39,11 +19,11 @@ import java.security.spec.PKCS8EncodedKeySpec;
  */
 public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
 
-    private static final Log log = LogFactory.getLog(PKCS8KeyStoreLoader.class);
-    private final String pkPath;
-    private final String certPath;
-    private final String keyPassword;
-    private final String entryAlias;
+    private static Log log = LogFactory.getLog(PKCS8KeyStoreLoader.class);
+    private String pkPath;
+    private String certPath;
+    private String keyPassword;
+    private String entryAlias;
 
     private static final String HEADER = "-----BEGIN PRIVATE KEY-----\n";
     private static final String FOOTER = "-----END PRIVATE KEY-----";
@@ -94,11 +74,8 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
             if (log.isDebugEnabled()) {
                 log.debug("Reading a private key(unencrypted) from given path : " + pkPath);
             }
-            String provider = MiscellaneousUtil.getPreferredJceProvider();
+
             FileInputStream fileInputStream = new FileInputStream(file);
-            if (log.isDebugEnabled()) {
-                log.debug("Successfully opened private key file for reading");
-            }
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
@@ -124,23 +101,16 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
                 log.debug("Creating a private key in PKCS8Encoded using given" +
                         " (unencrypted) RSA private key ");
             }
-            PrivateKey key = createPrivateKey(outStream.toByteArray(), provider);
+            PrivateKey key = createPrivateKey(outStream.toByteArray());
 
             if (log.isDebugEnabled()) {
                 log.debug("Generating a X509 certificate form given certificate file");
             }
 
             FileInputStream certInputStream = new FileInputStream(certFile);
-            if (log.isDebugEnabled()) {
-                log.debug("Successfully opened certificate file from path: " + certPath);
-            }
             BufferedInputStream certBufferedInputStream = new BufferedInputStream(certInputStream);
-            CertificateFactory certFactory;
-            if (provider != null) {
-                certFactory = CertificateFactory.getInstance(Constants.X509, provider);
-            } else {
-                certFactory = CertificateFactory.getInstance(Constants.X509);
-            }
+
+            CertificateFactory certFactory = CertificateFactory.getInstance("X509");
             Certificate cert = certFactory.generateCertificate(certBufferedInputStream);
 
             certBufferedInputStream.close();
@@ -152,12 +122,7 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
                         " PKCS8 private key and X509 certificate");
             }
 
-            KeyStore newKeyStore;
-            if (provider != null) {
-                newKeyStore = KeyStore.getInstance(Constants.BCFKS, provider);
-            } else {
-                newKeyStore = KeyStore.getInstance(Constants.JKS);
-            }
+            KeyStore newKeyStore = KeyStore.getInstance("JKS");
             newKeyStore.load(null, null);
 
             newKeyStore.setCertificateEntry("server Cert", cert);
@@ -169,17 +134,15 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
 
             return newKeyStore;
         } catch (FileNotFoundException e) {
-            handleException("File not found at location: ", e);
+            handleException("IOError", e);
         } catch (IOException e) {
             handleException("IOError", e);
         } catch (NoSuchAlgorithmException e) {
-            handleException("Error creating KeyStore: ", e);
+            handleException("Error creating KeyStore", e);
         } catch (KeyStoreException e) {
-            handleException("Failed to access the KeyStore while creating KeyStore: ", e);
+            handleException("Error creating KeyStore", e);
         } catch (CertificateException e) {
-            handleException("Invalid key was provided while creating KeyStore: ", e);
-        } catch (NoSuchProviderException e) {
-            handleException("Specified security provider is not available in this environment: ", e);
+            handleException("Error creating KeyStore", e);
         }
         return null;
 
@@ -193,7 +156,7 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
      * @param keyBytes Byte Array of the private key
      * @return PKCS8Encoded PrivateKey
      */
-    private PrivateKey createPrivateKey(byte[] keyBytes, String provider) {
+    private PrivateKey createPrivateKey(byte[] keyBytes) {
 
         int dataStart = HEADER.length();
         int dataEnd = keyBytes.length - FOOTER.length() - 1;
@@ -205,19 +168,12 @@ public class PKCS8KeyStoreLoader implements IKeyStoreLoader {
         PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64Utils.
                 decode(new String(keyContent)));
         try {
-            KeyFactory keyFactory;
-            if (provider != null) {
-                keyFactory = KeyFactory.getInstance(Constants.RSA, provider);
-            } else {
-                keyFactory = KeyFactory.getInstance(Constants.RSA);
-            }
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             return keyFactory.generatePrivate(pkcs8EncodedKeySpec);
         } catch (NoSuchAlgorithmException e) {
             handleException("Error getting a KeyFactory instance", e);
         } catch (InvalidKeySpecException e) {
             handleException("Error generating a private key", e);
-        } catch (NoSuchProviderException e) {
-            handleException("Specified security provider is not available in this environment: ", e);
         }
         return null;
     }

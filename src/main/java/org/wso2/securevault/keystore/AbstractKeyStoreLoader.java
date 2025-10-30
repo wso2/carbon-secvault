@@ -25,8 +25,8 @@ import org.wso2.securevault.SecureVaultException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -54,18 +54,22 @@ public abstract class AbstractKeyStoreLoader implements IKeyStoreLoader {
      * @param provider      Provider
      * @return KeyStore Instance
      */
-    protected KeyStore getKeyStore(String location, String storePassword, String storeType, String provider) {
+    protected KeyStore getKeyStore(String location, String storePassword,
+                                   String storeType,
+                                   String provider) {
 
         File keyStoreFile = new File(location);
         if (!keyStoreFile.exists()) {
             handleException("KeyStore can not be found at ' " + keyStoreFile + " '");
         }
 
-        try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(keyStoreFile.toPath()))) {
+        BufferedInputStream bis = null;
+        try {
             if (log.isDebugEnabled()) {
                 log.debug("Loading KeyStore from : " + location + " Store-Type : " +
                         storeType + " Provider : " + provider);
             }
+            bis = new BufferedInputStream(new FileInputStream(keyStoreFile));
             KeyStore keyStore;
             if (provider != null) {
                 keyStore = KeyStore.getInstance(storeType, provider);
@@ -79,11 +83,18 @@ public abstract class AbstractKeyStoreLoader implements IKeyStoreLoader {
         } catch (IOException e) {
             handleException("IOError loading keyStore from ' " + location + " ' ", e);
         } catch (NoSuchAlgorithmException e) {
-            handleException("Required cryptographic algorithm is not available in this environment", e);
-        }  catch (CertificateException e) {
-            handleException("Invalid key was provided while creating KeyStore: ", e);
+            handleException("Error loading keyStore from ' " + location + " ' ", e);
+        } catch (CertificateException e) {
+            handleException("Error loading keyStore from ' " + location + " ' ", e);
         } catch (NoSuchProviderException e) {
-            handleException("Specified security provider is not available in this environment: ", e);
+            handleException("Error loading keyStore from ' " + location + " ' ", e);
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (IOException ignored) {
+                }
+            }
         }
         return null;
     }

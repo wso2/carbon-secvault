@@ -18,9 +18,6 @@
 */
 package org.wso2.securevault.definition;
 
-import org.wso2.securevault.commons.Constants;
-import org.wso2.securevault.commons.MiscellaneousUtil;
-
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 
@@ -41,13 +38,10 @@ public class TrustKeyStoreInformation extends KeyStoreInformation {
                 log.debug("Creating a TrustManagerFactory instance");
             }
             KeyStore trustStore = this.getTrustStore();
-            TrustManagerFactory trustManagerFactory;
-            if (MiscellaneousUtil.getPreferredJceProvider() != null) {
-                trustManagerFactory = TrustManagerFactory.getInstance(Constants.PKIX, Constants.BCJSSE);
-            } else {
-                trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            }
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(trustStore);
+
             return trustManagerFactory;
         } catch (Exception e) {
             handleException("Error getting TrustManagerFactory: ", e);
