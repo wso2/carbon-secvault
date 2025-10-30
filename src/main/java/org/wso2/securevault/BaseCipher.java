@@ -20,6 +20,7 @@ package org.wso2.securevault;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.definition.CipherInformation;
 import org.wso2.securevault.definition.IdentityKeyStoreInformation;
 import org.wso2.securevault.definition.KeyStoreInformation;
@@ -48,9 +49,9 @@ import java.security.spec.AlgorithmParameterSpec;
  */
 public abstract class BaseCipher implements EncryptionProvider, DecryptionProvider {
 
-    private CipherInformation cipherInformation;
+    private final CipherInformation cipherInformation;
     private KeyStoreInformation keystoreInformation;
-    private static Log log = LogFactory.getLog(BaseCipher.class);
+    private static final Log log = LogFactory.getLog(BaseCipher.class);
     /* Underlying cipher instance*/
     private Cipher cipher;
     protected KeyStoreWrapper keyStoreWrapper;
@@ -105,13 +106,20 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         try {
             String provider = cipherInformation.getProvider();
             if (provider != null && !"".equals(provider)) {
-                try {
-                    cipher = Cipher.getInstance(algorithm, provider.trim());
-                } catch (NoSuchProviderException e) {
-                    throw new SecureVaultException("Invalid Provider : " + provider, log);
-                }
+                cipher = Cipher.getInstance(algorithm, provider.trim());
             } else {
-                cipher = Cipher.getInstance(algorithm);
+                String jceProvider = MiscellaneousUtil.getPreferredJceProvider();
+                if (jceProvider != null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using preferred JCE provider: " + jceProvider + " for algorithm: " + algorithm);
+                    }
+                    cipher = Cipher.getInstance(algorithm, jceProvider);
+                } else {
+                    cipher = Cipher.getInstance(algorithm);
+                    if (log.isDebugEnabled()) {
+                        log.debug("No preferred JCE provider found. Using default provider for algorithm: " + algorithm);
+                    }
+                }
             }
         } catch (NoSuchAlgorithmException e) {
             throw new SecureVaultException("There is no algorithm support for " +
@@ -119,6 +127,8 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         } catch (NoSuchPaddingException e) {
             throw new SecureVaultException("There is no padding scheme  for " +
                     "'" + algorithm + "' in the operation mode '" + opMode + "'" + e, log);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException("Specified security provider is not available in this environment", e);
         }
     }
 

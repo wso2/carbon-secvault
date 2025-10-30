@@ -3,6 +3,9 @@
  */
 package org.wso2.securevault.keystore;
 
+import org.wso2.securevault.commons.Constants;
+import org.wso2.securevault.commons.MiscellaneousUtil;
+
 import java.security.KeyStore;
 
 /**
@@ -10,8 +13,8 @@ import java.security.KeyStore;
  */
 public class JKSKeyStoreLoader extends AbstractKeyStoreLoader {
 
-    private String keyStorePath;
-    private String keyStorePassword;
+    private final String keyStorePath;
+    private final String keyStorePassword;
 
     /**
      * constructs an instance of KeyStoreLoader
@@ -31,7 +34,11 @@ public class JKSKeyStoreLoader extends AbstractKeyStoreLoader {
      * @return KeyStore instance
      */
     public KeyStore getKeyStore() {
-        return getKeyStore(keyStorePath, keyStorePassword, "JKS", null);
+        String provider = MiscellaneousUtil.getPreferredJceProvider();
+        if (provider != null) {
+            return getKeyStore(keyStorePath, keyStorePassword, Constants.JKS, provider);
+        }
+        return getKeyStore(keyStorePath, keyStorePassword, Constants.JKS, null);
     }
 
 }
