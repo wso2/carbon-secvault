@@ -43,7 +43,7 @@ public class TrustKeyStoreInformation extends KeyStoreInformation {
                 log.debug("Creating a TrustManagerFactory instance");
             }
             KeyStore trustStore = this.getTrustStore();
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(getManagerType());
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(getTrustManagerType());
             trustManagerFactory.init(trustStore);
 
             return trustManagerFactory;
@@ -64,7 +64,7 @@ public class TrustKeyStoreInformation extends KeyStoreInformation {
 
     }
 
-    private static String getManagerType() {
+    private static String getTrustManagerType() {
         String provider = System.getProperty(JCE_PROVIDER);
         if (StringUtils.isNotEmpty(provider)) {
             return PKIX;

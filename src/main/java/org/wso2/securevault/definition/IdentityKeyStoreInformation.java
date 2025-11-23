@@ -51,7 +51,7 @@ public class IdentityKeyStoreInformation extends KeyStoreInformation {
             }
 
             KeyStore keyStore = this.getIdentityKeyStore();
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(getManagerType());
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(getKeyManagerType());
             keyManagerFactory.init(keyStore, keyPasswordProvider.getResolvedSecret().toCharArray());
 
             return keyManagerFactory;
@@ -75,7 +75,7 @@ public class IdentityKeyStoreInformation extends KeyStoreInformation {
         return keyPasswordProvider;
     }
 
-    private static String getManagerType() {
+    private static String getKeyManagerType() {
         String provider = System.getProperty(JCE_PROVIDER);
         if (StringUtils.isNotEmpty(provider)) {
             return PKIX;
