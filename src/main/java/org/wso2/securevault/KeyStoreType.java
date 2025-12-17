@@ -26,5 +26,8 @@ public enum KeyStoreType {
     JKS,
     PKCS8,
     PKCS12,
+    BCFKS,
+    BKS,
+    UBER,
     CA_CERTIFICATES_PATH
 }

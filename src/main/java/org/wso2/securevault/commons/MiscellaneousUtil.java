@@ -20,6 +20,7 @@ package org.wso2.securevault.commons;
 
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.SecretResolver;
@@ -47,6 +48,12 @@ public class MiscellaneousUtil {
     private static Log log = LogFactory.getLog(MiscellaneousUtil.class);
     private static final String SECURED_PROPERTY_PREFIX = '$' + SecurityConstants.SECURE_VAULT_VALUE + '{';
     private static final char SECURED_PROPERTY_SUFFIX = '}';
+    private static final String BOUNCY_CASTLE_PROVIDER = "BC";
+    private static final String BOUNCY_CASTLE_FIPS_PROVIDER = "BCFIPS";
+    private static final String SECURITY_JCE_PROVIDER = "security.jce.provider";
+    private static final String PRIMARY_KEY_STORE_TYPE_PROPERTY = "primary.key.type";
+    public static final String BCFKS = "BCFKS";
+    public static final String JKS = "JKS";
 
     private MiscellaneousUtil() {
 
@@ -365,6 +372,29 @@ public class MiscellaneousUtil {
         public int getEndIndex() {
 
             return endIndex;
+        }
+    }
+
+    /**
+     * Get the preferred JCE provider.
+     *
+     * @return the preferred JCE provider
+     */
+    private static String getPreferredJceProvider() {
+        String provider = System.getProperty(SECURITY_JCE_PROVIDER);
+        if (provider != null && (provider.equalsIgnoreCase(BOUNCY_CASTLE_FIPS_PROVIDER) ||
+                provider.equalsIgnoreCase(BOUNCY_CASTLE_PROVIDER))) {
+            return provider;
+        }
+        return null;
+    }
+
+    public static String getKeyType() {
+        String keyType = System.getProperty(PRIMARY_KEY_STORE_TYPE_PROPERTY);
+        if (getPreferredJceProvider() != null) {
+            return StringUtils.isNotEmpty(keyType) ? keyType : BCFKS;
+        } else {
+            return StringUtils.isNotEmpty(keyType) ? keyType : JKS;
         }
     }
 }

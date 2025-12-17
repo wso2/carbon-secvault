@@ -54,9 +54,7 @@ public abstract class AbstractKeyStoreLoader implements IKeyStoreLoader {
      * @param provider      Provider
      * @return KeyStore Instance
      */
-    protected KeyStore getKeyStore(String location, String storePassword,
-                                   String storeType,
-                                   String provider) {
+    protected KeyStore getKeyStore(String location, String storePassword, String storeType) {
 
         File keyStoreFile = new File(location);
         if (!keyStoreFile.exists()) {
@@ -67,15 +65,10 @@ public abstract class AbstractKeyStoreLoader implements IKeyStoreLoader {
         try {
             if (log.isDebugEnabled()) {
                 log.debug("Loading KeyStore from : " + location + " Store-Type : " +
-                        storeType + " Provider : " + provider);
+                        storeType);
             }
             bis = new BufferedInputStream(new FileInputStream(keyStoreFile));
-            KeyStore keyStore;
-            if (provider != null) {
-                keyStore = KeyStore.getInstance(storeType, provider);
-            } else {
-                keyStore = KeyStore.getInstance(storeType);
-            }
+            KeyStore keyStore = KeyStore.getInstance(storeType);
             keyStore.load(bis, storePassword.toCharArray());
             return keyStore;
         } catch (KeyStoreException e) {
@@ -85,8 +78,6 @@ public abstract class AbstractKeyStoreLoader implements IKeyStoreLoader {
         } catch (NoSuchAlgorithmException e) {
             handleException("Error loading keyStore from ' " + location + " ' ", e);
         } catch (CertificateException e) {
-            handleException("Error loading keyStore from ' " + location + " ' ", e);
-        } catch (NoSuchProviderException e) {
             handleException("Error loading keyStore from ' " + location + " ' ", e);
         } finally {
             if (bis != null) {

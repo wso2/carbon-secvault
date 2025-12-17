@@ -24,7 +24,9 @@ import org.wso2.securevault.ICACertsLoader;
 import org.wso2.securevault.IKeyStoreLoader;
 import org.wso2.securevault.KeyStoreType;
 import org.wso2.securevault.SecureVaultException;
+import org.wso2.securevault.keystore.BCFKSKeyStoreLoader;
 import org.wso2.securevault.keystore.CACertsLoader;
+import org.wso2.securevault.keystore.DefaultKeystoreLoader;
 import org.wso2.securevault.keystore.JKSKeyStoreLoader;
 import org.wso2.securevault.keystore.PKCS12KeyStoreLoader;
 import org.wso2.securevault.keystore.PKCS8KeyStoreLoader;
@@ -140,14 +142,16 @@ public abstract class KeyStoreInformation {
                         parameters.get(KEY_STORE_CERTIFICATE_FILE_PATH),
                         keyStorePassword, alias);
                 return pkcs8KeyStoreLoader.getKeyStore();
+            case BCFKS:
+                IKeyStoreLoader bcfksKeyStoreLoader = new BCFKSKeyStoreLoader(location, keyStorePassword);
+                return bcfksKeyStoreLoader.getKeyStore();
             case CA_CERTIFICATES_PATH:
                 ICACertsLoader caCertsLoader = new CACertsLoader();
                 return caCertsLoader.loadTrustStore(location);
             default:
-                if (log.isDebugEnabled()) {
-                    log.debug("No KeyStore Found");
-                }
-                return null;
+                DefaultKeystoreLoader defaultKeystoreLoader = new DefaultKeystoreLoader(location,
+                        keyStorePassword, storeType.toString());
+                return defaultKeystoreLoader.getKeyStore();
         }
     }
 
