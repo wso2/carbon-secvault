@@ -19,11 +19,12 @@
 
 package org.wso2.securevault.secret.repository;
 
-import org.powermock.reflect.Whitebox;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 /**
@@ -42,7 +43,8 @@ public class VaultSecretRepositoryProviderTest {
     @Test(description = "Test case for filterConfigurations() method.")
     public void testFilterConfigurations() throws Exception {
 
-        Properties actual = Whitebox.invokeMethod(vaultSecretRepositoryProvider, "filterConfigurations",
+        Properties actual = invokePrivate("filterConfigurations",
+                new Class[]{Properties.class, String.class},
                 getConfigProperties(), "hashicorp");
         Assert.assertEquals(4, actual.size());
     }
@@ -50,9 +52,26 @@ public class VaultSecretRepositoryProviderTest {
     @Test(description = "Negative test case for filterConfigurations() method.")
     public void testFilterConfigurationsNegative() throws Exception {
 
-        Properties actual = Whitebox.invokeMethod(vaultSecretRepositoryProvider, "filterConfigurations",
+        Properties actual = invokePrivate("filterConfigurations",
+                new Class[]{Properties.class, String.class},
                 getConfigProperties(), "aws");
         Assert.assertEquals(0, actual.size());
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T invokePrivate(String methodName, Class<?>[] paramTypes, Object... args) throws Exception {
+
+        Method method = VaultSecretRepositoryProvider.class.getDeclaredMethod(methodName, paramTypes);
+        method.setAccessible(true);
+        try {
+            return (T) method.invoke(vaultSecretRepositoryProvider, args);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof Exception) {
+                throw (Exception) cause;
+            }
+            throw e;
+        }
     }
 
     private Properties getConfigProperties() {

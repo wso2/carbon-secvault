@@ -19,15 +19,14 @@
 
 package org.wso2.securevault.secret;
 
-import org.powermock.reflect.Whitebox;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.securevault.SecureVaultException;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Properties;
-
-import static org.mockito.Mockito.when;
 
 /**
  * Unit test class for SecretManager.
@@ -45,23 +44,26 @@ public class SecretManagerTest {
     @Test(description = "Test case for filterConfigurations() method.")
     public void testFilterConfigurations() throws Exception {
 
-        Properties actual = Whitebox.invokeMethod(secretManager, "filterConfigurations", "secretProviders",
-                getConfigProperties());
+        Properties actual = invokePrivate("filterConfigurations",
+                new Class[]{String.class, Properties.class},
+                "secretProviders", getConfigProperties());
         Assert.assertEquals(12, actual.size());
     }
 
     @Test(description = "Test case for populateArray() method.")
     public void testPopulateArray() throws Exception {
 
-        String[] actual = Whitebox.invokeMethod(secretManager, "populateArrayOfSecretProviders", "vault,hsm");
+        String[] actual = invokePrivate("populateArrayOfSecretProviders",
+                new Class[]{String.class},
+                "vault,hsm");
         Assert.assertEquals(2, actual.length);
     }
 
     @Test(description = "Test case for resolveSecret() method.")
     public void testResolveSecretNovel() throws Exception {
 
-        Whitebox.invokeMethod(secretManager, "readLegacyProviders", getConfigProperties());
-        Whitebox.invokeMethod(secretManager, "readNovelProviders", getConfigProperties());
+        invokePrivate("readLegacyProviders", new Class[]{Properties.class}, getConfigProperties());
+        invokePrivate("readNovelProviders", new Class[]{Properties.class}, getConfigProperties());
         String alias = secretManager.resolveSecret("vault:hashicorp:admin_password");
         Assert.assertEquals("admin_password", alias);
     }
@@ -69,8 +71,8 @@ public class SecretManagerTest {
     @Test(description = "Test case for resolveSecret() method.")
     public void testResolveSecretLegacy() throws Exception {
 
-        Whitebox.invokeMethod(secretManager, "readLegacyProviders", getConfigProperties());
-        Whitebox.invokeMethod(secretManager, "readNovelProviders", getConfigProperties());
+        invokePrivate("readLegacyProviders", new Class[]{Properties.class}, getConfigProperties());
+        invokePrivate("readNovelProviders", new Class[]{Properties.class}, getConfigProperties());
         String alias = secretManager.resolveSecret("admin_password");
         Assert.assertEquals("admin_password", alias);
     }
@@ -79,9 +81,26 @@ public class SecretManagerTest {
             expectedExceptions = {SecureVaultException.class})
     public void testResolveSecretNegative() throws Exception {
 
-        Whitebox.invokeMethod(secretManager, "readLegacyProviders", getConfigProperties());
-        Whitebox.invokeMethod(secretManager, "readNovelProviders", getConfigProperties());
-        when(secretManager.resolveSecret("vault:admin_password")).thenThrow(SecureVaultException.class);
+        invokePrivate("readLegacyProviders", new Class[]{Properties.class}, getConfigProperties());
+        invokePrivate("readNovelProviders", new Class[]{Properties.class}, getConfigProperties());
+        // "vault:admin_password" splits into 2 parts, hitting the default case which throws SecureVaultException.
+        secretManager.resolveSecret("vault:admin_password");
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T invokePrivate(String methodName, Class<?>[] paramTypes, Object... args) throws Exception {
+
+        Method method = SecretManager.class.getDeclaredMethod(methodName, paramTypes);
+        method.setAccessible(true);
+        try {
+            return (T) method.invoke(secretManager, args);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof Exception) {
+                throw (Exception) cause;
+            }
+            throw e;
+        }
     }
 
     private Properties getConfigProperties() {
