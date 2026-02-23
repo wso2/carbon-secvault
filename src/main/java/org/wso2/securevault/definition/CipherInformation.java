@@ -55,6 +55,8 @@ public class CipherInformation {
 
     private String provider;
 
+    private boolean keyBasedSymmetricEncryption;
+
     public String getAlgorithm() {
         return algorithm;
     }
@@ -112,5 +114,13 @@ public class CipherInformation {
 
     public void setProvider(String provider) {
         this.provider = provider;
+    }
+
+    public boolean getKeyBasedSymmetricEncryption() {
+        return keyBasedSymmetricEncryption;
+    }
+
+    public void setKeyBasedSymmetricEncryption(boolean keyBasedSymmetricEncryption) {
+        this.keyBasedSymmetricEncryption = keyBasedSymmetricEncryption;
     }
 }

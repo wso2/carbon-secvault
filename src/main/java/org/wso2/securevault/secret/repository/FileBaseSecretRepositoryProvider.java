@@ -18,6 +18,7 @@
  */
 package org.wso2.securevault.secret.repository;
 
+import org.wso2.securevault.encyption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 import org.wso2.securevault.secret.SecretRepository;
@@ -37,5 +38,15 @@ public class FileBaseSecretRepositoryProvider implements SecretRepositoryProvide
     public SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity,
                                                 TrustKeyStoreWrapper trust) {
         return new FileBaseSecretRepository(identity, trust);
+    }
+
+    /**
+     * Returns a  FileBaseSecretRepository instance
+     *
+     * @see org.wso2.securevault.secret.SecretRepositoryProvider
+     */
+    public SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust,
+            EncryptionKeyWrapper encryption) {
+        return new FileBaseSecretRepository(identity, trust, encryption);
     }
 }

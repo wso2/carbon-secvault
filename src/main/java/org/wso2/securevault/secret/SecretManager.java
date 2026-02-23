@@ -25,6 +25,7 @@ import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.definition.IdentityKeyStoreInformation;
 import org.wso2.securevault.definition.KeyStoreInformationFactory;
 import org.wso2.securevault.definition.TrustKeyStoreInformation;
+import org.wso2.securevault.encyption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 import org.wso2.securevault.secret.repository.VaultSecretRepositoryProvider;
@@ -80,6 +81,15 @@ public class SecretManager {
     private Map<String, String> providers = new HashMap<>();
     // To keep the secret repositories coming from a provider listed under secretProviders property.
     private Map<String, SecretRepository> secretRepositories = new HashMap<>();
+
+    /* Prompt for trust store password*/
+    private final static String SYMMETRIC_ENCRYPTION_KEY_PROMPT = "Symmetric Encryption Key > ";
+    /* Password for access keyStore*/
+    private final static String KEY_BASED_SECRET_PROVIDER = "key.based";
+    // property to identify the encryption mode of the secret file
+    private static final String SECRET_FILE_ENCRYPTION_MODE = "secretRepositories.file.encryptionMode";
+
+    private static final String KEY_BASED_SYMMETRIC_ENCRYPTION = "key.based.symmetric.encryption";
 
     public static SecretManager getInstance() {
         return SECRET_MANAGER;
@@ -140,10 +150,30 @@ public class SecretManager {
             return;
         }
 
+        String secretRepositoryEncryptionMode = MiscellaneousUtil.getProperty(properties, SECRET_FILE_ENCRYPTION_MODE,
+                null);
+        Boolean keyBasedSymmetricEncryption = isKeyBasedSymmetricEncryption(secretRepositoryEncryptionMode);
         Boolean encryptionEnabled = getEncryptionEnabledStatus(properties);
         IdentityKeyStoreWrapper identityKeyStoreWrapper = new IdentityKeyStoreWrapper();
         TrustKeyStoreWrapper trustKeyStoreWrapper = new TrustKeyStoreWrapper();
-        if (legacyProvidersExist || (novelProvidersExist && encryptionEnabled)) {
+        EncryptionKeyWrapper encryptionKeyWrapper = new EncryptionKeyWrapper();
+
+        if (keyBasedSymmetricEncryption) {
+            if (log.isDebugEnabled()) {
+                log.debug("Symmetric key encryption is configured. Hence skipping the initialization of keystores.");
+            }
+            SecretInformation secretInformation = SecretInformationFactory.createSecretInformation(properties,
+                    KEY_BASED_SECRET_PROVIDER + DOT, SYMMETRIC_ENCRYPTION_KEY_PROMPT);
+            String encryptionKey = createEncryptionKey(secretInformation);
+            if (encryptionKey == null || encryptionKey.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Encryption key is mandatory in order to initialize secret manager.");
+                }
+                return;
+            }
+            encryptionKeyWrapper.init(secretInformation, encryptionKey);
+        }
+        else if (legacyProvidersExist || (novelProvidersExist && encryptionEnabled)) {
             //Create a KeyStore Information  for private key entry KeyStore.
             IdentityKeyStoreInformation identityInformation =
                     KeyStoreInformationFactory.createIdentityKeyStoreInformation(properties);
@@ -208,9 +238,15 @@ public class SecretManager {
                                 ((SecretRepositoryProvider) instance).initProvider(filteredConfigs, providerType);
                         secretRepositories.putAll(providerBasedSecretRepositories);
                     } else if (PROP_SECRET_REPOSITORIES.equals(propertyName)){
-                        // This will be executed if and only if there`s a legacy secret provider configured.
-                        SecretRepository secretRepository = ((SecretRepositoryProvider) instance).
-                                getSecretRepository(identityKeyStoreWrapper, trustKeyStoreWrapper);
+                        SecretRepository secretRepository;
+                        if (keyBasedSymmetricEncryption){
+                            secretRepository = ((SecretRepositoryProvider) instance).
+                                    getSecretRepository(null, null, encryptionKeyWrapper);
+                        } else {
+                            // This will be executed if and only if there`s a legacy secret provider configured.
+                            secretRepository = ((SecretRepositoryProvider) instance).
+                                    getSecretRepository(identityKeyStoreWrapper, trustKeyStoreWrapper);
+                        }
                         secretRepository.init(configurationProperties, id);
                         if (parentRepository == null) {
                             parentRepository = secretRepository;
@@ -476,6 +512,26 @@ public class SecretManager {
     }
 
     /**
+     * Checks whether symmetric encryption is configured using the provided encryption mode.
+     */
+    private boolean isKeyBasedSymmetricEncryption(String secretRepositoryEncryptionMode) {
+
+        if (secretRepositoryEncryptionMode == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Symmetric key encryption is not configured.");
+            }
+            return false;
+        }
+        if (secretRepositoryEncryptionMode.equals(KEY_BASED_SYMMETRIC_ENCRYPTION)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Input key based symmetric encryption is configured.");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Util method to add all the providers from providers array to providers hash map along with the
      * type (secretRepositories or secretProviders).
      *
@@ -508,6 +564,22 @@ public class SecretManager {
             }
         }
         return propertyValues;
+    }
+
+    /**
+     * Create the encryption key.
+     *
+     * @param secretInformation Encryption Information for symmetric key encryption.
+     * @return encryptionKey.
+     */
+    private String createEncryptionKey(SecretInformation secretInformation) {
+
+        String encryptionKey = null;
+
+        if (secretInformation != null) {
+            encryptionKey = secretInformation.getResolvedSecret();
+        }
+        return encryptionKey;
     }
 
     /**

@@ -31,8 +31,10 @@ import org.wso2.securevault.CipherOperationMode;
 import org.wso2.securevault.DecryptionProvider;
 import org.wso2.securevault.EncodingType;
 import org.wso2.securevault.SecureVaultException;
+import org.wso2.securevault.SymmetricCipher;
 import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.definition.CipherInformation;
+import org.wso2.securevault.encyption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.KeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
@@ -56,6 +58,7 @@ public class FileBaseSecretRepository implements SecretRepository {
     private static final String DOT = ".";
     private static final String ALGORITHM = "algorithm";
     private static final String SYMMETRIC = "symmetric";
+    private static final String KEY_BASED_SYMMETRIC_ENCRYPTION = "key.based.symmetric.encryption";
     private static final String ENCRYPTION_MODE = "encryptionMode";
     private static final String DEFAULT_ASYMMETRIC_ALGORITHM = "RSA";
     private static final String DEFAULT_SYMMETRIC_ALGORITHM = "AES/GCM/NoPadding";
@@ -73,12 +76,21 @@ public class FileBaseSecretRepository implements SecretRepository {
     private IdentityKeyStoreWrapper identity;
     /* Wrapper for trusted KeyStore */
     private TrustKeyStoreWrapper trust;
+    /* Wrapper for input key based encryption */
+    private EncryptionKeyWrapper encryption;
     /* Whether this secret repository has been initiated successfully*/
     private boolean initialize = false;
     private static final String IV = "iv";
     private static final String CIPHER_TEXT = "cipherText";
 
     public FileBaseSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust) {
+        this.identity = identity;
+        this.trust = trust;
+    }
+
+    public FileBaseSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust,
+            EncryptionKeyWrapper encryption) {
+        this.encryption = encryption;
         this.identity = identity;
         this.trust = trust;
     }
@@ -107,8 +119,9 @@ public class FileBaseSecretRepository implements SecretRepository {
 
         // Load encryption mode.
         String encryptionMode = id + DOT + ENCRYPTION_MODE;
-        boolean symmetricEncryptionEnabled = SYMMETRIC.equals(MiscellaneousUtil.getProperty(properties,
-                encryptionMode, null));
+        boolean symmetricEncryptionEnabled = SYMMETRIC.equals(MiscellaneousUtil.getProperty(properties, encryptionMode,
+                null)) || KEY_BASED_SYMMETRIC_ENCRYPTION.equals(
+                MiscellaneousUtil.getProperty(properties, encryptionMode, null));
 
         //Load algorithm
         String sbTwo = id
@@ -139,8 +152,13 @@ public class FileBaseSecretRepository implements SecretRepository {
         if (symmetricEncryptionEnabled) {
             cipherInformation.setType(SYMMETRIC);
         }
-        DecryptionProvider baseCipher =
-                CipherFactory.createCipher(cipherInformation, keyStoreWrapper);
+        DecryptionProvider baseCipher;
+        if (KEY_BASED_SYMMETRIC_ENCRYPTION.equals(MiscellaneousUtil.getProperty(properties, encryptionMode, null))) {
+            cipherInformation.setKeyBasedSymmetricEncryption(true);
+            baseCipher = new SymmetricCipher(cipherInformation, encryption);
+        } else {
+            baseCipher = CipherFactory.createCipher(cipherInformation, keyStoreWrapper);
+        }
 
         for (Object alias : cipherProperties.keySet()) {
             //decrypt the encrypted text 

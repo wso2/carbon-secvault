@@ -18,6 +18,7 @@
  */
 package org.wso2.securevault.secret;
 
+import org.wso2.securevault.encyption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 
@@ -38,6 +39,19 @@ public interface SecretRepositoryProvider {
      * @return A SecretRepository implementation
      */
     public SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust);
+
+    /**
+     * Returns a SecretRepository implementation
+     *
+     * @param identity   Identity KeyStore
+     * @param trust      Trust KeyStore
+     * @param encryption Encryption Wrapper
+     * @return A SecretRepository implementation
+     */
+    default SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust,
+            EncryptionKeyWrapper encryption) {
+        return getSecretRepository(identity, trust);
+    }
 
     /**
      * Returns a List of initialized SecretRepositories.
