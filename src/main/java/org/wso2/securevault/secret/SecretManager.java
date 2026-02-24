@@ -82,13 +82,13 @@ public class SecretManager {
     // To keep the secret repositories coming from a provider listed under secretProviders property.
     private Map<String, SecretRepository> secretRepositories = new HashMap<>();
 
-    /* Prompt for trust store password*/
+    /* Prompt shown when requesting the symmetric encryption key from the user */
     private final static String SYMMETRIC_ENCRYPTION_KEY_PROMPT = "Symmetric Encryption Key > ";
-    /* Password for access keyStore*/
+    /* Identifier for the key-based secret provider implementation */
     private final static String KEY_BASED_SECRET_PROVIDER = "key.based";
-    // property to identify the encryption mode of the secret file
+    // Configuration property key that specifies the encryption mode used for the secrets file
     private static final String SECRET_FILE_ENCRYPTION_MODE = "secretRepositories.file.encryptionMode";
-
+    // Configuration value indicating key-based symmetric encryption mode
     private static final String KEY_BASED_SYMMETRIC_ENCRYPTION = "key.based.symmetric.encryption";
 
     public static SecretManager getInstance() {
@@ -159,18 +159,15 @@ public class SecretManager {
         EncryptionKeyWrapper encryptionKeyWrapper = new EncryptionKeyWrapper();
 
         if (keyBasedSymmetricEncryption) {
-            if (log.isDebugEnabled()) {
-                log.debug("Symmetric key encryption is configured. Hence skipping the initialization of keystores.");
-            }
+            log.debug("Symmetric key encryption is configured. Hence skipping the initialization of keystores.");
             SecretInformation secretInformation = SecretInformationFactory.createSecretInformation(properties,
                     KEY_BASED_SECRET_PROVIDER + DOT, SYMMETRIC_ENCRYPTION_KEY_PROMPT);
             String encryptionKey = createEncryptionKey(secretInformation);
             if (encryptionKey == null || encryptionKey.isEmpty()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Encryption key is mandatory in order to initialize secret manager.");
-                }
+                log.error("Encryption key is mandatory in order to initialize secret manager.");
                 return;
             }
+            log.debug("Initializing secret manager with symmetric key encryption.");
             encryptionKeyWrapper.init(secretInformation, encryptionKey);
         }
         else if (legacyProvidersExist || (novelProvidersExist && encryptionEnabled)) {

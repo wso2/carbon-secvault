@@ -106,11 +106,14 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         CipherOperationMode opMode = cipherInformation.getCipherOperationMode();
         boolean keyBasedSymmetricEncryption = cipherInformation.getKeyBasedSymmetricEncryption();
         if (keyBasedSymmetricEncryption) {
-            if (this.encryptionKeyWrapper != null) {
-                byte[] keyBytes = this.encryptionKeyWrapper.getSecretKeyBytes();
-                String baseAlgorithm = algorithm.split("/")[0];
-                key = new SecretKeySpec(keyBytes, baseAlgorithm);
+            log.debug("Key-based symmetric encryption enabled");
+            if (this.encryptionKeyWrapper == null) {
+                throw new SecureVaultException(
+                        "Key-based symmetric encryption is enabled, but no EncryptionKeyWrapper is configured.", log);
             }
+            byte[] keyBytes = this.encryptionKeyWrapper.getSecretKeyBytes();
+            String baseAlgorithm = algorithm.split("/")[0];
+            key = new SecretKeySpec(keyBytes, baseAlgorithm);
         }
         else if (key == null) {
             key = getKey(opMode);

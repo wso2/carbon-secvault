@@ -18,6 +18,8 @@
  */
 package org.wso2.securevault.secret;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.encyption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
@@ -50,6 +52,11 @@ public interface SecretRepositoryProvider {
      */
     default SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust,
             EncryptionKeyWrapper encryption) {
+        if (encryption != null) {
+            Log log = LogFactory.getLog(this.getClass());
+            log.warn("EncryptionKeyWrapper parameter is ignored by default implementation. " +
+                    "Provider should override this method to support key-based encryption.");
+        }
         return getSecretRepository(identity, trust);
     }
 

@@ -24,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.SecureVaultException;
 import org.wso2.securevault.secret.SecretInformation;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Wraps the encryption key and provide abstraction needed for ciphering.
  */
@@ -48,6 +50,10 @@ public class EncryptionKeyWrapper {
         if (secretInformation == null) {
             throw new SecureVaultException("Encryption information cannot be found", log);
         }
+        if (secretKey == null || secretKey.trim().isEmpty()) {
+            throw new SecureVaultException("Secret key cannot be null or empty", log);
+        }
+        log.debug("Initializing encryption key wrapper");
         this.secretKey = secretKey;
         this.secretInformation = secretInformation;
     }
@@ -65,7 +71,7 @@ public class EncryptionKeyWrapper {
             if (log.isDebugEnabled()) {
                 log.debug("Failed to decode secret as hex, using direct byte conversion: " + e.getMessage());
             }
-            keyBytes = secretKey.getBytes();
+            keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         }
         return keyBytes;
     }
