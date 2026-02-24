@@ -20,7 +20,7 @@ package org.wso2.securevault;
 
 import org.wso2.securevault.definition.CipherInformation;
 import org.wso2.securevault.definition.KeyStoreInformation;
-import org.wso2.securevault.encyption.EncryptionKeyWrapper;
+import org.wso2.securevault.encryption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.KeyStoreWrapper;
 
 import javax.crypto.SecretKey;

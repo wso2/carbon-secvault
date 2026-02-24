@@ -18,7 +18,7 @@
  */
 package org.wso2.securevault.secret.repository;
 
-import org.wso2.securevault.encyption.EncryptionKeyWrapper;
+import org.wso2.securevault.encryption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 import org.wso2.securevault.secret.SecretRepository;

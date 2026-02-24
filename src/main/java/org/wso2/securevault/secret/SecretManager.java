@@ -25,7 +25,7 @@ import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.definition.IdentityKeyStoreInformation;
 import org.wso2.securevault.definition.KeyStoreInformationFactory;
 import org.wso2.securevault.definition.TrustKeyStoreInformation;
-import org.wso2.securevault.encyption.EncryptionKeyWrapper;
+import org.wso2.securevault.encryption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
 import org.wso2.securevault.secret.repository.VaultSecretRepositoryProvider;

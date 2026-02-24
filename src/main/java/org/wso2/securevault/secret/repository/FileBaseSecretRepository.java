@@ -34,7 +34,7 @@ import org.wso2.securevault.SecureVaultException;
 import org.wso2.securevault.SymmetricCipher;
 import org.wso2.securevault.commons.MiscellaneousUtil;
 import org.wso2.securevault.definition.CipherInformation;
-import org.wso2.securevault.encyption.EncryptionKeyWrapper;
+import org.wso2.securevault.encryption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.KeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
