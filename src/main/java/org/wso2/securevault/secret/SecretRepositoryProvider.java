@@ -33,6 +33,8 @@ import java.util.Properties;
  */
 public interface SecretRepositoryProvider {
 
+    Log log = LogFactory.getLog(SecretRepositoryProvider.class);
+
     /**
      * Returns a SecretRepository implementation
      *
@@ -53,7 +55,6 @@ public interface SecretRepositoryProvider {
     default SecretRepository getSecretRepository(IdentityKeyStoreWrapper identity, TrustKeyStoreWrapper trust,
             EncryptionKeyWrapper encryption) {
         if (encryption != null) {
-            Log log = LogFactory.getLog(this.getClass());
             log.warn("EncryptionKeyWrapper parameter is ignored by default implementation. " +
                     "Provider should override this method to support key-based encryption.");
         }

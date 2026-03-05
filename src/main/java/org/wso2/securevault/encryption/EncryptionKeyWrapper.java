@@ -19,6 +19,7 @@ package org.wso2.securevault.encryption;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.SecureVaultException;
@@ -30,6 +31,10 @@ import java.nio.charset.StandardCharsets;
  * Wraps the encryption key and provide abstraction needed for ciphering.
  */
 public class EncryptionKeyWrapper {
+
+    private static final String HEX_PATTERN = "^[0-9a-fA-F]+$";
+    private static final int AES_256_HEX_KEY_LENGTH = 64;
+    private static final int AES_256_KEY_SIZE = 32;
 
     protected Log log;
     private SecretInformation secretInformation;
@@ -50,7 +55,7 @@ public class EncryptionKeyWrapper {
         if (secretInformation == null) {
             throw new SecureVaultException("Encryption information cannot be found", log);
         }
-        if (secretKey == null || secretKey.trim().isEmpty()) {
+        if (StringUtils.isEmpty(secretKey)) {
             throw new SecureVaultException("Secret key cannot be null or empty", log);
         }
         log.debug("Initializing encryption key wrapper");
@@ -61,17 +66,25 @@ public class EncryptionKeyWrapper {
     /**
      * Returns the secret key based on initialization data
      *
-     * @return keyBytes if there is a one , otherwise null
+     * @return keyBytes if there is a one, otherwise null
+     * @throws SecureVaultException if key validation fails
      */
     public byte[] getSecretKeyBytes() {
         byte[] keyBytes;
-        try {
-            keyBytes = Hex.decodeHex(secretKey.toCharArray());
-        } catch (DecoderException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Failed to decode secret as hex, using direct byte conversion: " + e.getMessage());
+        if (secretKey.matches(HEX_PATTERN) && secretKey.length() == AES_256_HEX_KEY_LENGTH) {
+            try {
+                keyBytes = Hex.decodeHex(secretKey);
+            } catch (DecoderException e) {
+                throw new SecureVaultException(
+                        "Invalid hexadecimal character found in encryption key", log);
             }
+        } else {
             keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        }
+        if (keyBytes.length != AES_256_KEY_SIZE) {
+            throw new SecureVaultException(
+                    String.format("Invalid encryption key size. Expected %d bytes for AES-256.",
+                            AES_256_KEY_SIZE), log);
         }
         return keyBytes;
     }

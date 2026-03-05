@@ -119,9 +119,9 @@ public class FileBaseSecretRepository implements SecretRepository {
 
         // Load encryption mode.
         String encryptionMode = id + DOT + ENCRYPTION_MODE;
-        boolean symmetricEncryptionEnabled = SYMMETRIC.equals(MiscellaneousUtil.getProperty(properties, encryptionMode,
-                null)) || KEY_BASED_SYMMETRIC_ENCRYPTION.equals(
-                MiscellaneousUtil.getProperty(properties, encryptionMode, null));
+        String encryptionModeProperty = MiscellaneousUtil.getProperty(properties, encryptionMode, null);
+        boolean symmetricEncryptionEnabled = SYMMETRIC.equals(encryptionModeProperty) ||
+                KEY_BASED_SYMMETRIC_ENCRYPTION.equals(encryptionModeProperty);
 
         //Load algorithm
         String sbTwo = id
