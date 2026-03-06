@@ -20,6 +20,7 @@ package org.wso2.securevault;
 
 import org.wso2.securevault.definition.CipherInformation;
 import org.wso2.securevault.definition.KeyStoreInformation;
+import org.wso2.securevault.encryption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.KeyStoreWrapper;
 
 import javax.crypto.SecretKey;
@@ -41,6 +42,10 @@ public class SymmetricCipher extends BaseCipher {
 
     public SymmetricCipher(CipherInformation cipherInformation, KeyStoreWrapper keyStoreWrapper) {
         super(cipherInformation, keyStoreWrapper);
+    }
+
+    public SymmetricCipher(CipherInformation cipherInformation, EncryptionKeyWrapper encryptionKeyWrapper) {
+        super(cipherInformation, encryptionKeyWrapper);
     }
 
     public SymmetricCipher(CipherInformation cipherInformation, Key key) {

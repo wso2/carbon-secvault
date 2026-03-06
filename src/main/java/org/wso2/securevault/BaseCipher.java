@@ -24,6 +24,7 @@ import org.wso2.securevault.definition.CipherInformation;
 import org.wso2.securevault.definition.IdentityKeyStoreInformation;
 import org.wso2.securevault.definition.KeyStoreInformation;
 import org.wso2.securevault.definition.TrustKeyStoreInformation;
+import org.wso2.securevault.encryption.EncryptionKeyWrapper;
 import org.wso2.securevault.keystore.IdentityKeyStoreWrapper;
 import org.wso2.securevault.keystore.KeyStoreWrapper;
 import org.wso2.securevault.keystore.TrustKeyStoreWrapper;
@@ -32,6 +33,7 @@ import org.wso2.securevault.secret.SecretInformation;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,6 +52,7 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
 
     private CipherInformation cipherInformation;
     private KeyStoreInformation keystoreInformation;
+    private EncryptionKeyWrapper encryptionKeyWrapper;
     private static Log log = LogFactory.getLog(BaseCipher.class);
     /* Underlying cipher instance*/
     private Cipher cipher;
@@ -85,6 +88,12 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
         init();
     }
 
+    protected BaseCipher(CipherInformation cipherInformation, EncryptionKeyWrapper encryptionKeyWrapper) {
+        this.encryptionKeyWrapper = encryptionKeyWrapper;
+        this.cipherInformation = cipherInformation;
+        init();
+    }
+
     protected BaseCipher(CipherInformation cipherInformation, Key key) {
         this.key = key;
         this.cipherInformation = cipherInformation;
@@ -95,7 +104,18 @@ public abstract class BaseCipher implements EncryptionProvider, DecryptionProvid
 
         String algorithm = cipherInformation.getAlgorithm();
         CipherOperationMode opMode = cipherInformation.getCipherOperationMode();
-        if (key == null) {
+        boolean keyBasedSymmetricEncryption = cipherInformation.getKeyBasedSymmetricEncryption();
+        if (keyBasedSymmetricEncryption) {
+            log.debug("Key-based symmetric encryption enabled");
+            if (this.encryptionKeyWrapper == null) {
+                throw new SecureVaultException(
+                        "Key-based symmetric encryption is enabled, but no EncryptionKeyWrapper is configured.", log);
+            }
+            byte[] keyBytes = this.encryptionKeyWrapper.getSecretKeyBytes();
+            String baseAlgorithm = algorithm.split("/")[0];
+            key = new SecretKeySpec(keyBytes, baseAlgorithm);
+        }
+        else if (key == null) {
             key = getKey(opMode);
         }
         if (log.isDebugEnabled()) {
