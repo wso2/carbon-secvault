@@ -18,6 +18,7 @@
  */
 package org.wso2.securevault.secret;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.securevault.SecureVaultException;
@@ -163,7 +164,7 @@ public class SecretManager {
             SecretInformation secretInformation = SecretInformationFactory.createSecretInformation(properties,
                     KEY_BASED_SECRET_PROVIDER + DOT, SYMMETRIC_ENCRYPTION_KEY_PROMPT);
             String encryptionKey = createEncryptionKey(secretInformation);
-            if (encryptionKey == null || encryptionKey.isEmpty()) {
+            if (StringUtils.isEmpty(encryptionKey)) {
                 log.error("Encryption key is mandatory in order to initialize secret manager.");
                 return;
             }
@@ -234,9 +235,9 @@ public class SecretManager {
                         Map<String, SecretRepository> providerBasedSecretRepositories =
                                 ((SecretRepositoryProvider) instance).initProvider(filteredConfigs, providerType);
                         secretRepositories.putAll(providerBasedSecretRepositories);
-                    } else if (PROP_SECRET_REPOSITORIES.equals(propertyName)){
+                    } else if (PROP_SECRET_REPOSITORIES.equals(propertyName)) {
                         SecretRepository secretRepository;
-                        if (keyBasedSymmetricEncryption){
+                        if (keyBasedSymmetricEncryption) {
                             secretRepository = ((SecretRepositoryProvider) instance).
                                     getSecretRepository(null, null, encryptionKeyWrapper);
                         } else {
@@ -514,15 +515,11 @@ public class SecretManager {
     private boolean isKeyBasedSymmetricEncryption(String secretRepositoryEncryptionMode) {
 
         if (secretRepositoryEncryptionMode == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Symmetric key encryption is not configured.");
-            }
+            log.debug("Symmetric key encryption is not configured.");
             return false;
         }
         if (secretRepositoryEncryptionMode.equals(KEY_BASED_SYMMETRIC_ENCRYPTION)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Input key based symmetric encryption is configured.");
-            }
+            log.debug("Input key based symmetric encryption is configured.");
             return true;
         }
         return false;

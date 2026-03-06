@@ -153,7 +153,7 @@ public class FileBaseSecretRepository implements SecretRepository {
             cipherInformation.setType(SYMMETRIC);
         }
         DecryptionProvider baseCipher;
-        if (KEY_BASED_SYMMETRIC_ENCRYPTION.equals(MiscellaneousUtil.getProperty(properties, encryptionMode, null))) {
+        if (KEY_BASED_SYMMETRIC_ENCRYPTION.equals(encryptionModeProperty)) {
             cipherInformation.setKeyBasedSymmetricEncryption(true);
             baseCipher = new SymmetricCipher(cipherInformation, encryption);
         } else {
