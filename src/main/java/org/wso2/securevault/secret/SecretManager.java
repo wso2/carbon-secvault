@@ -185,11 +185,7 @@ public class SecretManager {
             String trustStorePass = createTrustStorePassword(trustInformation);
 
             if (!validatePasswords(identityStorePass, identityKeyPass, trustStorePass)) {
-                if (log.isDebugEnabled()) {
-                    log.info(
-                            "Either Identity or Trust keystore password is mandatory in order to initialized secret manager.");
-                }
-                return;
+                handleException("Invalid Identity or Trust keystore password is provided.");
             }
             identityKeyStoreWrapper.init(identityInformation, identityKeyPass);
 
